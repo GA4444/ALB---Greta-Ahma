@@ -1,15 +1,23 @@
 # Python
 __pycache__/
 *.py[cod]
-*.class
 *.so
 .Python
+
+# Virtual environments
 venv/
+.venv/
 env/
 ENV/
+
+# Database (local only)
 *.db
 *.sqlite
 *.sqlite3
+
+# Environment (secrets)
+.env
+backend/.env
 
 # Node
 node_modules/
@@ -28,12 +36,14 @@ build/
 Thumbs.db
 
 # Project specific
-backend/dev.db
 backend/venv/
+backend/.venv/
 backend/temp_audio/
-backend/package-lock.json
+backend/test_audio.mp3
 frontend/node_modules/
 frontend/dist/
-*.pyc
-__pycache__/
-*.cpython-*.pyc
+
+# Large/binary files
+*.mp3
+*.wav
+ALBLingo.pdf

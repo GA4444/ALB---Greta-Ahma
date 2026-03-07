@@ -5,10 +5,10 @@ import tempfile
 import subprocess
 from gtts import gTTS
 import speech_recognition as sr
-from pydub import AudioSegment
 import uuid
 import json
 import time
+import hashlib
 from typing import Optional, Literal
 
 router = APIRouter()
@@ -181,7 +181,8 @@ async def speech_to_text(audio_file: UploadFile = File(...), language: str = "sq
 		with open(temp_filepath, "wb") as buffer:
 			buffer.write(await audio_file.read())
 		
-		# Convert to proper format if needed
+		# Convert to proper format if needed (lazy import to avoid ffmpeg warning at startup)
+		from pydub import AudioSegment
 		audio = AudioSegment.from_file(temp_filepath)
 		audio = audio.set_frame_rate(16000).set_channels(1)
 		audio.export(temp_filepath, format="wav")
@@ -314,6 +315,8 @@ async def get_audio_exercise(
 		if exercise.data:
 			try:
 				data = json.loads(exercise.data)
+				if "audio_word" in data and data["audio_word"]:
+					exercise_text = data["audio_word"]
 				if "audio_text" in data:
 					exercise_text = data["audio_text"]
 			except:
@@ -333,10 +336,13 @@ async def get_audio_exercise(
 		
 		exercise_text = exercise_text.strip()
 		
-		# Check for cached audio file (deterministic filename)
+		text_hash = hashlib.md5(exercise_text.encode("utf-8")).hexdigest()[:10]
+
+		# Check for cached audio file keyed by exercise text too, so content changes
+		# immediately generate a fresh voice file instead of reusing stale audio.
 		engine_suffix = "azure" if (AZURE_AVAILABLE and voice in ["anila", "ilir"]) else "gtts"
 		rate_suffix = "slow" if slow else "normal"
-		cached_filename = f"exercise_{exercise_id}_{voice}_{rate_suffix}_{engine_suffix}.mp3"
+		cached_filename = f"exercise_{exercise_id}_{text_hash}_{voice}_{rate_suffix}_{engine_suffix}.mp3"
 		cached_filepath = os.path.join(TEMP_AUDIO_DIR, cached_filename)
 		
 		# Return cached file if exists and is recent (< 24 hours old)

@@ -2,8 +2,11 @@
 import { useState, useEffect } from 'react'
 import type { ChangeEvent } from 'react'
 import type { CourseOut, LevelOut, ExerciseOut, ProgressOut, ClassData, AIPracticeExercise, AICoachResponse, UserAchievementsResponse, StreakData, DailyChallenge, SRSStatsResponse } from './api'
-import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, login, register, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, askChatbot, getChatSuggestions, getUserProfile, updateUserProfile, type LeaderboardEntry } from './api'
+import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, login, register, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument } from './api'
+import type { CorpusDocument } from './api'
 import AdminDashboard from './AdminDashboard'
+import AdvancedAIPractice from './AdvancedAIPractice'
+import ChatbotFloating from './ChatbotFloating'
 import './App.css'
 
 const normalizeText = (value: string) => {
@@ -128,12 +131,16 @@ function App() {
     const [srsStats, setSrsStats] = useState<SRSStatsResponse | null>(null)
     const [showGamification, setShowGamification] = useState(false)
 
-    // Chatbot state
-    const [showChatbot, setShowChatbot] = useState(false)
-    const [chatMessages, setChatMessages] = useState<Array<{role: 'user' | 'assistant', content: string, suggestions?: string[], timestamp: string}>>([])
-    const [chatInput, setChatInput] = useState('')
-    const [chatLoading, setChatLoading] = useState(false)
-    const [chatSuggestions, setChatSuggestions] = useState<string[]>([])
+    // Corpus browse state
+    const [showCorpusBrowse, setShowCorpusBrowse] = useState(false)
+    const [corpusBrowseDocs, setCorpusBrowseDocs] = useState<CorpusDocument[]>([])
+    const [corpusBrowseTotal, setCorpusBrowseTotal] = useState(0)
+    const [corpusBrowseSearch, setCorpusBrowseSearch] = useState('')
+    const [corpusBrowseClassId, setCorpusBrowseClassId] = useState<number | undefined>(undefined)
+    const [corpusBrowseLoading, setCorpusBrowseLoading] = useState(false)
+    const [selectedCorpusDoc, setSelectedCorpusDoc] = useState<CorpusDocument | null>(null)
+    const [corpusBrowseOffset, setCorpusBrowseOffset] = useState(0)
+
     const [showLeaderboard, setShowLeaderboard] = useState(false)
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
     const [userRank, setUserRank] = useState<any>(null)
@@ -272,56 +279,39 @@ function App() {
         }).finally(() => setAiCoachLevelLoading(false))
     }, [userId, selectedLevel?.id])
 
-    // Load chatbot suggestions when chatbot opens
-    useEffect(() => {
-        if (showChatbot && chatSuggestions.length === 0) {
-            getChatSuggestions().then((data) => {
-                setChatSuggestions(data.suggestions)
-            }).catch(console.error)
-        }
-    }, [showChatbot, chatSuggestions.length])
-
-    // Handle chatbot message
-    const handleChatbotSend = async (messageText?: string) => {
-        const text = messageText || chatInput.trim()
-        if (!text) return
-
-        // Add user message
-        const userMessage = {
-            role: 'user' as const,
-            content: text,
-            timestamp: new Date().toISOString()
-        }
-        setChatMessages(prev => [...prev, userMessage])
-        setChatInput('')
-        setChatLoading(true)
-
+    // Load corpus browse data
+    const loadCorpusBrowse = async () => {
+        setCorpusBrowseLoading(true)
         try {
-            const response = await askChatbot({
-                message: text,
-                user_id: userId || undefined
+            const res = await browseCorpus({
+                class_id: corpusBrowseClassId,
+                search: corpusBrowseSearch || undefined,
+                limit: 20,
+                offset: corpusBrowseOffset,
             })
-
-            // Add assistant message
-            const assistantMessage = {
-                role: 'assistant' as const,
-                content: response.response,
-                suggestions: response.suggestions,
-                timestamp: response.timestamp
-            }
-            setChatMessages(prev => [...prev, assistantMessage])
+            setCorpusBrowseDocs(res.documents)
+            setCorpusBrowseTotal(res.total)
         } catch (error) {
-            console.error('Chatbot error:', error)
-            const errorMessage = {
-                role: 'assistant' as const,
-                content: 'Më fal, ndodhi një gabim. Provo përsëri.',
-                timestamp: new Date().toISOString()
-            }
-            setChatMessages(prev => [...prev, errorMessage])
+            console.error('Corpus browse error:', error)
         } finally {
-            setChatLoading(false)
+            setCorpusBrowseLoading(false)
         }
     }
+
+    const loadCorpusDocument = async (docId: number) => {
+        try {
+            const doc = await browseCorpusDocument(docId)
+            setSelectedCorpusDoc(doc)
+        } catch (error) {
+            console.error('Corpus doc error:', error)
+        }
+    }
+
+    useEffect(() => {
+        if (showCorpusBrowse) {
+            loadCorpusBrowse()
+        }
+    }, [showCorpusBrowse, corpusBrowseClassId, corpusBrowseOffset])
 
     // Simple cache to avoid re-fetching classes unnecessarily
     const [classesCache, setClassesCache] = useState<{ data: ClassData[], timestamp: number } | null>(null)
@@ -1095,7 +1085,7 @@ function App() {
                 <div className="auth-container" style={{ display: 'flex', minHeight: '100vh', width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 9999, backgroundColor: 'transparent' }}>
                     <div className="auth-card" style={{ display: 'block', visibility: 'visible', opacity: 1, position: 'relative', zIndex: 10, backgroundColor: 'white', padding: '2rem', borderRadius: '1rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                         <div className="auth-header">
-                            <div className="auth-logo">🦉</div>
+                            <div className="auth-logo">🇦🇱</div>
                             <h2>Mirësevini në AlbLingo!</h2>
                             <p>Fillo udhëtimin tënd për të mësuar drejtshkrimin e gjuhës shqipe</p>
                         </div>
@@ -1135,18 +1125,31 @@ function App() {
                                 <button
                                     className="auth-submit"
                                     onClick={async () => {
+                                        const username = auth.username?.trim()
+                                        const password = auth.password
+                                        if (!username || !password) {
+                                            setMessage('Plotëso përdoruesin dhe fjalëkalimin! ❌')
+                                            return
+                                        }
                                         try {
                                             setMessage('Duke u lidhur... 🔄')
-                                            const res = await login(auth.username, auth.password)
+                                            const res = await login(username, password)
                                             setUserId(String(res.user_id))
                                             setIsAdmin(res.is_admin || false)
                                             setMessage('Mirësevini! 👋')
-                                            // Store additional user info
                                             localStorage.setItem('username', res.username)
                                             localStorage.setItem('user_id', String(res.user_id))
                                             localStorage.setItem('is_admin', String(res.is_admin || false))
                                         } catch (e: any) {
-                                            setMessage('Kredencialet e pasakta. Provo përsëri! ❌')
+                                            const status = e?.response?.status
+                                            const detail = e?.response?.data?.detail || e?.message
+                                            if (status === 401) {
+                                                setMessage('Kredencialet e pasakta. Provo përsëri! ❌')
+                                            } else if (e?.code === 'ECONNREFUSED' || e?.message?.includes('Network') || !e?.response) {
+                                                setMessage('Nuk mund të lidhet me serverin. Sigurohu që backend-i është duke u ekzekutuar (port 8001). ❌')
+                                            } else {
+                                                setMessage(detail || 'Gabim në lidhje. Provo përsëri! ❌')
+                                            }
                                         }
                                     }}
                                 >
@@ -1400,122 +1403,14 @@ function App() {
                 />
             </main>
 
-            {/* AI Chatbot */}
-            <button
-                className={`chatbot-float-btn ${showChatbot ? 'active' : ''}`}
-                onClick={() => setShowChatbot(!showChatbot)}
-                aria-label="AI Chatbot"
-            >
-                {showChatbot ? '✕' : '💬'}
-                {!showChatbot && <span className="chatbot-badge">AI</span>}
-            </button>
-
-            {showChatbot && (
-                <div className="chatbot-panel">
-                    <div className="chatbot-header">
-                        <div className="chatbot-header-content">
-                            <h3>🤖 AI Chatbot</h3>
-                            <p className="chatbot-subtitle">Pyetni çdo gjë për platformën</p>
-                        </div>
-                        <button
-                            className="chatbot-close"
-                            onClick={() => setShowChatbot(false)}
-                            aria-label="Mbyll"
-                        >
-                            ✕
-                        </button>
-                    </div>
-
-                    <div className="chatbot-messages">
-                        {chatMessages.length === 0 ? (
-                            <div className="chatbot-welcome">
-                                <div className="chatbot-avatar">🤖</div>
-                                <h4>Mirësevini te AI Chatbot!</h4>
-                                <p>Si mund t'ju ndihmoj sot?</p>
-                                {chatSuggestions.length > 0 && (
-                                    <div className="chatbot-suggestions">
-                                        <p className="suggestions-title">Pyetje të shpeshta:</p>
-                                        {chatSuggestions.map((suggestion: string, idx: number) => (
-                                            <button
-                                                key={idx}
-                                                className="suggestion-btn"
-                                                onClick={() => handleChatbotSend(suggestion)}
-                                            >
-                                                {suggestion}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <>
-                                {chatMessages.map((msg, idx) => (
-                                    <div key={idx} className={`chat-message ${msg.role}`}>
-                                        {msg.role === 'assistant' && (
-                                            <div className="message-avatar">🤖</div>
-                                        )}
-                                        <div className="message-content">
-                                            <div className="message-text">{msg.content}</div>
-                                            {msg.suggestions && msg.suggestions.length > 0 && (
-                                                <div className="message-suggestions">
-                                                    {msg.suggestions.map((sugg: string, sidx: number) => (
-                                                        <button
-                                                            key={sidx}
-                                                            className="suggestion-chip"
-                                                            onClick={() => handleChatbotSend(sugg)}
-                                                        >
-                                                            {sugg}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                        {msg.role === 'user' && (
-                                            <div className="message-avatar user-avatar">👤</div>
-                                        )}
-                                    </div>
-                                ))}
-                                {chatLoading && (
-                                    <div className="chat-message assistant">
-                                        <div className="message-avatar">🤖</div>
-                                        <div className="message-content">
-                                            <div className="typing-indicator">
-                                                <span></span>
-                                                <span></span>
-                                                <span></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-
-                    <div className="chatbot-input-area">
-                        <input
-                            type="text"
-                            className="chatbot-input"
-                            placeholder="Shkruani një pyetje..."
-                            value={chatInput}
-                            onChange={(e) => setChatInput(e.target.value)}
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault()
-                                    handleChatbotSend()
-                                }
-                            }}
-                            disabled={chatLoading}
-                        />
-                        <button
-                            className="chatbot-send-btn"
-                            onClick={() => handleChatbotSend()}
-                            disabled={chatLoading || !chatInput.trim()}
-                        >
-                            {chatLoading ? '⏳' : '➤'}
-                        </button>
-                    </div>
-                </div>
-            )}
+            {/* Advanced AI Chatbot (floating) */}
+            <ChatbotFloating
+                userId={userId || undefined}
+                context={selectedLevel ? {
+                    current_level: selectedLevel.title,
+                    current_exercise: exercises[currentExerciseIndex]?.prompt,
+                } : undefined}
+            />
 
                 {showProfile && (
                     <div className="profile-overlay" onClick={() => setShowProfile(false)}>
@@ -2083,6 +1978,87 @@ function App() {
                     </div>
                 )}
 
+                {/* Corpus Browse Overlay */}
+                {showCorpusBrowse && (
+                    <div className="profile-overlay" onClick={() => { setShowCorpusBrowse(false); setSelectedCorpusDoc(null) }}>
+                        <div className="profile-card corpus-browse-card" onClick={(e) => e.stopPropagation()}>
+                            <div className="profile-header">
+                                <div className="profile-title">📖 Korpusi i Drejtshkrimit</div>
+                                <button className="profile-close" onClick={() => { setShowCorpusBrowse(false); setSelectedCorpusDoc(null) }}>×</button>
+                            </div>
+                            <div className="corpus-browse-content">
+                                {selectedCorpusDoc ? (
+                                    <div className="corpus-doc-detail">
+                                        <button className="corpus-back-btn" onClick={() => setSelectedCorpusDoc(null)}>← Kthehu te lista</button>
+                                        <h3>{selectedCorpusDoc.title}</h3>
+                                        <div className="corpus-doc-meta">
+                                            {selectedCorpusDoc.author && <span>✍️ {selectedCorpusDoc.author}</span>}
+                                            {selectedCorpusDoc.year && <span>📅 {selectedCorpusDoc.year}</span>}
+                                            {selectedCorpusDoc.genre && <span>📂 {selectedCorpusDoc.genre}</span>}
+                                            {selectedCorpusDoc.dialect && <span>🗣️ {selectedCorpusDoc.dialect}</span>}
+                                            {selectedCorpusDoc.class_name && <span>📚 {selectedCorpusDoc.class_name}</span>}
+                                            {selectedCorpusDoc.token_count !== undefined && <span>📊 {selectedCorpusDoc.token_count} fjalë</span>}
+                                        </div>
+                                        <div className="corpus-doc-body">{selectedCorpusDoc.content}</div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="corpus-browse-filters">
+                                            <input
+                                                type="text"
+                                                placeholder="Kërko dokumente..."
+                                                value={corpusBrowseSearch}
+                                                onChange={(e) => setCorpusBrowseSearch(e.target.value)}
+                                                onKeyDown={(e) => { if (e.key === 'Enter') { setCorpusBrowseOffset(0); loadCorpusBrowse() } }}
+                                                className="corpus-search-input"
+                                            />
+                                            <select
+                                                value={corpusBrowseClassId || ''}
+                                                onChange={(e) => { setCorpusBrowseClassId(e.target.value ? parseInt(e.target.value) : undefined); setCorpusBrowseOffset(0) }}
+                                                className="corpus-filter-select"
+                                            >
+                                                <option value="">Të gjitha klasat</option>
+                                                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                            </select>
+                                            <button className="corpus-search-btn" onClick={() => { setCorpusBrowseOffset(0); loadCorpusBrowse() }}>Kërko</button>
+                                        </div>
+                                        {corpusBrowseLoading ? (
+                                            <div className="corpus-loading">Duke ngarkuar...</div>
+                                        ) : corpusBrowseDocs.length === 0 ? (
+                                            <div className="corpus-empty">Nuk u gjetën dokumente.</div>
+                                        ) : (
+                                            <>
+                                                <p className="corpus-results-count">{corpusBrowseTotal} dokumente gjithsej</p>
+                                                <div className="corpus-doc-list">
+                                                    {corpusBrowseDocs.map(doc => (
+                                                        <div key={doc.id} className="corpus-doc-card" onClick={() => loadCorpusDocument(doc.id)}>
+                                                            <h4>{doc.title}</h4>
+                                                            <p className="corpus-doc-preview">{doc.content?.substring(0, 200)}...</p>
+                                                            <div className="corpus-doc-tags">
+                                                                {doc.class_name && <span className="corpus-tag class">{doc.class_name}</span>}
+                                                                {doc.genre && <span className="corpus-tag genre">{doc.genre}</span>}
+                                                                {doc.author && <span className="corpus-tag author">{doc.author}</span>}
+                                                                {doc.token_count !== undefined && <span className="corpus-tag tokens">{doc.token_count} fjalë</span>}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {corpusBrowseTotal > 20 && (
+                                                    <div className="corpus-pagination">
+                                                        <button disabled={corpusBrowseOffset === 0} onClick={() => setCorpusBrowseOffset(Math.max(0, corpusBrowseOffset - 20))}>← Para</button>
+                                                        <span>Faqja {Math.floor(corpusBrowseOffset / 20) + 1} / {Math.ceil(corpusBrowseTotal / 20)}</span>
+                                                        <button disabled={corpusBrowseOffset + 20 >= corpusBrowseTotal} onClick={() => setCorpusBrowseOffset(corpusBrowseOffset + 20)}>Pas →</button>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             {/* FOOTER SECTION */}
             <Footer />
             {message && <div className="message">{message}</div>}
@@ -2100,7 +2076,7 @@ function Header({
     onLogout,
     onShowProfile,
     onShowLeaderboard,
-    onShowLevelInfo
+    onShowLevelInfo,
 }: {
     userStats: any
     selectedClass: any
@@ -2117,7 +2093,7 @@ function Header({
             <div className="header-content">
                 <div className="header-main">
                     <div className="header-logo">
-                        <span className="header-emoji">🦉</span>
+                        <span className="header-emoji">🇦🇱</span>
                         <h1>AlbLingo</h1>
                     </div>
                     <div className="header-navigation">
@@ -3141,65 +3117,21 @@ function MainContent({
                             </div>
                         </div>
                         
-                        {/* AI Practice Section - Integrated Below Exercise */}
-                        <div className="ai-practice-integrated">
-                        <div className="ai-practice-header-integrated">
-                            <div className="ai-header-left">
-                                <span className="ai-icon-integrated">🤖</span>
-                                <div>
-                                    <h4>Ushtrime Shtesë AI</h4>
-                                    <span className="ai-subtitle">Personalizuar për ty</span>
-                                </div>
-                            </div>
-                            <button
-                                className="ai-generate-btn-integrated"
-                                onClick={handleGenerateAIPractice}
-                                disabled={aiLoading}
-                            >
-                                {aiLoading ? 'Po gjeneroj...' : '✨ Gjenero'}
-                            </button>
-                        </div>
-
-                        {aiError && <div className="ai-error-integrated">{aiError}</div>}
-                        {aiMessage && <div className="ai-note-integrated">{aiMessage}</div>}
-
-                        {aiExercises.length > 0 && (
-                            <div className="ai-exercises-integrated">
-                                {aiExercises.map((exercise, idx) => (
-                                    <div key={exercise.id} className="ai-exercise-item">
-                                        <div className="ai-exercise-header">
-                                            <span className="ai-exercise-num">#{idx + 1}</span>
-                                            <span className="ai-exercise-type">AI</span>
-                                        </div>
-                                        <p className="ai-exercise-question">{exercise.prompt}</p>
-                                        {exercise.hint && (
-                                            <p className="ai-hint-text">💡 {exercise.hint}</p>
-                                        )}
-                                        <div className="ai-exercise-answer">
-                                            <input
-                                                type="text"
-                                                placeholder="Shkruaj përgjigjen..."
-                                                value={aiResponses[exercise.id] || ''}
-                                                onChange={(e) => handleAIResponseChange(exercise.id, e.target.value)}
-                                            />
-                                            <button onClick={() => handleAIExerciseCheck(exercise)}>
-                                                Kontrollo
-                                            </button>
-                                        </div>
-                                        {aiFeedback[exercise.id] && (
-                                            <div className={`ai-feedback ${aiFeedback[exercise.id].includes('✅') ? 'correct' : 'wrong'}`}>
-                                                {aiFeedback[exercise.id]}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
+                        {/* AI Practice Section - ULTRA ADVANCED VERSION */}
+                        {userId && selectedLevel && (
+                            <AdvancedAIPractice
+                                userId={userId}
+                                levelId={selectedLevel.id}
+                                onGenerateRequest={async () => {
+                                    return await generateAdvancedPractice({
+                                        user_id: userId,
+                                        level_id: selectedLevel.id,
+                                        count: 5,
+                                        difficulty: 'adaptive'
+                                    })
+                                }}
+                            />
                         )}
-
-                        {aiExercises.length === 0 && !aiLoading && (
-                            <p className="ai-empty-text">Kliko "Gjenero" për ushtrime të reja bazuar në gabimet e tua.</p>
-                        )}
-                        </div>
                     </div>
                 ) : null}
             </div>
@@ -3213,7 +3145,7 @@ function Footer() {
         <footer className="footer">
             <div className="footer-content">
                 <div className="footer-section">
-                    <h4>🦉 AlbLingo</h4>
+                    <h4>🇦🇱AlbLingo</h4>
                     <p>Platforma e mësimit të gjuhës shqipe për fëmijë</p>
                 </div>
                 <div className="footer-section">

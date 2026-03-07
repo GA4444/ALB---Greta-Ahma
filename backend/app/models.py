@@ -5,6 +5,37 @@ import enum
 from datetime import datetime
 
 
+class CorpusGenre(str, enum.Enum):
+	SHKENCOR = "shkencor"
+	LETRAR = "letrar"
+	JURIDIK = "juridik"
+	PUBLICISTIK = "publicistik"
+	ADMINISTRATIV = "administrativ"
+	DIDAKTIK = "didaktik"
+	TJETER = "tjeter"
+
+class CorpusDialect(str, enum.Enum):
+	GEGE = "gege"
+	TOSKE = "toske"
+	STANDARDE = "standarde"
+
+class CorpusSource(str, enum.Enum):
+	MEDIA = "media"
+	LIBRA = "libra"
+	DOKUMENTE_ZYRTARE = "dokumente_zyrtare"
+	AKADEMIK = "akademik"
+	PLATFORMA = "platforma"
+	TJETER = "tjeter"
+
+class CorpusProcessingStatus(str, enum.Enum):
+	PENDING = "pending"
+	TOKENIZED = "tokenized"
+	LEMMATIZED = "lemmatized"
+	ANNOTATED = "annotated"
+	VALIDATED = "validated"
+	ERROR = "error"
+
+
 class CategoryEnum(str, enum.Enum):
 	LISTEN_WRITE = "listen_write"  # Diktim (Audio → shkruaj)
 	WORD_FROM_DESCRIPTION = "word_from_description"  # Fjala nga përshkrimi
@@ -310,6 +341,40 @@ class ChatMessage(Base):
 	# Relationships
 	session = relationship("ChatSession", back_populates="messages")
 	generated_exercise = relationship("Exercise")
+
+
+class CorpusDocument(Base):
+	__tablename__ = "corpus_documents"
+
+	id = Column(Integer, primary_key=True, index=True)
+	title = Column(String(300), nullable=False, index=True)
+	content = Column(Text, nullable=False)
+	author = Column(String(200), nullable=True, index=True)
+	year = Column(Integer, nullable=True, index=True)
+
+	class_id = Column(Integer, ForeignKey("courses.id"), nullable=True, index=True)
+
+	genre = Column(Enum(CorpusGenre), nullable=True, index=True)
+	dialect = Column(Enum(CorpusDialect), nullable=True, index=True)
+	source = Column(Enum(CorpusSource), nullable=True, index=True)
+	fuse_class_code = Column(String(50), nullable=True, index=True)
+
+	token_count = Column(Integer, default=0, nullable=False)
+	lemma_count = Column(Integer, default=0, nullable=False)
+	sentence_count = Column(Integer, default=0, nullable=False)
+	avg_word_length = Column(Float, default=0.0, nullable=False)
+	type_token_ratio = Column(Float, default=0.0, nullable=False)
+	word_frequencies = Column(Text, nullable=True)  # JSON {word: count}
+
+	processing_status = Column(Enum(CorpusProcessingStatus), default=CorpusProcessingStatus.PENDING, nullable=False, index=True)
+	is_validated = Column(Boolean, default=False, nullable=False)
+	validation_notes = Column(Text, nullable=True)
+	content_hash = Column(String(64), nullable=True, index=True)
+
+	created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+	linked_class = relationship("Course", foreign_keys=[class_id])
 
 
 

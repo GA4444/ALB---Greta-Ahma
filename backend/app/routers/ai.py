@@ -563,14 +563,20 @@ def _letters_count(term: str) -> int:
 def _generate_sentence_frame(term: str) -> str:
 	"""
 	Generate a short, level-safe sentence containing the term.
-	We keep it generic to avoid semantic errors for unknown terms.
+	We keep it generic to avoid semantic errors and grammar issues.
+	
+	IMPORTANT: Uses grammatically correct Albanian sentences.
+	Avoids case inflection issues by using nominative contexts.
 	"""
 	term_cap = term[:1].upper() + term[1:] if term else term
 	frames = [
-		f"{term_cap} është këtu.",
-		f"Unë e pashë {term} sot.",
+		f"{term_cap} është këtu në klasë.",
 		f"Sot po mësojmë fjalën: {term}.",
-		f"Shkruaje saktë fjalën {term} në këtë fjali.",
+		f"Shkruaje saktë fjalën {term} me kujdes.",
+		f"Fjala e sotme është: {term}.",
+		f"Përsërite fjalën: {term}.",
+		f"Në fletore shkruaj: {term}.",
+		f"Kjo është fjala {term}.",
 	]
 	return random.choice(frames)
 

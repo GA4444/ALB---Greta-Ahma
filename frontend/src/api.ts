@@ -700,3 +700,448 @@ export async function getChatTopics() {
 	const { data } = await client.get<ChatTopicsResponse>('/api/chatbot/topics')
 	return data
 }
+
+// ============================================================================
+// ADVANCED CHATBOT API
+// ============================================================================
+
+export interface AdvancedChatRequest {
+	message: string
+	user_id?: string
+	session_token?: string
+	use_llm?: boolean
+	generate_exercise?: boolean
+	voice_input?: boolean
+	context?: {
+		current_level?: string
+		current_exercise?: string
+		recent_mistakes?: string[]
+	}
+}
+
+export interface AdvancedChatResponse {
+	response: string
+	session_token: string
+	suggestions?: string[]
+	related_topics?: string[]
+	generated_exercise?: any
+	audio_url?: string
+	model_used: string
+	timestamp: string
+	context_aware: boolean
+}
+
+export interface ChatHistoryResponse {
+	session_token: string
+	started_at: string
+	total_messages: number
+	messages: Array<{
+		id: number
+		role: 'user' | 'assistant'
+		content: string
+		model_used?: string
+		created_at: string
+		tokens_used?: number
+		response_time_ms?: number
+	}>
+}
+
+export interface MessageFeedback {
+	message_id: number
+	rating: number
+	feedback_text?: string
+}
+
+// Advanced chatbot - ask question
+export async function askAdvancedChatbot(request: AdvancedChatRequest) {
+	const { data } = await client.post<AdvancedChatResponse>('/api/chatbot/advanced/ask', request)
+	return data
+}
+
+// Get conversation history
+export async function getChatHistory(sessionToken: string) {
+	const { data } = await client.get<ChatHistoryResponse>(`/api/chatbot/advanced/history/${sessionToken}`)
+	return data
+}
+
+// Clear chat session
+export async function clearChatSession(sessionToken: string) {
+	const { data } = await client.delete(`/api/chatbot/advanced/session/${sessionToken}`)
+	return data
+}
+
+// Submit feedback for a message
+export async function submitChatFeedback(feedback: MessageFeedback) {
+	const { data } = await client.post('/api/chatbot/advanced/feedback', feedback)
+	return data
+}
+
+// Text to speech
+export async function textToSpeech(text: string, voice: string = 'anila') {
+	const { data } = await client.post('/api/chatbot/advanced/tts', {
+		text,
+		voice,
+		language: 'sq'
+	})
+	return data
+}
+
+// Speech to text
+export async function speechToText(audioBlob: Blob) {
+	const formData = new FormData()
+	formData.append('audio', audioBlob, 'recording.wav')
+	const { data } = await client.post('/api/chatbot/advanced/stt', formData, {
+		headers: {
+			'Content-Type': 'multipart/form-data'
+		}
+	})
+	return data
+}
+
+// Export conversation
+export async function exportConversation(sessionToken: string, format: 'json' | 'txt' = 'json') {
+	const { data } = await client.get(`/api/chatbot/advanced/export/${sessionToken}?format=${format}`)
+	return data
+}
+
+// Get chatbot stats
+export async function getChatbotStats() {
+	const { data } = await client.get('/api/chatbot/advanced/stats')
+	return data
+}
+
+// ============================================================================
+// ADVANCED AI PRACTICE API
+// ============================================================================
+
+export interface AdvancedPracticeRequest {
+	user_id: string
+	level_id: number
+	count?: number
+	difficulty?: string
+	focus_area?: string | null
+}
+
+export interface PersonalizedExercise {
+	id: string
+	type: string
+	prompt: string
+	answer: string
+	choices?: string[]
+	hint: string
+	difficulty: string
+	reason: string
+	focus_word: string
+	mistake_pattern?: string | null
+}
+
+export interface AdvancedPracticeResponse {
+	exercises: PersonalizedExercise[]
+	analysis: {
+		overall_accuracy: number
+		trend: string
+		total_attempts: number
+		weak_count: number
+		mastered_count: number
+		top_patterns: Array<{
+			name: string
+			name_key: string
+			count: number
+			severity: string
+			severity_sq: string
+			description: string
+		}>
+	}
+	recommendations: string[]
+	next_focus: string
+}
+
+export interface PracticeProgress {
+	overall_accuracy: number
+	trend: string
+	weak_words: Array<{
+		word: string
+		accuracy: number
+		total: number
+		trend: number
+	}>
+	improving_words: Array<{
+		word: string
+		accuracy: number
+		trend: number
+	}>
+	mastered_words: Array<{
+		word: string
+		accuracy: number
+		total: number
+	}>
+	patterns: Record<string, {
+		count: number
+		severity: string
+		example_count: number
+	}>
+}
+
+// Generate advanced personalized practice
+export async function generateAdvancedPractice(request: AdvancedPracticeRequest) {
+	const { data } = await client.post<AdvancedPracticeResponse>(
+		'/api/ai/advanced-practice',
+		request
+	)
+	return data
+}
+
+// Get practice progress
+export async function getPracticeProgress(userId: string, levelId: number) {
+	const { data } = await client.get<PracticeProgress>(
+		`/api/ai/practice-progress/${userId}/${levelId}`
+	)
+	return data
+}
+
+// ============================================================================
+// CORPUS ADMIN API
+// ============================================================================
+
+export interface CorpusDocument {
+	id: number
+	title: string
+	content: string
+	full_content?: string
+	author?: string | null
+	year?: number | null
+	class_id?: number | null
+	class_name?: string | null
+	genre?: string | null
+	dialect?: string | null
+	source?: string | null
+	fuse_class_code?: string | null
+	token_count: number
+	lemma_count: number
+	sentence_count: number
+	avg_word_length?: number
+	type_token_ratio?: number
+	processing_status: string
+	is_validated: boolean
+	validation_notes?: string | null
+	content_hash?: string | null
+	word_frequencies?: Record<string, number>
+	created_at: string
+	updated_at: string
+}
+
+export interface CorpusDocumentCreate {
+	title: string
+	content: string
+	author?: string
+	year?: number
+	genre?: string
+	dialect?: string
+	source?: string
+	fuse_class_code?: string
+	class_id?: number
+}
+
+export interface CorpusDocumentUpdate {
+	title?: string
+	content?: string
+	author?: string
+	year?: number
+	genre?: string
+	dialect?: string
+	source?: string
+	fuse_class_code?: string
+	class_id?: number
+	processing_status?: string
+	is_validated?: boolean
+	validation_notes?: string
+}
+
+export interface CorpusClassBreakdown {
+	class_id: number
+	class_name: string
+	documents: number
+	tokens: number
+	lemmas: number
+	avg_ttr: number
+}
+
+export interface CorpusStats {
+	total_documents: number
+	total_tokens: number
+	total_lemmas: number
+	total_sentences: number
+	validated_count: number
+	unvalidated_count: number
+	avg_type_token_ratio: number
+	avg_word_length: number
+	avg_doc_tokens: number
+	avg_sentences_per_doc: number
+	by_genre: Record<string, number>
+	by_dialect: Record<string, number>
+	by_source: Record<string, number>
+	by_status: Record<string, number>
+	by_year: Record<string, number>
+	top_authors: Record<string, number>
+	tokens_by_genre: Record<string, number>
+	tokens_by_dialect: Record<string, number>
+	by_class: CorpusClassBreakdown[]
+	unlinked_documents: number
+}
+
+export interface CorpusListResponse {
+	total: number
+	documents: CorpusDocument[]
+}
+
+export interface WordFrequencyResponse {
+	total_unique_words: number
+	top_words: Array<{ word: string; count: number }>
+}
+
+export interface CorpusDuplicatesResponse {
+	total_duplicate_groups: number
+	groups: Array<{
+		hash: string
+		count: number
+		documents: Array<{ id: number; title: string; author?: string; year?: number; class_id?: number }>
+	}>
+}
+
+export interface CorpusValidationResult {
+	is_valid: boolean
+	issues: string[]
+	document: CorpusDocument
+}
+
+export interface CorpusFuseCode {
+	code: string
+	document_count: number
+	total_tokens: number
+}
+
+export interface LinguisticMetrics {
+	document_count: number
+	total_tokens: number
+	unique_tokens: number
+	type_token_ratio: number
+	avg_word_length: number
+	avg_sentence_length: number
+	hapax_legomena: number
+	dis_legomena: number
+	yules_k: number
+	top_short_words: Array<{ word: string; count: number }>
+	top_long_words: Array<{ word: string; count: number }>
+	word_length_distribution: Array<{ length: number; count: number }>
+	sentence_length_stats: { min: number; max: number; avg: number; median: number }
+}
+
+export async function getCorpusStats(userId: number) {
+	const { data } = await client.get<CorpusStats>(`/api/admin/corpus/stats?user_id=${userId}`)
+	return data
+}
+
+export async function getCorpusDocuments(userId: number, params?: {
+	genre?: string; dialect?: string; source?: string;
+	year_from?: number; year_to?: number; fuse_class_code?: string;
+	class_id?: number; processing_status?: string; is_validated?: boolean;
+	search?: string; limit?: number; offset?: number;
+}) {
+	const searchParams = new URLSearchParams({ user_id: String(userId) })
+	if (params) {
+		Object.entries(params).forEach(([k, v]) => {
+			if (v !== undefined && v !== null && v !== '') searchParams.set(k, String(v))
+		})
+	}
+	const { data } = await client.get<CorpusListResponse>(`/api/admin/corpus/documents?${searchParams}`)
+	return data
+}
+
+export async function getCorpusDocument(userId: number, docId: number) {
+	const { data } = await client.get<CorpusDocument>(`/api/admin/corpus/documents/${docId}?user_id=${userId}`)
+	return data
+}
+
+export async function createCorpusDocument(userId: number, doc: CorpusDocumentCreate) {
+	const { data } = await client.post<CorpusDocument>(`/api/admin/corpus/documents?user_id=${userId}`, doc)
+	return data
+}
+
+export async function updateCorpusDocument(userId: number, docId: number, update: CorpusDocumentUpdate) {
+	const { data } = await client.put<CorpusDocument>(`/api/admin/corpus/documents/${docId}?user_id=${userId}`, update)
+	return data
+}
+
+export async function deleteCorpusDocument(userId: number, docId: number) {
+	const { data } = await client.delete(`/api/admin/corpus/documents/${docId}?user_id=${userId}`)
+	return data
+}
+
+export async function getCorpusWordFrequencies(userId: number, params?: { top_n?: number; genre?: string; dialect?: string; class_id?: number }) {
+	const searchParams = new URLSearchParams({ user_id: String(userId) })
+	if (params) {
+		Object.entries(params).forEach(([k, v]) => {
+			if (v !== undefined && v !== null && v !== '') searchParams.set(k, String(v))
+		})
+	}
+	const { data } = await client.get<WordFrequencyResponse>(`/api/admin/corpus/word-frequencies?${searchParams}`)
+	return data
+}
+
+export async function getCorpusLinguisticMetrics(userId: number, params?: { class_id?: number; genre?: string; dialect?: string }) {
+	const searchParams = new URLSearchParams({ user_id: String(userId) })
+	if (params) {
+		Object.entries(params).forEach(([k, v]) => {
+			if (v !== undefined && v !== null && v !== '') searchParams.set(k, String(v))
+		})
+	}
+	const { data } = await client.get<LinguisticMetrics>(`/api/admin/corpus/linguistic-metrics?${searchParams}`)
+	return data
+}
+
+export async function validateCorpusDocument(userId: number, docId: number) {
+	const { data } = await client.post<CorpusValidationResult>(`/api/admin/corpus/validate/${docId}?user_id=${userId}`)
+	return data
+}
+
+export async function validateAllCorpusDocuments(userId: number) {
+	const { data } = await client.post(`/api/admin/corpus/validate-all?user_id=${userId}`)
+	return data
+}
+
+export async function getCorpusDuplicates(userId: number) {
+	const { data } = await client.get<CorpusDuplicatesResponse>(`/api/admin/corpus/duplicates?user_id=${userId}`)
+	return data
+}
+
+export async function getCorpusFuseCodes(userId: number) {
+	const { data } = await client.get<{ codes: CorpusFuseCode[] }>(`/api/admin/corpus/fuse-codes?user_id=${userId}`)
+	return data
+}
+
+export async function reprocessAllCorpus(userId: number) {
+	const { data } = await client.post(`/api/admin/corpus/reprocess-all?user_id=${userId}`)
+	return data
+}
+
+export async function autoPopulateCorpus(userId: number) {
+	const { data } = await client.post(`/api/admin/corpus/auto-populate?user_id=${userId}`)
+	return data
+}
+
+// User-facing corpus browsing
+export async function browseCorpus(params?: { class_id?: number; genre?: string; dialect?: string; search?: string; limit?: number; offset?: number }) {
+	const searchParams = new URLSearchParams()
+	if (params) {
+		Object.entries(params).forEach(([k, v]) => {
+			if (v !== undefined && v !== null && v !== '') searchParams.set(k, String(v))
+		})
+	}
+	const { data } = await client.get(`/api/admin/corpus/browse?${searchParams}`)
+	return data
+}
+
+export async function browseCorpusDocument(docId: number) {
+	const { data } = await client.get(`/api/admin/corpus/browse/${docId}`)
+	return data
+}

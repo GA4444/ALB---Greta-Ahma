@@ -234,7 +234,7 @@ def seed_first_class_exercises(db: Session):
     
     # 1. Niveli 1 - 5 exercises
     dictation_exercises = [
-        ("Zogi", "Zogi"),
+        ("Zogu", "zogu"),
         ("Topi", "topi"),
         ("Dritë", "dritë"),
         ("Këngë", "këngë"),
@@ -387,9 +387,9 @@ def seed_first_class_exercises(db: Session):
     
     # 7. Niveli 7 - 10 exercises
     build_word_exercises = [
-        ("ėmep", "pemë"),
+        ("ëmep", "pemë"),
         ("lleid", "diell"),
-        ("lėmu", "lumë"),
+        ("lëmu", "lumë"),
         ("zgo", "zog"),
         ("klaë", "kalë"),
         ("Pot", "top"),
@@ -1319,7 +1319,7 @@ def seed_third_class_exercises(db: Session):
         ("shq_ptar", "shqiptar"),
         ("dem_kraci", "demokraci"),
         ("shkr_mtar", "shkrimtar"),
-        ("përg_jgje", "përgjigje"),
+        ("përgj_gje", "përgjigje"),
         ("eksper_ment", "eksperiment"),
         ("gje_graphi", "gjeografi"),
         ("hist_ri", "histori"),

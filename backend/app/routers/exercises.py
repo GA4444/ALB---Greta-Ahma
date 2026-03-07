@@ -235,9 +235,55 @@ async def get_course_levels(course_id: int, db: Session = Depends(get_db)):
     return levels
 
 @router.get("/levels/{level_id}/exercises", response_model=List[ExerciseOut])
-async def get_level_exercises(level_id: int, db: Session = Depends(get_db)):
+async def get_level_exercises(level_id: int, shuffle_choices: bool = True, db: Session = Depends(get_db)):
+    """
+    Get exercises for a level with optional choice shuffling.
+    
+    Args:
+        level_id: The level ID
+        shuffle_choices: If True, randomize answer choices (default: True)
+    
+    Returns:
+        List of exercises with shuffled choices (if applicable)
+    """
     # Only return fields defined in ExerciseOut (answer is excluded)
     exercises = db.query(Exercise).filter(Exercise.level_id == level_id).order_by(Exercise.order_index).all()
+    
+    # Shuffle choices to prevent pattern recognition
+    if shuffle_choices:
+        import json
+        import random
+        from datetime import datetime
+        
+        # Use hour as seed for consistent shuffling within the same hour
+        # This prevents excessive randomization while still rotating answers
+        hour_seed = datetime.utcnow().hour
+        
+        shuffled_exercises = []
+        for exercise in exercises:
+            if exercise.data:
+                try:
+                    data = json.loads(exercise.data)
+                    
+                    # Shuffle choices if they exist
+                    if 'choices' in data and isinstance(data['choices'], list) and len(data['choices']) > 1:
+                        # Use exercise ID + hour seed for deterministic shuffling
+                        random.seed(exercise.id + hour_seed)
+                        shuffled_choices = data['choices'].copy()
+                        random.shuffle(shuffled_choices)
+                        data['choices'] = shuffled_choices
+                        
+                        # Update exercise data
+                        exercise.data = json.dumps(data, ensure_ascii=False)
+                
+                except (json.JSONDecodeError, TypeError):
+                    # If JSON is invalid, keep original data
+                    pass
+            
+            shuffled_exercises.append(exercise)
+        
+        return shuffled_exercises
+    
     return exercises
 
 @router.get("/classes")

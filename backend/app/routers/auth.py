@@ -4,6 +4,7 @@ from ..database import get_db
 from .. import models, schemas
 from passlib.context import CryptContext
 from datetime import datetime
+from ..services.email_service import send_welcome_email
 
 router = APIRouter()
 # Use a modern, battle-tested password hashing scheme that doesn't have
@@ -22,8 +23,8 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
 		raise HTTPException(status_code=400, detail="Email already registered")
 	
 	# Validate age
-	if user_data.age and (user_data.age < 5 or user_data.age > 18):
-		raise HTTPException(status_code=400, detail="Age must be between 5 and 18")
+	if user_data.age and (user_data.age < 5 or user_data.age > 80):
+		raise HTTPException(status_code=400, detail="Age must be between 5 and 80")
 	
 	# Hash password
 	hashed_password = pwd_context.hash(user_data.password)
@@ -40,6 +41,10 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
 	db.add(db_user)
 	db.commit()
 	db.refresh(db_user)
+	
+	# Dërgo welcome email në thread të veçantë (nuk bllokojë HTTP response-in)
+	if user_data.email:
+		send_welcome_email(user_data.email, user_data.username, blocking=False)
 	
 	return schemas.AuthResponse(
 		user_id=db_user.id,
@@ -106,8 +111,8 @@ def update_user_profile(
 	
 	# Update other fields
 	if user_update.age is not None:
-		if user_update.age < 5 or user_update.age > 18:
-			raise HTTPException(status_code=400, detail="Age must be between 5 and 18")
+		if user_update.age < 5 or user_update.age > 80:
+			raise HTTPException(status_code=400, detail="Age must be between 5 and 80")
 		user.age = user_update.age
 	
 	if user_update.date_of_birth is not None:

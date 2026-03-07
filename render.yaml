@@ -1,0 +1,26 @@
+databases:
+  - name: alblingo-db
+    databaseName: alblingo
+    plan: free
+
+services:
+  - type: web
+    name: alblingo-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements-prod.txt
+    startCommand: gunicorn app.main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: alblingo-db
+          property: connectionString
+      - key: ENABLE_EMAIL_NOTIFICATIONS
+        value: "true"
+      - key: ENABLE_BACKGROUND_TASKS
+        value: "false"
+      - key: APP_URL
+        value: "https://alblingo.vercel.app"
+      - key: PYTHON_VERSION
+        value: "3.11.6"

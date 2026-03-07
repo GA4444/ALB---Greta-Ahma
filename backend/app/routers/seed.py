@@ -14,7 +14,8 @@ from .seed_albanian_corpus import (
     seed_eighth_class_exercises,
 )
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Must match auth.py - use pbkdf2_sha256 for password verification to work
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 router = APIRouter()
 
@@ -316,7 +317,7 @@ def klasa1_add_courses_with_exercises():
         # Build exercises lists
         import json
         # 1. Diktim
-        dictation = [("Zogi","zogi"),("Topi","topi"),("Dritë","dritë"),("Këngë","këngë"),("Shkollë","shkollë")]
+        dictation = [("Zogu","zogu"),("Topi","topi"),("Dritë","dritë"),("Këngë","këngë"),("Shkollë","shkollë")]
         # 2. Përshkrimi
         desc = [
             ("Ata që kujdesen gjithmonë për ne.", "prindërit"),

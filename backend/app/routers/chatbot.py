@@ -161,8 +161,8 @@ def _get_contextual_response(query: str, user_id: Optional[str], db: Optional[Se
     # Category detection
     if any(word in query_norm for word in ["cila", "sa", "platforme", "alblingo", "kush", "pershkrim"]):
         return {
-            "response": f"**{PLATFORM_KNOWLEDGE['platform_info']['name']}** është {PLATFORM_KNOWLEDGE['platform_info']['description']}\n\n"
-                       f"Platforma ofron:\n" + "\n".join(f"✅ {feat}" for feat in PLATFORM_KNOWLEDGE['platform_info']['features'][:5]),
+            "response": f"{PLATFORM_KNOWLEDGE['platform_info']['name']} eshte {PLATFORM_KNOWLEDGE['platform_info']['description']}\n\n"
+                       f"Platforma ofron:\n" + "\n".join(f"- {feat}" for feat in PLATFORM_KNOWLEDGE['platform_info']['features'][:5]),
             "suggestions": ["Si filloj?", "Çfarë janë ushtrimet AI?", "Si marr pikë?"],
             "related_topics": ["Udhëzuesi për fillestartë", "Veçoritë", "Gamifikimi"]
         }
@@ -195,7 +195,7 @@ def _get_contextual_response(query: str, user_id: Optional[str], db: Optional[Se
     if any(word in query_norm for word in ["gamifikimi", "badge", "streak", "pike", "competition"]):
         steps = PLATFORM_KNOWLEDGE['how_to_use']['gamification']
         return {
-            "response": "Gamifikimi në AlbLingo:\n\n" + "\n".join(f"🏆 {step}" for step in steps),
+            "response": "Gamifikimi ne AlbLingo:\n\n" + "\n".join(f"- {step}" for step in steps),
             "suggestions": ["Si fitoj badges?", "Çfarë është streak-u?", "Si shoh tabelën e rezultateve?"],
             "related_topics": ["Arritjet", "Seritë", "Tabela e rezultateve"]
         }
@@ -218,11 +218,11 @@ def _get_contextual_response(query: str, user_id: Optional[str], db: Optional[Se
                 
                 if "progres" in query_norm or "status" in query_norm:
                     return {
-                        "response": f"**Progresi yt, {user.username}:**\n\n"
-                                   f"📊 Nivele të plotësuara: {progress_count}\n"
-                                   f"🔥 Streak aktual: {user.current_streak or 0} ditë\n"
-                                   f"🏆 Arritje të fituara: {user.total_achievements or 0}\n\n"
-                                   f"Vazhdo kështu! 💪",
+                        "response": f"Progresi yt, {user.username}:\n\n"
+                                   f"Nivele te plotesuara: {progress_count}\n"
+                                   f"Streak aktual: {user.current_streak or 0} dite\n"
+                                   f"Arritje te fituara: {user.total_achievements or 0}\n\n"
+                                   f"Vazhdo keshtu!",
                         "suggestions": ["Si përmirësohem?", "Çfarë është AI Coach?"],
                         "related_topics": ["Progresi", "Statistika", "Tabela e rezultateve"]
                     }

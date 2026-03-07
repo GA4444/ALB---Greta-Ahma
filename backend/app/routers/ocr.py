@@ -36,17 +36,26 @@ except ImportError:
 	pytesseract = None
 
 # Optional PaddleOCR fallback (për shkrim dore). Kërkon instalim manual të paddleocr.
-try:
-	from paddleocr import PaddleOCR  # type: ignore
-	import numpy as np  # type: ignore
-	_PADDLE_OCR = PaddleOCR(
-		use_angle_cls=True,
-		lang="latin",  # PaddleOCR nuk ka model specifik "sqi"; latin punon mirë për alfabetin tonë
-		show_log=False,
-	)
-except Exception:
-	_PADDLE_OCR = None
-	np = None  # type: ignore
+_PADDLE_OCR = None
+np = None  # type: ignore
+
+def _get_paddle_ocr():
+	"""Lazy-initialize PaddleOCR on first use to avoid segfaults at import time."""
+	global _PADDLE_OCR, np
+	if _PADDLE_OCR is not None:
+		return _PADDLE_OCR
+	try:
+		from paddleocr import PaddleOCR  # type: ignore
+		import numpy as _np  # type: ignore
+		np = _np
+		_PADDLE_OCR = PaddleOCR(
+			use_angle_cls=True,
+			lang="latin",
+			show_log=False,
+		)
+	except Exception:
+		_PADDLE_OCR = None
+	return _PADDLE_OCR
 
 # LLM Integration for post-OCR refinement
 try:
@@ -250,11 +259,12 @@ def _run_paddle_fallback(img: "Image.Image") -> str:
 	"""
 	Fallback OCR me PaddleOCR (opsionale, nëse është instaluar). E përshtatshme për shkrim dore.
 	"""
-	if not _PADDLE_OCR or np is None:
+	paddle = _get_paddle_ocr()
+	if not paddle or np is None:
 		return ""
 	try:
 		np_img = np.array(img.convert("RGB"))
-		res = _PADDLE_OCR.ocr(np_img, cls=True)
+		res = paddle.ocr(np_img, cls=True)
 		lines = []
 		for line in res:
 			if line and len(line) > 0:

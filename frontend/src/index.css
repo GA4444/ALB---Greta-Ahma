@@ -1,68 +1,441 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* ============================================
+   MAIN ENTRY POINT - Import Order Matters!
+   Professional Platform CSS Architecture
+   ============================================ */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* 1. CSS Variables (Must be first) */
+@import './global-variables.css';
 
-  font-synthesis: none;
+/* 2. Base Styles & Reset */
+@import './global-base.css';
+
+/* 3. Utility Classes */
+@import './responsive-utilities.css';
+
+/* ============================================
+   Root Element Configuration
+   ============================================ */
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   Global Enhancements
+   ============================================ */
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* iOS Safari fixes */
+body {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Focus visible for better keyboard navigation */
+*:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Better text rendering */
+body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+/* Prevent text size adjustment on mobile */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
-a:hover {
-  color: #535bf2;
+
+/* ============================================
+   Loading State Animation
+   ============================================ */
+
+.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--color-background);
 }
+
+.app-loading::after {
+  content: "⏳";
+  font-size: 3rem;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   Safe Area Insets (iOS notch support)
+   ============================================ */
 
 body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 
+          env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ============================================
+   Improved Input Interactions
+   ============================================ */
+
+/* Remove default input number spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+/* Remove default search input clear button */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+/* Better file input styling */
+input[type="file"] {
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+input[type="file"]::file-selector-button {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-right: var(--space-3);
+  transition: var(--transition-base);
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: var(--color-primary-hover);
+}
+
+/* ============================================
+   Prevent Layout Shift
+   ============================================ */
+
+img,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ============================================
+   Better Link Behavior
+   ============================================ */
+
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:active {
+  opacity: 0.7;
+}
+
+/* ============================================
+   Improved Button Interactions
+   ============================================ */
+
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   Custom Selection Colors
+   ============================================ */
+
+::selection {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+::-moz-selection {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* ============================================
+   Responsive Iframe Container
+   ============================================ */
+
+.iframe-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+}
+
+.iframe-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ============================================
+   Accessible Hidden Content
+   ============================================ */
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* ============================================
+   Print Optimizations
+   ============================================ */
+
+@media print {
+  /* Hide non-essential elements */
+  nav,
+  aside,
+  button,
+  .no-print {
+    display: none !important;
   }
-  a:hover {
-    color: #747bff;
+  
+  /* Ensure content is visible */
+  body {
+    background: white;
+    color: black;
   }
-  button {
-    background-color: #f9f9f9;
+  
+  /* Better page breaks */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  
+  img, table, figure {
+    page-break-inside: avoid;
+  }
+  
+  /* Show link URLs */
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+  
+  /* Remove shadows and rounded corners */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
   }
 }
+
+/* ============================================
+   Dark Mode Support (Future Enhancement)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  /* Dark mode variables are defined in global-variables.css */
+  /* Additional dark mode specific styles can go here */
+}
+
+/* ============================================
+   High Contrast Mode Support
+   ============================================ */
+
+@media (prefers-contrast: high) {
+  button,
+  input,
+  select,
+  textarea,
+  .card {
+    border: 2px solid currentColor !important;
+  }
+  
+  a {
+    text-decoration: underline !important;
+  }
+}
+
+/* ============================================
+   Reduced Motion Support
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   Mobile Specific Enhancements
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Better touch targets */
+  button,
+  a,
+  input,
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent iOS zoom on input focus */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Better spacing on mobile */
+  body {
+    padding: var(--space-4);
+  }
+}
+
+/* ============================================
+   Performance Optimizations
+   ============================================ */
+
+/* GPU acceleration for frequently animated elements */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Will-change hints for better performance */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+/* ============================================
+   Utility Animations
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--duration-base) var(--ease-out);
+}
+
+.animate-slide-in-up {
+  animation: slideInUp var(--duration-slow) var(--ease-out);
+}
+
+.animate-slide-in-down {
+  animation: slideInDown var(--duration-slow) var(--ease-out);
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-base) var(--ease-out);
+}
+
+/* ============================================
+   Component Animations
+   ============================================ */
+
+/* Page transitions */
+.page-enter {
+  animation: fadeIn var(--duration-slow) var(--ease-out);
+}
+
+/* Modal animations */
+.modal-enter {
+  animation: scaleIn var(--duration-base) var(--ease-out);
+}
+
+/* Toast notifications */
+.toast-enter {
+  animation: slideInDown var(--duration-base) var(--ease-out);
+}
+
+/* ============================================
+   Debug Helpers (Remove in production)
+   ============================================ */
+
+/* Uncomment to see layout boundaries */
+/*
+* {
+  outline: 1px solid rgba(255, 0, 0, 0.1);
+}
+*/
