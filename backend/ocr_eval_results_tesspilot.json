@@ -1,0 +1,201 @@
+{
+  "dataset": "balanced synthetic pilot benchmark (6 samples)",
+  "overall": {
+    "A": {
+      "cer": 76.37,
+      "wer": 113.01,
+      "der": 25.13
+    },
+    "B": {
+      "cer": 82.66,
+      "wer": 103.33,
+      "der": 83.33
+    },
+    "C": {
+      "cer": 76.37,
+      "wer": 113.01,
+      "der": 25.13
+    },
+    "D": {
+      "cer": 76.09,
+      "wer": 113.01,
+      "der": 18.35
+    },
+    "E": {
+      "cer": 77.16,
+      "wer": 113.01,
+      "der": 23.94
+    }
+  },
+  "by_category_layout": {
+    "administrative": {
+      "simple": {
+        "A": {
+          "cer": 76.92,
+          "wer": 100.0,
+          "der": 40.0
+        },
+        "B": {
+          "cer": 82.42,
+          "wer": 100.0,
+          "der": 100.0
+        },
+        "C": {
+          "cer": 76.92,
+          "wer": 100.0,
+          "der": 40.0
+        },
+        "D": {
+          "cer": 75.82,
+          "wer": 100.0,
+          "der": 20.0
+        },
+        "E": {
+          "cer": 75.82,
+          "wer": 100.0,
+          "der": 40.0
+        }
+      },
+      "complex": {
+        "A": {
+          "cer": 72.73,
+          "wer": 129.41,
+          "der": 50.0
+        },
+        "B": {
+          "cer": 72.73,
+          "wer": 100.0,
+          "der": 100.0
+        },
+        "C": {
+          "cer": 72.73,
+          "wer": 129.41,
+          "der": 50.0
+        },
+        "D": {
+          "cer": 71.72,
+          "wer": 129.41,
+          "der": 25.0
+        },
+        "E": {
+          "cer": 71.72,
+          "wer": 129.41,
+          "der": 25.0
+        }
+      }
+    },
+    "educational": {
+      "simple": {
+        "A": {
+          "cer": 76.55,
+          "wer": 100.0,
+          "der": 8.7
+        },
+        "B": {
+          "cer": 89.58,
+          "wer": 100.0,
+          "der": 100.0
+        },
+        "C": {
+          "cer": 76.55,
+          "wer": 100.0,
+          "der": 8.7
+        },
+        "D": {
+          "cer": 78.5,
+          "wer": 100.0,
+          "der": 13.04
+        },
+        "E": {
+          "cer": 77.85,
+          "wer": 100.0,
+          "der": 13.04
+        }
+      },
+      "complex": {
+        "A": {
+          "cer": 75.38,
+          "wer": 150.0,
+          "der": 0.0
+        },
+        "B": {
+          "cer": 75.38,
+          "wer": 120.0,
+          "der": 0.0
+        },
+        "C": {
+          "cer": 75.38,
+          "wer": 150.0,
+          "der": 0.0
+        },
+        "D": {
+          "cer": 72.31,
+          "wer": 150.0,
+          "der": 0.0
+        },
+        "E": {
+          "cer": 78.46,
+          "wer": 150.0,
+          "der": 0.0
+        }
+      }
+    },
+    "literary": {
+      "simple": {
+        "A": {
+          "cer": 70.76,
+          "wer": 98.67,
+          "der": 2.08
+        },
+        "B": {
+          "cer": 88.7,
+          "wer": 100.0,
+          "der": 100.0
+        },
+        "C": {
+          "cer": 70.76,
+          "wer": 98.67,
+          "der": 2.08
+        },
+        "D": {
+          "cer": 72.31,
+          "wer": 98.67,
+          "der": 2.08
+        },
+        "E": {
+          "cer": 73.2,
+          "wer": 98.67,
+          "der": 15.62
+        }
+      },
+      "complex": {
+        "A": {
+          "cer": 85.9,
+          "wer": 100.0,
+          "der": 50.0
+        },
+        "B": {
+          "cer": 87.18,
+          "wer": 100.0,
+          "der": 100.0
+        },
+        "C": {
+          "cer": 85.9,
+          "wer": 100.0,
+          "der": 50.0
+        },
+        "D": {
+          "cer": 85.9,
+          "wer": 100.0,
+          "der": 50.0
+        },
+        "E": {
+          "cer": 85.9,
+          "wer": 100.0,
+          "der": 50.0
+        }
+      }
+    }
+  },
+  "markdown": "## Table I. Overall CER and WER by configuration across all document categories\n\n| Configuration | CER (%) | WER (%) | DER (%) |\n|---|---:|---:|---:|\n| A - Tesseract sqi | 76.37 | 113.01 | 25.13 |\n| B - Tesseract fallback | 82.66 | 103.33 | 83.33 |\n| C - Best-of multi-pass fusion | 76.37 | 113.01 | 25.13 |\n| D - Fusion + heuristics | 76.09 | 113.01 | 18.35 |\n| E - Full pipeline | 77.16 | 113.01 | 23.94 |\n\n## Table II. CER (%) by document category and layout complexity\n\n| Category | Layout | Config A | Config B | Config C | Config D | Config E |\n|---|---|---:|---:|---:|---:|---:|\n| Administrative | Complex | 72.73 | 72.73 | 72.73 | 71.72 | 71.72 |\n| Administrative | Simple | 76.92 | 82.42 | 76.92 | 75.82 | 75.82 |\n| Educational | Complex | 75.38 | 75.38 | 75.38 | 72.31 | 78.46 |\n| Educational | Simple | 76.55 | 89.58 | 76.55 | 78.50 | 77.85 |\n| Literary | Complex | 85.90 | 87.18 | 85.90 | 85.90 | 85.90 |\n| Literary | Simple | 70.76 | 88.70 | 70.76 | 72.31 | 73.20 |\n\n## Table III. Proposed row for comparison table\n\n| System | Language | CER (%) | WER (%) | Method |\n|---|---|---:|---:|---|\n| Proposed (Config E) | Albanian | 77.16 | 113.01 | Tesseract-based hybrid + Albanian-specific PP |"
+}

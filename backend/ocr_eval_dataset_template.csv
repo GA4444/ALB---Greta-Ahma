@@ -1,0 +1,4 @@
+id,image_path,expected_text,category,layout
+sample_001,/absolute/path/to/image1.png,"Teksti i saktë referencë për dokumentin e parë.",administrative,simple
+sample_002,/absolute/path/to/image2.jpg,"Teksti i saktë referencë për dokumentin e dytë.",educational,complex
+sample_003,/absolute/path/to/image3.png,"Teksti i saktë referencë për dokumentin e tretë.",literary,simple

@@ -21,8 +21,9 @@ _ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 
 def _cfg(key: str, default: str = "") -> str:
     """Read a key from .env every time (no cache), then fall back to os.environ."""
-    values = dotenv_values(_ENV_PATH)
-    return values.get(key) or os.getenv(key, default)
+    values = dotenv_values(_ENV_PATH) if _ENV_PATH.exists() else {}
+    out = (values.get(key) or os.getenv(key, default) or "").strip()
+    return out if out else default
 
 
 # ─────────────────────────────────────────────
@@ -45,20 +46,27 @@ def _send_email(
         print("[EMAIL] Notifications disabled (ENABLE_EMAIL_NOTIFICATIONS=false).")
         return False
 
-    smtp_host = _cfg("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(_cfg("SMTP_PORT", "587"))
+    smtp_host = _cfg("SMTP_HOST", "smtp.gmail.com") or "smtp.gmail.com"
+    smtp_host = smtp_host.strip()
+    if not smtp_host or "@" in smtp_host or "your-" in smtp_host.lower():
+        smtp_host = "smtp.gmail.com"
+    try:
+        smtp_port = int(_cfg("SMTP_PORT", "587"))
+    except ValueError:
+        smtp_port = 587
     smtp_user = _cfg("SMTP_USER", "")
     smtp_pass = _cfg("SMTP_PASSWORD", "")
     from_email = _cfg("FROM_EMAIL") or smtp_user
     from_name = _cfg("FROM_NAME", "AlbLingo Platform")
 
+    # Treat placeholders as "not configured" to avoid DNS/connection errors
     if not smtp_user or not smtp_pass:
+        return False
+    if "your-gmail" in smtp_user.lower() or "your-app-password" in (smtp_pass or "").lower():
         print(
-            "[EMAIL] SMTP credentials missing.\n"
-            f"  Edit  {_ENV_PATH}\n"
-            "  Set SMTP_USER=your-gmail@gmail.com\n"
-            "  Set SMTP_PASSWORD=your-16-char-app-password\n"
-            "  (Gmail: Account > Security > 2-Step Verification > App Passwords)"
+            "[EMAIL] SMTP still using placeholders. Edit backend/.env:\n"
+            "  SMTP_USER=your-real@gmail.com\n"
+            "  SMTP_PASSWORD=16-char-app-password (Gmail: Security > App Passwords)"
         )
         return False
 
@@ -91,6 +99,15 @@ def _send_email(
         return False
     except smtplib.SMTPException as e:
         print(f"[EMAIL] ❌ SMTP error: {e}")
+        return False
+    except OSError as e:
+        if e.errno == 8 or "nodename" in str(e).lower() or "servname" in str(e).lower():
+            print(
+                "[EMAIL] ❌ Cannot resolve SMTP server (DNS/network).\n"
+                f"  SMTP_HOST={smtp_host!r} – kontrollo .env dhe lidhjen e internetit."
+            )
+        else:
+            print(f"[EMAIL] ❌ Connection error: {e}")
         return False
     except Exception as e:
         print(f"[EMAIL] ❌ Unexpected error: {e}")
