@@ -8,6 +8,7 @@ import AdminDashboard from './AdminDashboard'
 import AdvancedAIPractice from './AdvancedAIPractice'
 import ChatbotFloating from './ChatbotFloating'
 import './App.css'
+import './mobile-refinements.css'
 
 const normalizeText = (value: string) => {
     return value.normalize('NFKC').toLowerCase().trim().replace(/\s+/g, ' ')
