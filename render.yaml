@@ -20,12 +20,12 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: CORS_ORIGINS
-        value: "https://alblingo.vercel.app"
+        value: "https://alblingo.vercel.app,https://alb-greta-ahma.vercel.app"
       - key: ENABLE_EMAIL_NOTIFICATIONS
         value: "false"
       - key: ENABLE_BACKGROUND_TASKS
         value: "false"
       - key: APP_URL
-        value: "https://alblingo.vercel.app"
+        value: "https://alb-greta-ahma.vercel.app"
       - key: PYTHON_VERSION
         value: "3.11.6"
