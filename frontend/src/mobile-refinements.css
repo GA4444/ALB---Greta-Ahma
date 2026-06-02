@@ -416,6 +416,34 @@
   }
 }
 
+/* ===================== CHATBOT INPUT (mic + text + send) ==================== */
+@media (max-width: 768px) {
+  .chatbot-input-area {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    /* keep the bar above the iOS home indicator */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* min-width:0 lets the textarea shrink instead of overflowing off-screen,
+     which previously left only the mic button visible on narrow phones. */
+  .chatbot-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .voice-btn,
+  .send-btn {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    flex-shrink: 0;
+  }
+}
+
 /* ===================== GAMIFICATION (compact widgets) ==================== */
 @media (max-width: 768px) {
   .gamification-compact {
