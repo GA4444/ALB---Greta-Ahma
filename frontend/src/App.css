@@ -11098,8 +11098,21 @@ body {
         padding: 12px;
     }
     
+    /* Stack the navigation sidebar (classes + OCR) above the content on
+       tablet/mobile instead of hiding it, so classes remain reachable. */
     .sidebar {
-        display: none;
+        display: block;
+        position: static;
+        top: auto;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+        order: -1;
+    }
+
+    .sidebar-compact {
+        max-height: none;
+        overflow: visible;
     }
     
     .content-area {
