@@ -425,7 +425,7 @@ def _get_or_create_session(
     
     # Create new session
     session = models.ChatSession(
-        user_id=user_id,
+        user_id=int(user_id) if user_id else None,
         session_token=str(uuid.uuid4()),
         started_at=datetime.utcnow(),
         last_activity=datetime.utcnow()

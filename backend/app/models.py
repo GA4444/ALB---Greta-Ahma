@@ -217,7 +217,7 @@ class UserAchievement(Base):
 	__tablename__ = "user_achievements"
 	
 	id = Column(Integer, primary_key=True, index=True)
-	user_id = Column(String(50), ForeignKey("users.id"), nullable=False, index=True)
+	user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 	achievement_id = Column(Integer, ForeignKey("achievements.id"), nullable=False)
 	earned_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 	
@@ -250,7 +250,7 @@ class UserDailyProgress(Base):
 	__tablename__ = "user_daily_progress"
 	
 	id = Column(Integer, primary_key=True, index=True)
-	user_id = Column(String(50), ForeignKey("users.id"), nullable=False, index=True)
+	user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 	challenge_id = Column(Integer, ForeignKey("daily_challenges.id"), nullable=False)
 	current_value = Column(Integer, default=0, nullable=False)  # Current progress toward target
 	completed = Column(Boolean, default=False, nullable=False)
@@ -268,7 +268,7 @@ class SpacedRepetitionCard(Base):
 	__tablename__ = "srs_cards"
 	
 	id = Column(Integer, primary_key=True, index=True)
-	user_id = Column(String(50), ForeignKey("users.id"), nullable=False, index=True)
+	user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 	exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=False)
 	word = Column(String(200), nullable=False)  # The word being practiced
 	
@@ -299,7 +299,7 @@ class ChatSession(Base):
 	__tablename__ = "chat_sessions"
 	
 	id = Column(Integer, primary_key=True, index=True)
-	user_id = Column(String(50), ForeignKey("users.id"), nullable=True, index=True)  # Null for anonymous
+	user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)  # Null for anonymous
 	session_token = Column(String(100), unique=True, nullable=False, index=True)
 	started_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 	last_activity = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

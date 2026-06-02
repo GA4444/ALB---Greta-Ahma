@@ -13,6 +13,7 @@ def create_app() -> FastAPI:
 		"http://127.0.0.1:5173",
 		"http://localhost:5174",
 		"http://127.0.0.1:5174",
+		"https://alblingo.vercel.app",
 	]
 	extra = os.getenv("CORS_ORIGINS", "")
 	if extra:

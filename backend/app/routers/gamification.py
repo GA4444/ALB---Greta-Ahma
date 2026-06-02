@@ -157,7 +157,7 @@ def check_and_award_achievements(db: Session, user_id: str):
 		# Award achievement if criteria met
 		if should_award:
 			user_achievement = models.UserAchievement(
-				user_id=user_id,
+				user_id=int(user_id),
 				achievement_id=achievement.id
 			)
 			db.add(user_achievement)
@@ -348,7 +348,7 @@ def update_daily_challenge_progress(db: Session, user_id: str, challenge_type: s
 	
 	if not progress:
 		progress = models.UserDailyProgress(
-			user_id=user_id,
+			user_id=int(user_id),
 			challenge_id=challenge.id,
 			current_value=0
 		)
@@ -492,7 +492,7 @@ def create_srs_card_for_mistake(db: Session, user_id: str, exercise_id: int):
 	
 	# Create new card
 	card = models.SpacedRepetitionCard(
-		user_id=user_id,
+		user_id=int(user_id),
 		exercise_id=exercise_id,
 		word=exercise.answer or exercise.prompt[:50],
 		next_review_date=datetime.utcnow() + timedelta(hours=4),  # Review in 4 hours

@@ -2295,6 +2295,28 @@ function MainContent({
     // Suppress unused variable warnings for simplified layout
     void _learningPath; void _progressInsights; void _aiCoachLoading; void _aiCoachError;
     void _aiCoachLevel; void _aiCoachLevelLoading; void _aiCoachLevelError; void _srsStats;
+
+    const getOCRIssueLabel = (type?: string) => {
+        const labels: Record<string, string> = {
+            missing_word: 'Fjalë e munguar',
+            extra_word: 'Fjalë shtesë',
+            missing_letter: 'Shkronjë e munguar',
+            extra_letter: 'Shkronjë e tepërt',
+            letter_substitution: 'Zëvendësim shkronje',
+            letter_transposition: 'Ndërrim shkronjash',
+            digraph_suspected: 'Grup shkronjash shqip',
+            vowel_confusion: 'Ngatërrim zanor',
+            diacritics_suspected: 'Ë/Ç dhe diakritikë',
+            ending_ë_suspected: 'Ë fundore',
+            ç_suspected: 'Ç/C',
+            double_consonant_suspected: 'Bashkëtingëllore e dyfishtë',
+            capitalization: 'Shkronjë e madhe/vogël',
+            low_confidence: 'Besueshmëri e ulët OCR',
+            unknown_word: 'Fjalë e panjohur',
+            mismatch_expected: 'Nuk përputhet'
+        }
+        return labels[type || ''] || 'Drejtshkrim'
+    }
     
     return (
         <div className={`main-content ${selectedLevel ? 'with-ai-panel' : ''}`}>
@@ -2552,11 +2574,19 @@ function MainContent({
                                                 <li key={idx} className="ocr-error-item">
                                                     <div className="ocr-error-main">
                                                         {err.expected ? (
-                                                            <>Pozicioni {err.position}: Fjala <strong>"{err.recognized || err.token}"</strong> duhet të shkruhet <strong>"{err.expected}"</strong></>
+                                                            <>
+                                                                <span className="ocr-type-tag type-orth">
+                                                                    {getOCRIssueLabel(err.type)}
+                                                                </span>
+                                                                Pozicioni {err.position}: Fjala <strong>"{err.recognized || err.token}"</strong> duhet të shkruhet <strong>"{err.expected}"</strong>. {err.message}
+                                                            </>
                                                         ) : (
                                                             <>
                                                                 <span className={`ocr-type-tag ${err.source === 'ocr' ? 'type-ocr' : 'type-orth'}`}>
                                                                     {err.source === 'ocr' ? 'OCR' : 'Drejtshkrim'}
+                                                                </span>
+                                                                <span className="ocr-type-tag type-orth">
+                                                                    {getOCRIssueLabel(err.type)}
                                                                 </span>
                                                                 Fjala <strong>"{err.token || err.recognized}"</strong>: {err.message}
                                                             </>

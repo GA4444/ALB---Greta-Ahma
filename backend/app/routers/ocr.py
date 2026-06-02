@@ -344,6 +344,18 @@ def _issue_meta(issue_type: str, conf: Optional[float], has_suggestions: bool) -
 		return {"source": "orthography", "severity": "warning", "likelihood": 0.8}
 	if issue_type in ("ending_ë_suspected", "ç_suspected"):
 		return {"source": "orthography", "severity": "warning", "likelihood": 0.85}
+	if issue_type in (
+		"missing_letter",
+		"extra_letter",
+		"letter_substitution",
+		"letter_transposition",
+		"digraph_suspected",
+		"vowel_confusion",
+		"capitalization",
+	):
+		return {"source": "orthography", "severity": "warning", "likelihood": 0.82 if has_suggestions else 0.7}
+	if issue_type in ("missing_word", "extra_word"):
+		return {"source": "orthography", "severity": "error", "likelihood": 0.9}
 	if issue_type == "unknown_word":
 		return {"source": "orthography", "severity": "warning" if has_suggestions else "info", "likelihood": 0.6 if has_suggestions else 0.35}
 	return {"source": "orthography", "severity": "info", "likelihood": 0.5}
@@ -371,9 +383,23 @@ def _rule_based_candidates(token: str, lexicon: set) -> List[str]:
 	for i, ch in enumerate(w):
 		if ch == "c":
 			cands.append(w[:i] + "ç" + w[i + 1 :])
+		if ch == "e":
+			cands.append(w[:i] + "ë" + w[i + 1 :])
+		if ch == "ë":
+			cands.append(w[:i] + "e" + w[i + 1 :])
 
 	# 3) collapse double consonants (OCR repeats letters)
 	cands.append(_collapse_double_consonants(w))
+
+	# 4) Albanian digraphs often lose one letter in handwriting/OCR.
+	cands.extend(_digraph_expansion_candidates(w))
+
+	# 5) Single missing / extra letter hypotheses, filtered by lexicon below.
+	cands.extend(_single_letter_insertion_candidates(w, lexicon))
+	cands.extend(_single_letter_deletion_candidates(w))
+
+	# 6) Nearby transposition, useful for dictation mistakes and OCR swaps.
+	cands.extend(_adjacent_transposition_candidates(w))
 
 	# Dedupe, keep only present in lexicon
 	out = []
@@ -422,6 +448,179 @@ def _diacritics_normalize(word: str) -> str:
 
 def _is_diacritics_variant(a: str, b: str) -> bool:
 	return _diacritics_normalize(a) == _diacritics_normalize(b) and a != b
+
+
+ALBANIAN_DIGRAPHS = ("dh", "gj", "ll", "nj", "rr", "sh", "th", "xh", "zh")
+ALBANIAN_VOWELS = set("aeëiouy")
+ALBANIAN_LETTERS = "abcçdeëfghijklmnopqrstuvxyz"
+
+
+def _digraph_expansion_candidates(word: str) -> List[str]:
+	"""
+	Generate conservative candidates for Albanian digraph loss:
+	d -> dh, g -> gj, l -> ll, n -> nj, r -> rr, s -> sh, t -> th, x -> xh, z -> zh.
+	"""
+	cands: List[str] = []
+	for digraph in ALBANIAN_DIGRAPHS:
+		first = digraph[0]
+		for idx, ch in enumerate(word):
+			if ch == first:
+				cands.append(word[:idx] + digraph + word[idx + 1 :])
+	return cands
+
+
+def _single_letter_insertion_candidates(word: str, lexicon: set) -> List[str]:
+	cands: List[str] = []
+	lengths = {len(candidate) for candidate in lexicon}
+	if len(word) + 1 not in lengths:
+		return cands
+	for idx in range(len(word) + 1):
+		for letter in ALBANIAN_LETTERS:
+			cands.append(word[:idx] + letter + word[idx:])
+	return cands
+
+
+def _single_letter_deletion_candidates(word: str) -> List[str]:
+	return [word[:idx] + word[idx + 1 :] for idx in range(len(word))]
+
+
+def _adjacent_transposition_candidates(word: str) -> List[str]:
+	cands: List[str] = []
+	for idx in range(len(word) - 1):
+		if word[idx] != word[idx + 1]:
+			cands.append(word[:idx] + word[idx + 1] + word[idx] + word[idx + 2 :])
+	return cands
+
+
+def _is_adjacent_transposition(a: str, b: str) -> bool:
+	if len(a) != len(b) or a == b:
+		return False
+	diffs = [idx for idx, (ca, cb) in enumerate(zip(a, b)) if ca != cb]
+	return len(diffs) == 2 and diffs[1] == diffs[0] + 1 and a[diffs[0]] == b[diffs[1]] and a[diffs[1]] == b[diffs[0]]
+
+
+def _single_substitution(a: str, b: str) -> Optional[Tuple[str, str]]:
+	if len(a) != len(b):
+		return None
+	diffs = [(ca, cb) for ca, cb in zip(a, b) if ca != cb]
+	if len(diffs) == 1:
+		return diffs[0]
+	return None
+
+
+def _classify_expected_mismatch(expected: str, recognized: str) -> Dict[str, Any]:
+	exp = (expected or "").strip()
+	rec = (recognized or "").strip()
+	exp_l = exp.lower()
+	rec_l = rec.lower()
+
+	if exp and not rec:
+		return {
+			"type": "missing_word",
+			"message": "Fjala mungon në tekstin e lexuar nga OCR ose në diktim.",
+			"suggestions": [exp],
+		}
+	if rec and not exp:
+		return {
+			"type": "extra_word",
+			"message": "U gjet një fjalë shtesë që nuk është në tekstin e pritur.",
+			"suggestions": [],
+		}
+	if exp_l == rec_l and exp != rec:
+		return {
+			"type": "capitalization",
+			"message": "Fjala është e njëjtë, por ka ndryshim në shkronjë të madhe/të vogël.",
+			"suggestions": [exp],
+		}
+	if _is_diacritics_variant(rec_l, exp_l):
+		return {
+			"type": "diacritics_suspected",
+			"message": "Gabim diakritik: kontrollo përdorimin e ë/e ose ç/c.",
+			"suggestions": [exp],
+		}
+	if _collapse_double_consonants(rec_l) == exp_l:
+		return {
+			"type": "double_consonant_suspected",
+			"message": "Dyshohet shkronjë e dyfishtë e tepërt.",
+			"suggestions": [exp],
+		}
+	for digraph in ALBANIAN_DIGRAPHS:
+		if digraph in exp_l and digraph not in rec_l:
+			return {
+				"type": "digraph_suspected",
+				"message": f"Dyshohet gabim te grupi karakteristik shqip '{digraph}'.",
+				"suggestions": [exp],
+			}
+	if len(exp_l) == len(rec_l) + 1 and _levenshtein(rec_l, exp_l, max_dist=1) == 1:
+		return {
+			"type": "missing_letter",
+			"message": "Mungon një shkronjë në fjalë.",
+			"suggestions": [exp],
+		}
+	if len(rec_l) == len(exp_l) + 1 and _levenshtein(rec_l, exp_l, max_dist=1) == 1:
+		return {
+			"type": "extra_letter",
+			"message": "Ka një shkronjë të tepërt në fjalë.",
+			"suggestions": [exp],
+		}
+	if _is_adjacent_transposition(rec_l, exp_l):
+		return {
+			"type": "letter_transposition",
+			"message": "Dy shkronja janë ndërruar vendesh.",
+			"suggestions": [exp],
+		}
+
+	substitution = _single_substitution(rec_l, exp_l)
+	if substitution:
+		found, needed = substitution
+		if found in ALBANIAN_VOWELS and needed in ALBANIAN_VOWELS:
+			return {
+				"type": "vowel_confusion",
+				"message": f"Dyshohet ngatërrim zanor: '{found}' duhet të jetë '{needed}'.",
+				"suggestions": [exp],
+			}
+		return {
+			"type": "letter_substitution",
+			"message": f"Dyshohet zëvendësim shkronje: '{found}' duhet të jetë '{needed}'.",
+			"suggestions": [exp],
+		}
+
+	return {
+		"type": "mismatch_expected",
+		"message": "Fjala nuk përputhet me tekstin e pritur.",
+		"suggestions": [exp] if exp else [],
+	}
+
+
+def _classify_lexicon_issue(token: str, suggestions: List[str], collapsed: str, lexicon: set) -> Tuple[str, str]:
+	w = token.lower()
+	if not suggestions:
+		return "unknown_word", "Fjalë e panjohur në korpus; mund të jetë gabim drejtshkrimi ose emër i përveçëm."
+
+	best = suggestions[0]
+	if any(s.endswith("ë") and not w.endswith("ë") for s in suggestions):
+		return "ending_ë_suspected", "Dyshohet mungesë e 'ë' (shpesh në fund të fjalës). Shiko sugjerimet."
+	if any("ç" in s and "c" in w for s in suggestions):
+		return "ç_suspected", "Dyshohet gabim te 'ç' / 'c'. Shiko sugjerimet."
+	if collapsed != w and collapsed in lexicon:
+		return "double_consonant_suspected", "Dyshohet shkronjë e dyfishtë (shpesh gabim OCR ose gabim drejtshkrimi)."
+	if _is_diacritics_variant(w, best):
+		return "diacritics_suspected", "Dyshohet gabim te ë/e ose ç/c. Shiko sugjerimet."
+	if any(digraph in best and digraph not in w for digraph in ALBANIAN_DIGRAPHS):
+		return "digraph_suspected", "Dyshohet gabim te një grup shkronjash karakteristik i shqipes (dh, gj, ll, nj, rr, sh, th, xh, zh)."
+	if len(best) == len(w) + 1:
+		return "missing_letter", "Mund të mungojë një shkronjë. Shiko sugjerimet."
+	if len(w) == len(best) + 1:
+		return "extra_letter", "Mund të ketë një shkronjë të tepërt. Shiko sugjerimet."
+	if _is_adjacent_transposition(w, best):
+		return "letter_transposition", "Dyshohet ndërrim vendesh i dy shkronjave."
+	substitution = _single_substitution(w, best)
+	if substitution:
+		found, needed = substitution
+		if found in ALBANIAN_VOWELS and needed in ALBANIAN_VOWELS:
+			return "vowel_confusion", "Dyshohet ngatërrim zanor. Shiko sugjerimet."
+		return "letter_substitution", "Dyshohet zëvendësim shkronje. Shiko sugjerimet."
+	return "unknown_word", "Mund të ketë gabim drejtshkrimi. Shiko sugjerimet."
 
 
 def _extract_tokens_with_confidence(img: "Image.Image") -> Tuple[List[Dict[str, Any]], float]:
@@ -584,18 +783,20 @@ async def analyze_dictation(
 		for idx in range(max_len):
 			rec_word = extracted_tokens[idx] if idx < len(extracted_tokens) else ""
 			exp_word = expected_tokens[idx] if idx < len(expected_tokens) else ""
-			if rec_word.lower() != exp_word.lower():
+			if rec_word != exp_word:
+				classification = _classify_expected_mismatch(exp_word, rec_word)
+				issue_type = classification["type"]
 				errors.append({"position": idx + 1, "expected": exp_word, "recognized": rec_word})
 				issues.append({
 					"position": idx + 1,
 					"token": rec_word or exp_word,
-					"type": "mismatch_expected",
-					"message": "Fjala nuk përputhet me tekstin e pritur.",
+					"type": issue_type,
+					"message": classification["message"],
 					"expected": exp_word,
 					"recognized": rec_word,
-					"suggestions": [exp_word] if exp_word else [],
+					"suggestions": classification["suggestions"],
 					"ocr_confidence": (token_objs[idx]["confidence"] if token_objs and idx < len(token_objs) else None),
-					**_issue_meta("mismatch_expected", None, bool(exp_word)),
+					**_issue_meta(issue_type, None, bool(classification["suggestions"])),
 				})
 				if exp_word:
 					suggestions.append(exp_word)
@@ -636,24 +837,12 @@ async def analyze_dictation(
 			rule_sugs = _rule_based_candidates(w, lexicon)
 			if rule_sugs:
 				sugs = rule_sugs
-				# Determine which rule likely triggered
-				if any(s.endswith("ë") and not w.endswith("ë") for s in rule_sugs):
-					issue_type = "ending_ë_suspected"
-					msg = "Dyshohet mungesë e 'ë' (shpesh në fund të fjalës). Shiko sugjerimet."
-				elif any("ç" in s and "c" in w for s in rule_sugs):
-					issue_type = "ç_suspected"
-					msg = "Dyshohet gabim te 'ç' / 'c'. Shiko sugjerimet."
-				elif collapsed != w and collapsed in lexicon:
-					issue_type = "double_consonant_suspected"
-					msg = "Dyshohet shkronjë e dyfishtë (shpesh gabim OCR ose gabim drejtshkrimi)."
+				issue_type, msg = _classify_lexicon_issue(w, sugs, collapsed, lexicon)
 			else:
 				# Second: distance-based suggestions from corpus
 				sugs = _suggest_from_lexicon(w, buckets, max_suggestions=5)
-				if sugs and _is_diacritics_variant(w, sugs[0]):
-					issue_type = "diacritics_suspected"
-					msg = "Dyshohet gabim te ë/e ose ç/c. Shiko sugjerimet."
-				elif sugs:
-					msg = "Mund të ketë gabim drejtshkrimi. Shiko sugjerimet."
+				if sugs:
+					issue_type, msg = _classify_lexicon_issue(w, sugs, collapsed, lexicon)
 			issues.append({
 				"position": idx,
 				"token": tok,
