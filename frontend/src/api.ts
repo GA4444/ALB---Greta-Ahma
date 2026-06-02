@@ -207,7 +207,7 @@ export interface AICoachResponse {
 	drill_plan: string[]
 }
 
-const client = axios.create({ baseURL: '' })
+const client = axios.create({ baseURL: '', timeout: 90000 })
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {

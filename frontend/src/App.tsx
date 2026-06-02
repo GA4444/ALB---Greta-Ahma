@@ -1145,8 +1145,8 @@ function App() {
                                             const detail = e?.response?.data?.detail || e?.message
                                             if (status === 401) {
                                                 setMessage('Kredencialet e pasakta. Provo përsëri! ❌')
-                                            } else if (e?.code === 'ECONNREFUSED' || e?.message?.includes('Network') || !e?.response) {
-                                                setMessage('Nuk mund të lidhet me serverin. Sigurohu që backend-i është duke u ekzekutuar (port 8001). ❌')
+                                            } else if (e?.code === 'ECONNREFUSED' || e?.code === 'ECONNABORTED' || e?.message?.includes('timeout') || e?.message?.includes('Network') || !e?.response) {
+                                                setMessage('Serveri po zgjohet (mund të zgjasë deri në 1 minutë). Të lutem prit pak dhe provo përsëri. ⏳')
                                             } else {
                                                 setMessage(detail || 'Gabim në lidhje. Provo përsëri! ❌')
                                             }
