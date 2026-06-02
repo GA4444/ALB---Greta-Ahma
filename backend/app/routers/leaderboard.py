@@ -63,9 +63,11 @@ def get_leaderboard(db: Session = Depends(get_db), limit: int = 0):
             func.coalesce(attempts_stats.c.total_correct, 0).label('total_correct'),
             func.coalesce(completed_courses_subq.c.completed_courses, 0).label('completed_courses')
         )
-        # Cast user.id (int) to string to match Attempt.user_id / CourseProgress.user_id types
+        # Attempt.user_id is a String column, so cast User.id to string for that join.
         .outerjoin(attempts_stats, cast(models.User.id, String) == attempts_stats.c.user_id)
-        .outerjoin(completed_courses_subq, cast(models.User.id, String) == completed_courses_subq.c.user_id)
+        # CourseProgress.user_id is an Integer column, so join on integers directly
+        # (casting to String breaks on PostgreSQL with an "operator does not exist" error).
+        .outerjoin(completed_courses_subq, models.User.id == completed_courses_subq.c.user_id)
         .order_by(
             func.coalesce(attempts_stats.c.total_points, 0).desc(),
             (func.coalesce(attempts_stats.c.total_correct, 0) * 100.0 / func.nullif(func.coalesce(attempts_stats.c.total_attempts, 1), 0)).desc(),
