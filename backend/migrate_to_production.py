@@ -12,6 +12,11 @@ Get TARGET_DATABASE_URL from Render:
 
 The script wipes the target tables it manages and re-inserts every row from
 dev.db, preserving primary keys, then fixes the PostgreSQL id sequences.
+
+SQLite does not enforce foreign keys, so the local data contains some orphaned
+references. PostgreSQL does enforce them, so during the copy:
+  * an orphaned NULLABLE foreign key is set to NULL,
+  * a row whose REQUIRED foreign key points at a missing parent is skipped.
 """
 import os
 import sys
@@ -52,19 +57,77 @@ MIGRATION_ORDER = [
     models.ChatMessage,
 ]
 
+# (column, parent table, nullable) for every foreign key we must validate.
+# user_id columns that are plain strings (attempts, progress) are NOT real FKs.
+FK_RULES = {
+    models.Course: [("parent_class_id", "courses", True)],
+    models.Level: [("course_id", "courses", False)],
+    models.Exercise: [("course_id", "courses", False), ("level_id", "levels", False)],
+    models.CorpusDocument: [("class_id", "courses", True)],
+    models.DailyChallenge: [("level_id", "levels", True)],
+    models.Attempt: [("exercise_id", "exercises", False)],
+    models.Progress: [("course_id", "courses", False), ("level_id", "levels", False)],
+    models.CourseProgress: [("user_id", "users", False), ("course_id", "courses", False)],
+    models.UserAchievement: [("user_id", "users", False), ("achievement_id", "achievements", False)],
+    models.UserDailyProgress: [("user_id", "users", False), ("challenge_id", "daily_challenges", False)],
+    models.SpacedRepetitionCard: [("user_id", "users", False), ("exercise_id", "exercises", False)],
+    models.ChatSession: [("user_id", "users", True)],
+    models.ChatMessage: [("session_id", "chat_sessions", False)],
+}
 
-def _row_order(model, rows):
-    """Insert self-referential courses with parents before children."""
-    if model is models.Course:
-        return sorted(rows, key=lambda r: (r.parent_class_id is not None, r.id or 0))
-    return rows
+
+def _copy_table(model, src, tgt, inserted):
+    table = model.__tablename__
+    cols = [c.key for c in sa_inspect(model).mapper.column_attrs]
+    rules = FK_RULES.get(model, [])
+    rows = src.query(model).all()
+
+    ids_ok = set()
+    skipped = 0
+    deferred_parent = {}  # course id -> parent_class_id (set after insert)
+
+    for row in rows:
+        data = {c: getattr(row, c) for c in cols}
+        skip = False
+        for col, parent, nullable in rules:
+            val = data.get(col)
+            if val is None:
+                continue
+            # Self-referential courses: insert without parent, link afterwards.
+            if model is models.Course and col == "parent_class_id":
+                deferred_parent[data.get("id")] = val
+                data[col] = None
+                continue
+            if val not in inserted.get(parent, set()):
+                if nullable:
+                    data[col] = None
+                else:
+                    skip = True
+                    break
+        if skip:
+            skipped += 1
+            continue
+        tgt.add(model(**data))
+        ids_ok.add(data.get("id"))
+
+    tgt.commit()
+    inserted[table] = ids_ok
+
+    if model is models.Course and deferred_parent:
+        for child_id, parent_id in deferred_parent.items():
+            if child_id in ids_ok and parent_id in ids_ok:
+                tgt.query(model).filter(model.id == child_id).update(
+                    {"parent_class_id": parent_id}
+                )
+        tgt.commit()
+
+    return len(ids_ok), skipped
 
 
 def main():
     src_engine = create_engine(SOURCE_URL)
     tgt_engine = create_engine(TARGET_URL)
 
-    # Ensure the target schema exists (matches the deployed app).
     Base.metadata.create_all(bind=tgt_engine)
 
     SrcSession = sessionmaker(bind=src_engine)
@@ -72,7 +135,6 @@ def main():
     src = SrcSession()
     tgt = TgtSession()
 
-    # Wipe managed tables (children first) so we can re-insert with real PKs.
     print("Clearing target tables...")
     for model in reversed(MIGRATION_ORDER):
         deleted = tgt.query(model).delete()
@@ -80,16 +142,12 @@ def main():
     tgt.commit()
 
     print("Copying data...")
+    inserted = {}
     for model in MIGRATION_ORDER:
-        cols = [c.key for c in sa_inspect(model).mapper.column_attrs]
-        rows = src.query(model).all()
-        for row in _row_order(model, rows):
-            data = {c: getattr(row, c) for c in cols}
-            tgt.add(model(**data))
-        tgt.commit()
-        print(f"  {model.__tablename__}: {len(rows)}")
+        count, skipped = _copy_table(model, src, tgt, inserted)
+        note = f" (skipped {skipped} orphaned)" if skipped else ""
+        print(f"  {model.__tablename__}: {count}{note}")
 
-    # Fix PostgreSQL id sequences after inserting explicit primary keys.
     if tgt_engine.dialect.name == "postgresql":
         print("Resetting id sequences...")
         with tgt_engine.connect() as conn:
