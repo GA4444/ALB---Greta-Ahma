@@ -261,12 +261,93 @@
   }
 }
 
-/* ===================== EXERCISES / CONTENT TOUCH POLISH ==================== */
+/* ===================== STEP-BY-STEP EXERCISES ==================== */
 @media (max-width: 768px) {
-  /* Make primary action buttons easy to tap */
+  .exercise-header-modern {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .back-button-modern {
+    align-self: flex-start;
+    min-height: 44px;
+  }
+
+  .exercise-title-section {
+    margin-top: 8px;
+  }
+
+  .exercise-badge-modern {
+    padding: 6px 16px;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+  }
+
+  /* The desktop title is 4xl, far too big for phones */
+  .exercise-title-modern {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+
+  .exercise-subtitle-modern {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .exercise-container-modern {
+    padding: 16px;
+    gap: 16px;
+    border-radius: 16px;
+  }
+
+  .exercise-progress-modern {
+    padding: 14px;
+    margin-bottom: 0;
+  }
+
+  .exercise-card-header-modern {
+    padding: 14px 16px;
+  }
+
+  .exercise-question {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .answer-input-field {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  /* Listen/record controls stack and fill the width */
+  .voice-controls-modern {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .voice-btn-modern {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+  }
+
+  /* Prev / Next stay side by side (short labels), the rest stack */
+  .navigation-buttons-modern {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .nav-btn-modern {
+    flex: 1;
+    min-height: 46px;
+  }
+
   .submit-btn-modern,
-  .nav-btn-modern,
-  .hint-btn-modern,
+  .hint-btn-modern {
+    width: 100%;
+    min-height: 48px;
+  }
+
   .choice-btn-modern,
   .ocr-button {
     min-height: 48px;
@@ -277,5 +358,71 @@
   .exercise-card-modern,
   .ocr-main-container {
     max-width: 100%;
+  }
+}
+
+/* ===================== AUTH (LOGIN / REGISTER) ==================== */
+@media (max-width: 768px) {
+  .auth-card {
+    width: 92vw;
+    max-width: 420px;
+    padding: 1.5rem !important;
+  }
+
+  .auth-tabs {
+    gap: 6px;
+  }
+
+  .auth-input {
+    min-height: 48px;
+  }
+
+  .auth-submit {
+    min-height: 50px;
+    width: 100%;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* ===================== WELCOME / HERO ==================== */
+@media (max-width: 768px) {
+  .welcome-screen-modern,
+  .hero-section-modern {
+    padding: 18px;
+  }
+
+  .hero-title-modern {
+    font-size: 1.5rem;
+  }
+
+  .welcome-emoji-modern {
+    font-size: 2.5rem;
+  }
+
+  .hero-description-modern {
+    font-size: 0.9rem;
+  }
+
+  .features-grid-modern,
+  .course-preview-grid-modern,
+  .level-grid-modern,
+  .ai-exercises-integrated {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ===================== GAMIFICATION (compact widgets) ==================== */
+@media (max-width: 768px) {
+  .gamification-compact {
+    width: 100%;
+  }
+
+  .achievements-compact {
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
   }
 }

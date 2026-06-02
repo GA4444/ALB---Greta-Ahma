@@ -2065,3 +2065,81 @@ textarea:focus-visible {
 		flex-direction: column;
 	}
 }
+
+/* =============================================================================
+   FINAL MOBILE REFINEMENTS (kept last so they win the cascade)
+   ============================================================================= */
+@media (max-width: 768px) {
+	.admin-dashboard {
+		padding: 12px;
+	}
+
+	.admin-header {
+		padding: 1rem 1.25rem;
+		margin-bottom: 1rem;
+	}
+
+	.admin-header h1 {
+		font-size: 1.25rem;
+	}
+
+	/* Six tabs don't fit in a single row on phones; use a tidy grid */
+	.admin-tabs {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 6px;
+		padding: 6px;
+		margin-bottom: 1rem;
+	}
+
+	.admin-tabs button {
+		flex: none;
+		width: 100%;
+		padding: 0.6rem 0.4rem;
+		font-size: 0.78rem;
+		min-height: 44px;
+	}
+
+	.admin-content {
+		padding: 1rem;
+	}
+
+	/* Sub-tabs scroll horizontally rather than getting squeezed */
+	.corpus-subtabs {
+		gap: 6px;
+	}
+
+	.corpus-subtabs button {
+		flex: 0 0 auto;
+		min-height: 40px;
+	}
+
+	/* Keep charts inside the screen */
+	.chart-card,
+	.charts-row,
+	.charts-container {
+		max-width: 100%;
+		overflow: hidden;
+	}
+
+	.recharts-responsive-container {
+		max-width: 100% !important;
+	}
+}
+
+@media (max-width: 480px) {
+	.admin-tabs {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.admin-header {
+		flex-direction: column;
+		gap: 0.75rem;
+		align-items: stretch;
+		text-align: center;
+	}
+
+	.admin-logout-btn {
+		width: 100%;
+	}
+}
