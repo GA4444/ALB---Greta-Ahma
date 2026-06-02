@@ -38,6 +38,7 @@ def seed_database():
                 "name": f"Klasa {i}",
                 "description": f"Kurrikula e plotë për klasën {i}",
                 "order_index": i,
+                "category": models.CategoryEnum.VOCABULARY,
                 "enabled": False,
                 "parent_class_id": None
             }
