@@ -2143,3 +2143,129 @@ textarea:focus-visible {
 		width: 100%;
 	}
 }
+
+/* =============================================================================
+   PhD AI Research Module
+   ============================================================================= */
+.research-ai-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.research-hero {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+	padding: 1.5rem;
+	border-radius: 16px;
+	background: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 100%);
+	border: 1px solid #c7d2fe;
+}
+
+.research-hero h2 {
+	margin: 0 0 0.5rem;
+	color: #1e293b;
+}
+
+.research-hero p {
+	margin: 0;
+	color: #475569;
+	line-height: 1.55;
+}
+
+.research-badge {
+	flex-shrink: 0;
+	padding: 0.5rem 0.75rem;
+	border-radius: 999px;
+	background: #111827;
+	color: white;
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
+.research-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 1rem;
+}
+
+.research-card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 1.25rem;
+	background: white;
+	border: 1px solid #e2e8f0;
+	border-radius: 14px;
+	box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+}
+
+.research-card.full {
+	grid-column: 1 / -1;
+}
+
+.research-card h3 {
+	margin: 0;
+	color: #1e293b;
+}
+
+.research-card p {
+	margin: 0;
+	color: #64748b;
+	line-height: 1.5;
+}
+
+.research-card input,
+.research-card select,
+.research-card textarea {
+	width: 100%;
+	padding: 0.75rem;
+	border: 1px solid #cbd5e1;
+	border-radius: 10px;
+	font: inherit;
+}
+
+.research-card textarea {
+	min-height: 90px;
+	resize: vertical;
+}
+
+.research-json {
+	max-height: 320px;
+	overflow: auto;
+	padding: 1rem;
+	border-radius: 12px;
+	background: #0f172a;
+	color: #e2e8f0;
+	font-size: 0.78rem;
+	line-height: 1.45;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.research-json.compact {
+	max-height: 180px;
+	font-size: 0.72rem;
+}
+
+.create-btn.secondary {
+	background: #64748b;
+}
+
+@media (max-width: 768px) {
+	.research-hero {
+		flex-direction: column;
+		padding: 1rem;
+	}
+
+	.research-badge {
+		width: 100%;
+		text-align: center;
+	}
+
+	.research-grid {
+		grid-template-columns: 1fr;
+	}
+}

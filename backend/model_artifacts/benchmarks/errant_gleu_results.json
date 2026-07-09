@@ -1,0 +1,17 @@
+{
+  "created_at_utc": "2026-07-09T17:14:46.063970Z",
+  "official_errant_available": true,
+  "note": "ERRANT package detected. Albanian is not an official ERRANT language; for publication, use this script with a validated Albanian tokenizer/annotator or report the fallback metric as ERRANT-inspired.",
+  "fallback_metrics": {
+    "n": 3,
+    "errant_like_f0_5": 1.0,
+    "gleu_like": 1.0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  "publication_guidance": [
+    "Use a manually validated gold correction set.",
+    "Report official ERRANT/GLEU only if the official tools and Albanian preprocessing are documented.",
+    "Otherwise label the implemented metric as ERRANT-inspired F0.5 and GLEU-like."
+  ]
+}

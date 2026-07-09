@@ -1,0 +1,14 @@
+# Optional research-training dependencies.
+# Install only on a GPU/Colab/training machine, not on the lightweight Render service.
+torch==2.2.2
+transformers==4.57.6
+datasets==4.5.0
+accelerate==1.10.1
+peft==0.17.1
+bitsandbytes==0.42.0
+sentencepiece==0.2.1
+scikit-learn==1.6.1
+numpy<2
+errant==3.0.2
+spacy<3.8
+gleu==1.1.0

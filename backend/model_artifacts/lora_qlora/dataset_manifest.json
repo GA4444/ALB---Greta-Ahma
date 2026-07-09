@@ -1,0 +1,7 @@
+{
+  "created_at_utc": "2026-07-09T17:14:20.983807Z",
+  "records": 763,
+  "format": "instruction_tuning_jsonl",
+  "output": "/Users/Apple/Desktop/Phd 08:02:2026/backend/model_artifacts/lora_qlora/instruction_dataset.jsonl",
+  "next_step": "Run train_lora_qlora.py on a GPU/Colab machine."
+}

@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
-from .routers import exercises, progress, seed, auth, ai, audio, course_progression, database_viewer, leaderboard, admin, ocr, gamification, chatbot, chatbot_advanced, ai_advanced_practice, corpus_admin
+from .routers import exercises, progress, seed, auth, ai, audio, course_progression, database_viewer, leaderboard, admin, ocr, gamification, chatbot, chatbot_advanced, ai_advanced_practice, corpus_admin, research_ai
 
 
 def create_app() -> FastAPI:
@@ -48,6 +48,7 @@ def create_app() -> FastAPI:
 	app.include_router(leaderboard.router, prefix="/api", tags=["leaderboard"])
 	app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 	app.include_router(corpus_admin.router, prefix="/api/admin", tags=["corpus-admin"])
+	app.include_router(research_ai.router, prefix="/api", tags=["research-ai"])
 
 	return app
 

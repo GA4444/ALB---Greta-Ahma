@@ -30,6 +30,23 @@ import {
 	reprocessAllCorpus,
 	autoPopulateCorpus,
 	getCorpusLinguisticMetrics,
+	getResearchAIOverview,
+	getInstructionDataset,
+	createAugmentedErrorPair,
+	generateResearchExercise,
+	generatePedagogicalFeedback,
+	evaluateResearchCorrection,
+	evaluateGradeFit,
+	getIRTSummary,
+	getKnowledgeTracing,
+	getAdaptiveNextItem,
+	compareRAGAblation,
+	createTeacherReview,
+	getTeacherReviewSummary,
+	getFinalExperimentProtocol,
+	getDeepLearningDataset,
+	getModelTrainingStatus,
+	getTrainingCommands,
 	type UserOut,
 	type AdminStats,
 	type ClassData,
@@ -42,6 +59,7 @@ import {
 	type WordFrequencyResponse,
 	type CorpusFuseCode,
 	type LinguisticMetrics,
+	type ResearchAIOverview,
 } from './api'
 import {
 	BarChart,
@@ -82,7 +100,7 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps) {
-	const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'classes' | 'levels' | 'exercises' | 'corpus'>('stats')
+	const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'classes' | 'levels' | 'exercises' | 'corpus' | 'research'>('stats')
 	const [timeRange, setTimeRange] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
 	const [stats, setStats] = useState<AdminStats | null>(null)
 	const [users, setUsers] = useState<UserOut[]>([])
@@ -114,6 +132,29 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 	const [corpusFuseCodes, setCorpusFuseCodes] = useState<CorpusFuseCode[]>([])
 	const [corpusPage, setCorpusPage] = useState(0)
 	const [linguisticMetrics, setLinguisticMetrics] = useState<LinguisticMetrics | null>(null)
+	const [researchOverview, setResearchOverview] = useState<ResearchAIOverview | null>(null)
+	const [instructionDataset, setInstructionDataset] = useState<any>(null)
+	const [irtSummary, setIrtSummary] = useState<any>(null)
+	const [ktSummary, setKtSummary] = useState<any>(null)
+	const [teacherReviewSummary, setTeacherReviewSummary] = useState<any>(null)
+	const [finalProtocol, setFinalProtocol] = useState<any>(null)
+	const [modelTrainingStatus, setModelTrainingStatus] = useState<any>(null)
+	const [trainingCommands, setTrainingCommands] = useState<any>(null)
+	const [researchResult, setResearchResult] = useState<any>(null)
+	const [researchForm, setResearchForm] = useState({
+		seedWord: 'mirë',
+		studentAnswer: 'mrië',
+		correctAnswer: 'mirë',
+		augmentationText: 'Unë shkova në shkollë dhe mësova drejtshkrimin.',
+		source: 'Une shkova ne shkoll',
+		reference: 'Unë shkova në shkollë',
+		hypothesis: 'Unë shkova në shkollë',
+		gradeText: 'Fëmija lexon një fjali të shkurtër për shkollën.',
+		adaptiveUserId: String(userId),
+		grade: 3,
+		difficulty: 'medium' as 'easy' | 'medium' | 'hard',
+		exerciseType: 'missing_letter' as 'missing_letter' | 'find_error' | 'explain_error',
+	})
 
 	useEffect(() => {
 		loadData()
@@ -179,6 +220,27 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 				setCorpusTotal(docsRes.total)
 				setCorpusFuseCodes(fuseRes.codes)
 				setClasses(classesRes)
+			} else if (activeTab === 'research') {
+				const [overviewRes, datasetRes, irtRes, protocolRes, statusRes, commandsRes] = await Promise.all([
+					getResearchAIOverview(),
+					getInstructionDataset(12),
+					getIRTSummary(1),
+					getFinalExperimentProtocol(),
+					getModelTrainingStatus(),
+					getTrainingCommands(),
+				])
+				setResearchOverview(overviewRes)
+				setInstructionDataset(datasetRes)
+				setIrtSummary(irtRes)
+				setFinalProtocol(protocolRes)
+				setModelTrainingStatus(statusRes)
+				setTrainingCommands(commandsRes)
+				const [ktRes, reviewRes] = await Promise.all([
+					getKnowledgeTracing(String(userId)),
+					getTeacherReviewSummary(),
+				])
+				setKtSummary(ktRes)
+				setTeacherReviewSummary(reviewRes)
 			}
 		} catch (error) {
 			console.error('Error loading data:', error)
@@ -207,6 +269,100 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			const res = await getCorpusLinguisticMetrics(userId)
 			setLinguisticMetrics(res)
 		} catch (e) { console.error(e) }
+	}
+
+	const runResearchAction = async (action: 'generate' | 'augment' | 'feedback' | 'evaluate' | 'grade-fit') => {
+		try {
+			let result: any
+			if (action === 'generate') {
+				result = await generateResearchExercise({
+					seed_word: researchForm.seedWord,
+					grade: researchForm.grade,
+					difficulty: researchForm.difficulty,
+					exercise_type: researchForm.exerciseType,
+				})
+			} else if (action === 'augment') {
+				result = await createAugmentedErrorPair({ text: researchForm.augmentationText, error_rate: 0.25 })
+			} else if (action === 'feedback') {
+				result = await generatePedagogicalFeedback({
+					student_answer: researchForm.studentAnswer,
+					correct_answer: researchForm.correctAnswer,
+					grade: researchForm.grade,
+				})
+			} else if (action === 'evaluate') {
+				result = await evaluateResearchCorrection({
+					source: researchForm.source,
+					reference: researchForm.reference,
+					hypothesis: researchForm.hypothesis,
+				})
+			} else {
+				result = await evaluateGradeFit({ text: researchForm.gradeText, grade: researchForm.grade })
+			}
+			setResearchResult({ action, result })
+		} catch (error: any) {
+			alert(error?.response?.data?.detail || 'Gabim në modulin kërkimor')
+		}
+	}
+
+	const runAdaptiveResearchAction = async (action: 'kt' | 'adaptive' | 'rag' | 'teacher-review') => {
+		try {
+			let result: any
+			if (action === 'kt') {
+				result = await getKnowledgeTracing(researchForm.adaptiveUserId)
+				setKtSummary(result)
+			} else if (action === 'adaptive') {
+				result = await getAdaptiveNextItem(researchForm.adaptiveUserId)
+			} else if (action === 'rag') {
+				result = await compareRAGAblation({
+					with_context: [
+						{ is_correct: true, unsafe: false },
+						{ is_correct: true, unsafe: false },
+						{ is_correct: false, unsafe: false },
+					],
+					without_context: [
+						{ is_correct: false, unsafe: true },
+						{ is_correct: true, unsafe: false },
+						{ is_correct: false, unsafe: false },
+					],
+				})
+			} else {
+				result = await createTeacherReview({
+					reviewer_user_id: userId,
+					item_type: 'generated_feedback',
+					content_snapshot: researchResult?.result || { note: 'sample review' },
+					linguistic_accuracy: 5,
+					clarity: 5,
+					age_appropriateness: 4,
+					pedagogical_value: 5,
+					safety: 5,
+					notes: 'Demo review from admin panel; replace with teacher assessment during study.',
+					approved_for_children: true,
+				})
+				setTeacherReviewSummary(await getTeacherReviewSummary())
+			}
+			setResearchResult({ action, result })
+		} catch (error: any) {
+			alert(error?.response?.data?.detail || 'Gabim në eksperimentin adaptiv')
+		}
+	}
+
+	const runFinalExperimentAction = async (action: 'protocol' | 'deep-dataset') => {
+		try {
+			const result = action === 'protocol'
+				? await getFinalExperimentProtocol()
+				: await getDeepLearningDataset()
+			if (action === 'protocol') setFinalProtocol(result)
+			setResearchResult({ action, result })
+		} catch (error: any) {
+			alert(error?.response?.data?.detail || 'Gabim në paketën finale eksperimentale')
+		}
+	}
+
+	const refreshTrainingStatus = async () => {
+		const [status, commands] = await Promise.all([getModelTrainingStatus(), getTrainingCommands()])
+		setModelTrainingStatus(status)
+		setTrainingCommands(commands)
+		setResearchResult({ action: 'training-status', result: { status, commands } })
 	}
 
 	const handleCreateCorpusDoc = async (doc: {title: string; content: string; author?: string; year?: number; genre?: string; dialect?: string; source?: string; fuse_class_code?: string}) => {
@@ -746,6 +902,9 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 				</button>
 				<button className={activeTab === 'corpus' ? 'active' : ''} onClick={() => setActiveTab('corpus')}>
 					📖 Korpusi
+				</button>
+				<button className={activeTab === 'research' ? 'active' : ''} onClick={() => setActiveTab('research')}>
+					🤖 AI Mësimore
 				</button>
 			</div>
 
@@ -2033,6 +2192,161 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										)}
 									</div>
 								)}
+							</div>
+						)}
+
+						{activeTab === 'research' && (
+							<div className="research-ai-panel">
+								<div className="research-hero">
+									<div>
+										<h2>🤖 AI Mësimore për Ushtrime Shqipe</h2>
+										<p>
+											Emri që shfaqet në platformë është i thjeshtë për fëmijë. Në prapavijë,
+											admini përdor të njëjtin modul për gjenerim, feedback, siguri dhe vlerësim shkencor.
+										</p>
+									</div>
+									<div className="research-badge">DB/Rules decide · LLM explains</div>
+								</div>
+
+								{researchOverview && (
+									<div className="stats-grid">
+										<div className="stat-card">
+											<div className="stat-icon">📚</div>
+											<div className="stat-value">{researchOverview.available_data.existing_exercises}</div>
+											<div className="stat-label">Ushtrime për instruction tuning</div>
+										</div>
+										<div className="stat-card">
+											<div className="stat-icon">🧪</div>
+											<div className="stat-value">{researchOverview.available_data.student_attempts}</div>
+											<div className="stat-label">Tentime për IRT/KT</div>
+										</div>
+										<div className="stat-card">
+											<div className="stat-icon">🛡️</div>
+											<div className="stat-value">Safe</div>
+											<div className="stat-label">Përgjigja nga DB/rregullat</div>
+										</div>
+									</div>
+								)}
+
+								<div className="research-grid">
+									<div className="research-card">
+										<h3>Instruction Fine-tuning Dataset</h3>
+										<p>Kthen ushtrimet ekzistuese në çifte <code>instruction → output</code> për LoRA/QLoRA.</p>
+										<button className="create-btn" onClick={async () => setInstructionDataset(await getInstructionDataset(25))}>
+											Rifresko dataset
+										</button>
+										<pre className="research-json">{JSON.stringify(instructionDataset?.pairs?.[0] || instructionDataset, null, 2)}</pre>
+									</div>
+
+									<div className="research-card">
+										<h3>Gjenerim Ushtrimi të Sigurt</h3>
+										<input value={researchForm.seedWord} onChange={(e) => setResearchForm({ ...researchForm, seedWord: e.target.value })} placeholder="Fjala bazë" />
+										<select value={researchForm.exerciseType} onChange={(e) => setResearchForm({ ...researchForm, exerciseType: e.target.value as any })}>
+											<option value="missing_letter">Plotëso shkronjën</option>
+											<option value="find_error">Gjej gabimin</option>
+											<option value="explain_error">Shpjego gabimin</option>
+										</select>
+										<select value={researchForm.difficulty} onChange={(e) => setResearchForm({ ...researchForm, difficulty: e.target.value as any })}>
+											<option value="easy">Lehtë</option>
+											<option value="medium">Mesatare</option>
+											<option value="hard">Vështirë</option>
+										</select>
+										<button className="create-btn" onClick={() => runResearchAction('generate')}>Gjenero</button>
+									</div>
+
+									<div className="research-card">
+										<h3>Data Augmentation me Gabime Shqipe</h3>
+										<textarea value={researchForm.augmentationText} onChange={(e) => setResearchForm({ ...researchForm, augmentationText: e.target.value })} />
+										<button className="create-btn" onClick={() => runResearchAction('augment')}>Krijo gabime të kontrolluara</button>
+									</div>
+
+									<div className="research-card">
+										<h3>Feedback Pedagogjik</h3>
+										<input value={researchForm.studentAnswer} onChange={(e) => setResearchForm({ ...researchForm, studentAnswer: e.target.value })} placeholder="Përgjigja e nxënësit" />
+										<input value={researchForm.correctAnswer} onChange={(e) => setResearchForm({ ...researchForm, correctAnswer: e.target.value })} placeholder="Forma e saktë" />
+										<button className="create-btn" onClick={() => runResearchAction('feedback')}>Gjenero shpjegim</button>
+									</div>
+
+									<div className="research-card">
+										<h3>ERRANT F0.5 / GLEU-like</h3>
+										<input value={researchForm.source} onChange={(e) => setResearchForm({ ...researchForm, source: e.target.value })} placeholder="Teksti gabim" />
+										<input value={researchForm.reference} onChange={(e) => setResearchForm({ ...researchForm, reference: e.target.value })} placeholder="Gold reference" />
+										<input value={researchForm.hypothesis} onChange={(e) => setResearchForm({ ...researchForm, hypothesis: e.target.value })} placeholder="Korrigjimi i sistemit" />
+										<button className="create-btn" onClick={() => runResearchAction('evaluate')}>Vlerëso korrigjimin</button>
+									</div>
+
+									<div className="research-card">
+										<h3>Grade Fit + IRT</h3>
+										<input type="number" min="1" max="8" value={researchForm.grade} onChange={(e) => setResearchForm({ ...researchForm, grade: Number(e.target.value) })} />
+										<textarea value={researchForm.gradeText} onChange={(e) => setResearchForm({ ...researchForm, gradeText: e.target.value })} />
+										<button className="create-btn" onClick={() => runResearchAction('grade-fit')}>Kontrollo nivelin</button>
+										<button className="create-btn secondary" onClick={async () => setIrtSummary(await getIRTSummary(1))}>Rifresko IRT</button>
+									</div>
+
+									<div className="research-card">
+										<h3>Knowledge Tracing</h3>
+										<p>Modelon njohurinë e nxënësit në kohë me një BKT të interpretuar.</p>
+										<input value={researchForm.adaptiveUserId} onChange={(e) => setResearchForm({ ...researchForm, adaptiveUserId: e.target.value })} placeholder="User ID" />
+										<button className="create-btn" onClick={() => runAdaptiveResearchAction('kt')}>Llogarit KT</button>
+										<pre className="research-json compact">{JSON.stringify(ktSummary?.skills?.slice?.(0, 4) || ktSummary, null, 2)}</pre>
+									</div>
+
+									<div className="research-card">
+										<h3>Adaptive Next Item</h3>
+										<p>Zgjedh ushtrimin që jep informacion maksimal, as shumë të lehtë as shumë të vështirë.</p>
+										<button className="create-btn" onClick={() => runAdaptiveResearchAction('adaptive')}>Rekomando ushtrimin tjetër</button>
+									</div>
+
+									<div className="research-card">
+										<h3>RAG vs No-Context</h3>
+										<p>Mat uljen e gabimeve kur gjenerimi përdor kontekst/rikthim njohurie.</p>
+										<button className="create-btn" onClick={() => runAdaptiveResearchAction('rag')}>Krahaso demo</button>
+									</div>
+
+									<div className="research-card">
+										<h3>Teacher Rubric</h3>
+										<p>Ruaj vlerësime nga mësues/gjuhëtarë: saktësi, qartësi, moshë, vlerë pedagogjike, siguri.</p>
+										<button className="create-btn" onClick={() => runAdaptiveResearchAction('teacher-review')}>Ruaj review demo</button>
+										<pre className="research-json compact">{JSON.stringify(teacherReviewSummary, null, 2)}</pre>
+									</div>
+
+									<div className="research-card">
+										<h3>Eksperimenti Final Doktorature</h3>
+										<p>
+											Përmbledh gatishmërinë për LoRA/QLoRA, ERRANT/GLEU zyrtar,
+											Deep-IRT/DKT dhe vlerësim njerëzor.
+										</p>
+										<button className="create-btn" onClick={() => runFinalExperimentAction('protocol')}>Shfaq protokollin</button>
+										<button className="create-btn secondary" onClick={() => runFinalExperimentAction('deep-dataset')}>Export Deep-IRT/DKT</button>
+										<pre className="research-json compact">{JSON.stringify(finalProtocol?.readiness || finalProtocol, null, 2)}</pre>
+									</div>
+
+									<div className="research-card">
+										<h3>Statusi i Modeleve të Trajnuara</h3>
+										<p>
+											Tregon nëse LoRA/QLoRA, Deep-IRT/DKT dhe benchmark-u ERRANT/GLEU
+											kanë artifacts të trajnuara në sistem.
+										</p>
+										<button className="create-btn" onClick={refreshTrainingStatus}>Kontrollo statusin</button>
+										<pre className="research-json compact">{JSON.stringify(modelTrainingStatus?.models || modelTrainingStatus, null, 2)}</pre>
+									</div>
+
+									<div className="research-card">
+										<h3>Komandat e Trajnimit</h3>
+										<p>Këto komanda ekzekutohen në GPU/Colab, pastaj artifacts kopjohen në aplikacion.</p>
+										<pre className="research-json compact">{JSON.stringify(trainingCommands, null, 2)}</pre>
+									</div>
+								</div>
+
+								<div className="research-card full">
+									<h3>Rezultati i eksperimentit</h3>
+									<pre className="research-json">{JSON.stringify(researchResult?.result || researchResult || { message: 'Zgjidh një veprim më sipër.' }, null, 2)}</pre>
+								</div>
+
+								<div className="research-card full">
+									<h3>IRT Difficulty / Ability Summary</h3>
+									<pre className="research-json">{JSON.stringify({ items: irtSummary?.items?.slice?.(0, 5), users: irtSummary?.users?.slice?.(0, 5), interpretation: irtSummary?.interpretation }, null, 2)}</pre>
+								</div>
 							</div>
 						)}
 					</>

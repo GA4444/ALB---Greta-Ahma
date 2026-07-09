@@ -343,6 +343,31 @@ class ChatMessage(Base):
 	generated_exercise = relationship("Exercise")
 
 
+class PedagogicalReview(Base):
+	"""Teacher/linguist rubric review for generated exercises and feedback."""
+	__tablename__ = "pedagogical_reviews"
+
+	id = Column(Integer, primary_key=True, index=True)
+	reviewer_user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+	exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=True, index=True)
+
+	item_type = Column(String(50), default="generated_exercise", nullable=False)
+	content_snapshot = Column(Text, nullable=False)
+
+	linguistic_accuracy = Column(Integer, nullable=False)  # 1-5
+	clarity = Column(Integer, nullable=False)  # 1-5
+	age_appropriateness = Column(Integer, nullable=False)  # 1-5
+	pedagogical_value = Column(Integer, nullable=False)  # 1-5
+	safety = Column(Integer, nullable=False)  # 1-5
+
+	notes = Column(Text, nullable=True)
+	approved_for_children = Column(Boolean, default=False, nullable=False)
+	created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+	reviewer = relationship("User")
+	exercise = relationship("Exercise")
+
+
 class CorpusDocument(Base):
 	__tablename__ = "corpus_documents"
 

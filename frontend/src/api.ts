@@ -1145,3 +1145,147 @@ export async function browseCorpusDocument(docId: number) {
 	const { data } = await client.get(`/api/admin/corpus/browse/${docId}`)
 	return data
 }
+
+// ─────────────────────────────────────────────────────────
+// Doctoral research AI module
+// ─────────────────────────────────────────────────────────
+
+export interface ResearchAIOverview {
+	module: string
+	scientific_focus: string[]
+	available_data: {
+		existing_exercises: number
+		student_attempts: number
+	}
+	safety_principle: string
+}
+
+export interface ResearchGeneratedExercise {
+	instruction: string
+	prompt: string
+	answer: string
+	data: Record<string, unknown>
+	grade: number
+	difficulty: string
+	safety: Record<string, unknown>
+	grade_fit: Record<string, unknown>
+}
+
+export interface ResearchFeedback {
+	what_student_wrote: string
+	correct_form: string
+	error_type: string
+	error_label: string
+	simple_rule: string
+	why: string
+	tone: string
+	next_practice: {
+		prompt: string
+		answer: string
+		difficulty: string
+	}
+	safety: Record<string, unknown>
+}
+
+export async function getResearchAIOverview() {
+	const { data } = await client.get<ResearchAIOverview>('/api/research-ai/overview')
+	return data
+}
+
+export async function getInstructionDataset(limit = 20) {
+	const { data } = await client.get(`/api/research-ai/instruction-dataset?limit=${limit}`)
+	return data
+}
+
+export async function createAugmentedErrorPair(body: { text: string; error_rate?: number; error_types?: string[] }) {
+	const { data } = await client.post('/api/research-ai/augment', body)
+	return data
+}
+
+export async function generateResearchExercise(body: {
+	seed_word: string
+	grade?: number
+	difficulty?: 'easy' | 'medium' | 'hard'
+	exercise_type?: 'missing_letter' | 'find_error' | 'explain_error'
+}) {
+	const { data } = await client.post<ResearchGeneratedExercise>('/api/research-ai/generate-exercise', body)
+	return data
+}
+
+export async function generatePedagogicalFeedback(body: { student_answer: string; correct_answer: string; grade?: number }) {
+	const { data } = await client.post<ResearchFeedback>('/api/research-ai/feedback', body)
+	return data
+}
+
+export async function evaluateResearchCorrection(body: { source: string; reference: string; hypothesis: string }) {
+	const { data } = await client.post('/api/research-ai/evaluate-correction', body)
+	return data
+}
+
+export async function evaluateGradeFit(body: { text: string; grade: number }) {
+	const { data } = await client.post('/api/research-ai/grade-fit', body)
+	return data
+}
+
+export async function getIRTSummary(minAttempts = 1) {
+	const { data } = await client.get(`/api/research-ai/irt-summary?min_attempts=${minAttempts}`)
+	return data
+}
+
+export async function getKnowledgeTracing(userId?: string) {
+	const query = userId ? `?user_id=${encodeURIComponent(userId)}` : ''
+	const { data } = await client.get(`/api/research-ai/knowledge-tracing${query}`)
+	return data
+}
+
+export async function getAdaptiveNextItem(userId: string) {
+	const { data } = await client.get(`/api/research-ai/adaptive-next-item?user_id=${encodeURIComponent(userId)}`)
+	return data
+}
+
+export async function compareRAGAblation(body: { with_context: Array<Record<string, unknown>>; without_context: Array<Record<string, unknown>> }) {
+	const { data } = await client.post('/api/research-ai/rag-ablation', body)
+	return data
+}
+
+export async function createTeacherReview(body: {
+	reviewer_user_id?: number
+	exercise_id?: number
+	item_type?: string
+	content_snapshot: Record<string, unknown>
+	linguistic_accuracy: number
+	clarity: number
+	age_appropriateness: number
+	pedagogical_value: number
+	safety: number
+	notes?: string
+	approved_for_children?: boolean
+}) {
+	const { data } = await client.post('/api/research-ai/teacher-review', body)
+	return data
+}
+
+export async function getTeacherReviewSummary() {
+	const { data } = await client.get('/api/research-ai/teacher-review-summary')
+	return data
+}
+
+export async function getFinalExperimentProtocol() {
+	const { data } = await client.get('/api/research-ai/final-experiment-protocol')
+	return data
+}
+
+export async function getDeepLearningDataset() {
+	const { data } = await client.get('/api/research-ai/deep-learning-dataset')
+	return data
+}
+
+export async function getModelTrainingStatus() {
+	const { data } = await client.get('/api/research-ai/model-training-status')
+	return data
+}
+
+export async function getTrainingCommands() {
+	const { data } = await client.get('/api/research-ai/training-commands')
+	return data
+}
