@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import type { ChangeEvent } from 'react'
 import type { CourseOut, LevelOut, ExerciseOut, ProgressOut, ClassData, AIPracticeExercise, AICoachResponse, UserAchievementsResponse, StreakData, DailyChallenge, SRSStatsResponse } from './api'
-import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, login, register, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument } from './api'
+import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, login, register, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument, generatePedagogicalFeedback, getAdaptiveNextItem } from './api'
 import type { CorpusDocument } from './api'
 import AdminDashboard from './AdminDashboard'
 import AdvancedAIPractice from './AdvancedAIPractice'
@@ -12,6 +12,27 @@ import './mobile-refinements.css'
 
 const normalizeText = (value: string) => {
     return value.normalize('NFKC').toLowerCase().trim().replace(/\s+/g, ' ')
+}
+
+const inferExerciseAnswer = (exercise?: ExerciseOut | null): string | null => {
+    if (!exercise?.data) return null
+    try {
+        const data = JSON.parse(exercise.data)
+        const candidates = [
+            data.answer,
+            data.correct_answer,
+            data.correct,
+            data.solution,
+            data.zgjidhja,
+            data.word,
+            data.fjala,
+            data.term,
+        ]
+        const value = candidates.find(item => typeof item === 'string' && item.trim())
+        return value ? String(value) : null
+    } catch {
+        return null
+    }
 }
 
 function App() {
@@ -123,6 +144,9 @@ function App() {
     const [aiCoachLevelLoading, setAiCoachLevelLoading] = useState(false)
     const [aiCoachLevelError, setAiCoachLevelError] = useState<string | null>(null)
     const [showAIInsights, setShowAIInsights] = useState(false)
+    const [childLearningSupport, setChildLearningSupport] = useState<any>(null)
+    const [childLearningLoading, setChildLearningLoading] = useState(false)
+    const [childFeedback, setChildFeedback] = useState<any>(null)
     const [showProfile, setShowProfile] = useState(false)
 
     // Gamification state
@@ -556,6 +580,35 @@ function App() {
         }
     }, [exercises, currentExerciseIndex])
 
+    useEffect(() => {
+        if (!userId || !selectedLevel || exercises.length === 0) {
+            setChildLearningSupport(null)
+            return
+        }
+
+        let cancelled = false
+        setChildLearningLoading(true)
+        getAdaptiveNextItem(userId)
+            .then((result) => {
+                if (!cancelled) setChildLearningSupport(result)
+            })
+            .catch((error) => {
+                console.error('Child adaptive support error:', error)
+                if (!cancelled) setChildLearningSupport(null)
+            })
+            .finally(() => {
+                if (!cancelled) setChildLearningLoading(false)
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [userId, selectedLevel?.id, exercises.length])
+
+    useEffect(() => {
+        setChildFeedback(null)
+    }, [currentExerciseIndex, selectedLevel?.id])
+
     const handleSubmitAnswer = async () => {
         if (!selectedLevel || !exercises[currentExerciseIndex]) return
 
@@ -585,6 +638,7 @@ function App() {
             
             // Advanced gamification feedback
             if (result.is_correct) {
+                setChildFeedback(null)
                 const pointsEarned = result.score_delta
                 const newTotalPoints = userStats.totalPoints + pointsEarned
                 const newLevel = Math.floor(newTotalPoints / 100) + 1
@@ -664,6 +718,29 @@ function App() {
             } else {
                 console.log('[DEBUG] Incorrect answer')
                 setMessage(`Përgjigja e pasaktë. Provo përsëri! 💪`)
+                const correctAnswer = inferExerciseAnswer(currentExercises[currentIndex])
+                if (correctAnswer) {
+                    try {
+                        const feedback = await generatePedagogicalFeedback({
+                            student_answer: trimmedAnswer,
+                            correct_answer: correctAnswer,
+                            grade: selectedClass?.order_index || 3,
+                        })
+                        setChildFeedback(feedback)
+                    } catch (feedbackError) {
+                        console.error('Child feedback error:', feedbackError)
+                        setChildFeedback(null)
+                    }
+                } else {
+                    setChildFeedback({
+                        simple_rule: currentExercises[currentIndex].rule || 'Lexoje pyetjen ngadalë dhe krahasoje përgjigjen me fjalën që kërkohet.',
+                        why: 'Gabimet janë pjesë e mësimit. Provo përsëri me kujdes.',
+                        next_practice: {
+                            prompt: 'Provo përsëri këtë ushtrim duke kontrolluar çdo shkronjë.',
+                            difficulty: 'easy',
+                        },
+                    })
+                }
             }
         } catch (error) {
             console.error('[ERROR] Error submitting answer:', error)
@@ -1351,6 +1428,9 @@ function App() {
                     userId={userId || ''}
                     aiRecommendations={aiRecommendations}
                     adaptiveDifficulty={adaptiveDifficulty}
+                    childLearningSupport={childLearningSupport}
+                    childLearningLoading={childLearningLoading}
+                    childFeedback={childFeedback}
                     learningPath={learningPath}
                     progressInsights={progressInsights}
                     aiCoach={aiCoach}
@@ -2176,6 +2256,9 @@ function MainContent({
     userId,
     aiRecommendations,
     adaptiveDifficulty,
+    childLearningSupport,
+    childLearningLoading,
+    childFeedback,
     learningPath: _learningPath,
     progressInsights: _progressInsights,
     aiCoach,
@@ -2237,6 +2320,9 @@ function MainContent({
     userId: string
     aiRecommendations: any
     adaptiveDifficulty: any
+    childLearningSupport: any
+    childLearningLoading: boolean
+    childFeedback: any
     learningPath: any
     progressInsights: any
     aiCoach: AICoachResponse | null
@@ -2978,6 +3064,25 @@ function MainContent({
                                     ></div>
                                 </div>
                             </div>
+
+                            {(childLearningLoading || childLearningSupport?.recommended) && (
+                                <div className="child-ai-card">
+                                    <div className="child-ai-icon">🤖</div>
+                                    <div className="child-ai-content">
+                                        <div className="child-ai-title">AI Mësimore po të ndihmon</div>
+                                        <p>
+                                            {childLearningLoading
+                                                ? 'Po zgjedhim ushtrime që përshtaten me ritmin tënd...'
+                                                : 'Pas këtij ushtrimi, sistemi do të të rekomandojë një ushtrim as shumë të lehtë, as shumë të vështirë.'}
+                                        </p>
+                                        {childLearningSupport?.recommended?.prompt && (
+                                            <div className="child-ai-next">
+                                                <strong>Ushtrim i përshtatur:</strong> {childLearningSupport.recommended.prompt}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                             
                             <div className="exercise-card-modern">
                                 <div className="exercise-card-header-modern">
@@ -3097,6 +3202,23 @@ function MainContent({
                                             autoFocus
                                         />
                                     </div>
+
+                                    {childFeedback && (
+                                        <div className="child-feedback-card">
+                                            <div className="child-feedback-header">
+                                                <span>💡</span>
+                                                <strong>Ndihmë e vogël</strong>
+                                            </div>
+                                            <p><strong>Rregulli:</strong> {childFeedback.simple_rule}</p>
+                                            <p><strong>Pse?</strong> {childFeedback.why}</p>
+                                            {childFeedback.next_practice?.prompt && (
+                                                <div className="child-practice-box">
+                                                    <span>Provo këtë më të lehtë:</span>
+                                                    <strong>{childFeedback.next_practice.prompt}</strong>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="exercise-actions-modern">

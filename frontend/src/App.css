@@ -63,6 +63,79 @@
     padding: 20px;
 }
 
+.child-ai-card,
+.child-feedback-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #bfdbfe;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  color: #1e3a8a;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+}
+
+.child-ai-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #dbeafe;
+  font-size: 1.25rem;
+}
+
+.child-ai-content,
+.child-feedback-card {
+  flex: 1;
+}
+
+.child-ai-title,
+.child-feedback-header {
+  font-weight: 800;
+  color: #1d4ed8;
+  margin-bottom: 4px;
+}
+
+.child-ai-card p,
+.child-feedback-card p {
+  margin: 4px 0;
+  line-height: 1.45;
+}
+
+.child-ai-next,
+.child-practice-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(147, 197, 253, 0.8);
+}
+
+.child-feedback-card {
+  display: block;
+  border-color: #bbf7d0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%);
+  color: #14532d;
+}
+
+.child-feedback-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #15803d;
+}
+
+.child-practice-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-color: #86efac;
+}
+
 /* ==================== PhD LEVEL ACADEMIC LAYOUT ==================== */
 
 body {
