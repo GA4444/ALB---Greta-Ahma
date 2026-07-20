@@ -10,7 +10,7 @@ import ChatbotFloating from './ChatbotFloating'
 import './App.css'
 import './mobile-refinements.css'
 
-const LEADERBOARD_TITLE = 'Pozita jote në tabelën e kampionëve'
+const LEADERBOARD_TITLE = 'Vendi yt në renditje'
 
 const normalizeText = (value: string) => {
     return value.normalize('NFKC').toLowerCase().trim().replace(/\s+/g, ' ')
