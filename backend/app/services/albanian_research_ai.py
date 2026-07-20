@@ -438,24 +438,137 @@ def pedagogical_feedback(student_answer: str, correct_answer: str, grade: int = 
         "case_ending_error": "Në këtë fjali fjala ka nevojë për mbaresën e saktë që të lidhet mirë me fjalët e tjera.",
         "letter_transposition": "Shkronjat janë të sakta, por janë vendosur në rend të gabuar.",
     }
+    example_map = {
+        "missing_diacritic": f"Shembull: '{correct}' shkruhet me shenjën e duhur, jo si '{observed}'.",
+        "digraph_reduction": "Shembull: tingulli 'sh' shkruhet me dy shkronja, jo vetëm me 's'.",
+        "c_q_confusion": "Shembull: 'ç' dhe 'q' tingëllojnë ndryshe; prandaj fjala ndryshon kur i ndërrojmë.",
+        "case_ending_error": f"Shembull: në këtë rast forma që përshtatet është '{correct}'.",
+        "letter_transposition": f"Shembull: radha e saktë është {'-'.join(correct)}.",
+        "missing_letter": f"Shembull: fjala e plotë është '{correct}', pa hequr shkronja.",
+        "extra_letter": f"Shembull: '{correct}' nuk ka shkronjë shtesë.",
+        "wrong_letter": f"Shembull: krahaso '{observed}' me '{correct}' shkronjë për shkronjë.",
+        "correct": "Shembull: përgjigjja është në rregull.",
+    }
     easier = _hide_letter(correct, "easy")
+    simple_rule = rule_map.get(label, "Krahaso fjalën tënde me formën e saktë dhe shiko ku ndryshojnë.")
+    why = why_map.get(label, "Ky ndryshim e bën fjalën të pasaktë në drejtshkrimin standard shqip.")
+    example = example_map.get(label, f"Shembull: forma e saktë është '{correct}'.")
+    child_message = _build_child_feedback_message(
+        observed=observed,
+        correct=correct,
+        simple_rule=simple_rule,
+        why=why,
+        example=example,
+        easier=easier,
+        grade=grade,
+    )
+    llm_advisory = _llm_advisory_feedback_prompt(
+        observed=observed,
+        correct=correct,
+        classification=classification,
+        simple_rule=simple_rule,
+        why=why,
+        example=example,
+        grade=grade,
+    )
     return {
         "what_student_wrote": observed,
         "correct_form": correct,
+        "comparison": {
+            "expected_to_student": f"{correct} → {observed}",
+            "student_to_correct": f"{observed} → {correct}",
+        },
         "error_type": label,
         "error_label": classification["label"],
-        "simple_rule": rule_map.get(label, "Krahaso fjalën tënde me formën e saktë dhe shiko ku ndryshojnë."),
-        "why": why_map.get(label, "Ky ndryshim e bën fjalën të pasaktë në drejtshkrimin standard shqip."),
+        "simple_rule": simple_rule,
+        "why": why,
+        "example": example,
         "tone": "supportive_non_punitive",
+        "child_message": child_message,
         "next_practice": {
             "prompt": f"Provo përsëri: plotëso fjalën {easier}",
             "answer": correct,
             "difficulty": "easy",
+            "type": "easier_missing_letter",
         },
+        "llm_advisory": llm_advisory,
         "safety": {
             "correctness_source": "database_or_rule_based_answer",
-            "llm_allowed": "explanation_only_after_rule_classification",
+            "llm_allowed": "wording_support_only_after_rule_classification",
+            "child_visible_output": "rule_grounded_child_message",
+            "teacher_review_recommended": label in {"unknown_orthographic", "case_ending_error"},
         },
+    }
+
+
+def _build_child_feedback_message(
+    observed: str,
+    correct: str,
+    simple_rule: str,
+    why: str,
+    example: str,
+    easier: str,
+    grade: int,
+) -> Dict[str, str]:
+    grade = max(1, min(8, int(grade or 1)))
+    intro = "Mirë që provove. Le ta rregullojmë bashkë."
+    if grade <= 2:
+        intro = "Shumë mirë që provove. Tani e shohim bashkë."
+    return {
+        "title": "Ndihmë",
+        "what_you_wrote": f"Ti shkrove: {observed}",
+        "correct_form": f"Forma e saktë: {correct}",
+        "rule": simple_rule,
+        "why": why,
+        "example": example,
+        "try_next": f"Provo një më të lehtë: plotëso fjalën {easier}.",
+        "full_text": (
+            f"{intro} Ti shkrove '{observed}', ndërsa forma e saktë është '{correct}'. "
+            f"{simple_rule} {why} {example} Provo tani një më të lehtë: {easier}."
+        ),
+    }
+
+
+def _llm_advisory_feedback_prompt(
+    observed: str,
+    correct: str,
+    classification: Dict[str, Any],
+    simple_rule: str,
+    why: str,
+    example: str,
+    grade: int,
+) -> Dict[str, Any]:
+    """Structured prompt and guarded draft for an LLM wording layer.
+
+    The child-facing feedback remains rule-grounded. This object documents how
+    an LLM is allowed to help: shorten and soften the wording without changing
+    correctness, rule, answer or error type.
+    """
+    prompt = {
+        "role": "pedagogical_feedback_wording_assistant",
+        "language": "Albanian",
+        "target_grade": grade,
+        "constraints": [
+            "Use a short, supportive, non-punitive tone.",
+            "Do not change the correct answer.",
+            "Do not invent a new rule.",
+            "Include one simple example and one easier follow-up exercise.",
+        ],
+        "fixed_facts": {
+            "student_answer": observed,
+            "correct_answer": correct,
+            "error_type": classification.get("type"),
+            "error_label": classification.get("label"),
+            "rule": simple_rule,
+            "reason": why,
+            "example": example,
+        },
+    }
+    return {
+        "status": "enabled_as_guarded_prompt",
+        "prompt": prompt,
+        "policy": "LLM may rewrite tone only; database/rules keep correctness authority.",
+        "requires_teacher_review_before_reuse": classification.get("type") in {"unknown_orthographic", "case_ending_error"},
     }
 
 
@@ -953,7 +1066,7 @@ def final_experiment_protocol(stats: Dict[str, int]) -> Dict[str, Any]:
     review_count = int(stats.get("review_count", 0))
     model_status = model_training_status()
     return {
-        "child_facing_name": "AI Mësimore",
+        "child_facing_name": "Ndihma jote",
         "scientific_name": "AI-assisted Albanian spelling exercise generation and pedagogical feedback",
         "readiness": {
             "lora_qlora_dataset": {
@@ -1005,7 +1118,7 @@ def final_experiment_protocol(stats: Dict[str, int]) -> Dict[str, Any]:
             "Use IRT/KT estimates only for recommendations, never as correctness authority.",
         ],
         "safety_policy": [
-            "Children see supportive labels such as AI Mësimore, Ndihmë, Provo përsëri.",
+            "Children see supportive labels such as Ndihma jote, Ndihmë, Provo përsëri.",
             "The database and deterministic rules decide correctness.",
             "LLM output is limited to explanations and must pass rule/teacher review before child-facing reuse.",
             "Closed categories such as numbers, antonyms, synonyms and fixed answers never rely on LLM correctness.",
@@ -1043,7 +1156,7 @@ def model_training_status(base_dir: Optional[str] = None) -> Dict[str, Any]:
         "lora_qlora": {
             "artifact_dir": os.path.join(base_dir, "lora_qlora", "adapter"),
             "required_files": ["training_manifest.json"],
-            "child_facing_use": "Gjeneron ushtrime të reja si AI Mësimore pas trajnimit.",
+            "child_facing_use": "Gjeneron ushtrime të reja si Ndihma jote pas trajnimit.",
         },
         "deep_irt_dkt": {
             "artifact_dir": os.path.join(base_dir, "deep_irt_dkt"),

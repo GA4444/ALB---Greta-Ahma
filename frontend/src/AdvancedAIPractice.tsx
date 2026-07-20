@@ -164,7 +164,7 @@ export default function AdvancedAIPractice({ userId, levelId, onGenerateRequest 
 				</button>
 			</div>
 
-			{/* Analysis Panel */}
+			{/* Paneli i analizës */}
 			{analysis && showAnalysis && (
 				<div className="analysis-panel">
 					<div className="analysis-header">
@@ -203,7 +203,7 @@ export default function AdvancedAIPractice({ userId, levelId, onGenerateRequest 
 						</div>
 					</div>
 
-					{/* Top Patterns */}
+					{/* Modelet kryesore të gabimeve */}
 					{analysis.top_patterns && analysis.top_patterns.length > 0 && (
 						<div className="patterns-section">
 							<h5>🎯 Gabimet Kryesore:</h5>
@@ -235,7 +235,7 @@ export default function AdvancedAIPractice({ userId, levelId, onGenerateRequest 
 						</div>
 					)}
 
-					{/* Next Focus */}
+					{/* Fokusi i ardhshëm */}
 					{nextFocus && (
 						<div className="next-focus-card">
 							<div className="focus-icon">🎯</div>
@@ -246,7 +246,7 @@ export default function AdvancedAIPractice({ userId, levelId, onGenerateRequest 
 						</div>
 					)}
 
-					{/* Recommendations */}
+					{/* Rekomandime */}
 					{recommendations && recommendations.length > 0 && (
 						<div className="recommendations-section">
 							<h5>💡 Rekomandime për Ty:</h5>
@@ -262,7 +262,7 @@ export default function AdvancedAIPractice({ userId, levelId, onGenerateRequest 
 				</div>
 			)}
 
-			{/* Exercises List */}
+			{/* Lista e ushtrimeve */}
 			{exercises.length > 0 && (
 				<div className="exercises-container">
 					<div className="exercises-progress">
@@ -387,9 +387,9 @@ export default function AdvancedAIPractice({ userId, levelId, onGenerateRequest 
 					</p>
 					<ul className="benefits-list">
 						<li>✅ Fokus në gabimet e tua specifike</li>
-						<li>✅ Pattern recognition dhe eliminim</li>
+						<li>✅ Njohje dhe eliminim i modeleve të gabimeve</li>
 						<li>✅ Rekomandime të personalizuara</li>
-						<li>✅ Track progress në kohë reale</li>
+						<li>✅ Ndjekje e progresit në kohë reale</li>
 					</ul>
 				</div>
 			)}

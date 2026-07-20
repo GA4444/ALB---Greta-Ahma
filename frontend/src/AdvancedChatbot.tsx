@@ -353,9 +353,9 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 				<div className="header-left">
 					<div className="chatbot-avatar-large">🤖</div>
 					<div>
-						<h3>AI Chatbot {useLLM && <span className="llm-badge">✨ LLM</span>}</h3>
+						<h3>Bashkëbiseduesi AI {useLLM && <span className="llm-badge">✨ LLM</span>}</h3>
 						<p className="chatbot-subtitle">
-							{context ? '📍 Context-Aware' : 'Pyetni çdo gjë për platformën'}
+							{context ? '📍 I përshtatur me kontekstin' : 'Pyetni çdo gjë për platformën'}
 						</p>
 					</div>
 				</div>
@@ -396,7 +396,7 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 			{showSettings && (
 				<div className="chatbot-settings">
 					<div className="settings-grid">
-						{/* AI Options */}
+						{/* Opsionet AI */}
 						<div className="setting-group">
 							<label className="setting-label">🤖 Opsionet AI</label>
 							<label className="setting-item checkbox">
@@ -417,7 +417,7 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 							</label>
 						</div>
 
-						{/* Response Settings */}
+						{/* Cilësimet e përgjigjes */}
 						<div className="setting-group">
 							<label className="setting-label">💬 Gjatësia e Përgjigjes</label>
 							<select
@@ -431,7 +431,7 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 							</select>
 						</div>
 
-						{/* Difficulty Level */}
+						{/* Niveli i vështirësisë */}
 						<div className="setting-group">
 							<label className="setting-label">🎯 Niveli i Vështirësisë</label>
 							<select
@@ -445,7 +445,7 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 							</select>
 						</div>
 
-						{/* Chatbot Tone */}
+						{/* Toni i bashkëbiseduesit */}
 						<div className="setting-group">
 							<label className="setting-label">😊 Toni i Chatbot-it</label>
 							<select
@@ -491,7 +491,7 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 				{messages.length === 0 ? (
 					<div className="chatbot-welcome">
 						<div className="welcome-avatar">🤖</div>
-						<h4>Mirësevini te AI Chatbot i avancuar!</h4>
+						<h4>Mirësevini te bashkëbiseduesi AI i avancuar!</h4>
 						<p>Si mund t'ju ndihmoj sot?</p>
 						{context && (
 							<div className="context-info">
@@ -534,7 +534,7 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 													<span className="time-badge">⏱️ {msg.response_time_ms}ms</span>
 												)}
 												{msg.tokens_used && (
-													<span className="tokens-badge">🔢 {msg.tokens_used} tokens</span>
+													<span className="tokens-badge">🔢 {msg.tokens_used} njësi teksti</span>
 												)}
 											</div>
 										)}

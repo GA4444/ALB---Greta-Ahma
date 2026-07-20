@@ -226,7 +226,8 @@ async def submit_answer(exercise_id: int, request: SubmitRequest, db: Session = 
         stars=progress.stars,
         level_completed=level_completed,
         course_completed=course_progress.is_completed,
-        message=message
+        message=message,
+        correct_answer=exercise.answer if not is_correct else None
     )
 
 @router.get("/courses/{course_id}/levels")

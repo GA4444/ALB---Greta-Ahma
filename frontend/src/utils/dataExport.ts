@@ -32,19 +32,19 @@ export function exportToCSV(data: ExportData): void {
 		// Platform Statistics
 		csv += `PLATFORM STATISTICS\n`
 		csv += `Metric,Value\n`
-		csv += `Total Users,${platformStats.total_users || 0}\n`
-		csv += `Active Users,${platformStats.active_users || 0}\n`
-		csv += `Total Classes,${platformStats.total_classes || 0}\n`
-		csv += `Total Courses,${platformStats.total_courses || 0}\n`
-		csv += `Total Levels,${platformStats.total_levels || 0}\n`
-		csv += `Total Exercises,${platformStats.total_exercises || 0}\n`
-		csv += `Total Attempts,${platformStats.total_attempts || 0}\n`
+		csv += `Përdorues gjithsej,${platformStats.total_users || 0}\n`
+		csv += `Përdorues aktivë,${platformStats.active_users || 0}\n`
+		csv += `Klasa gjithsej,${platformStats.total_classes || 0}\n`
+		csv += `Kurse gjithsej,${platformStats.total_courses || 0}\n`
+		csv += `Nivele gjithsej,${platformStats.total_levels || 0}\n`
+		csv += `Ushtrime gjithsej,${platformStats.total_exercises || 0}\n`
+		csv += `Tentime gjithsej,${platformStats.total_attempts || 0}\n`
 		csv += `\n`
 		
 		// User Statistics (if available)
 		if (userStats && userStats.length > 0) {
-			csv += `USER STATISTICS\n`
-			csv += `User ID,Username,Email,Exercises,Avg Score,Time (min),Streak,Level\n`
+			csv += `STATISTIKAT E PËRDORUESVE\n`
+			csv += `ID e përdoruesit,Emri i përdoruesit,Email,Ushtrime,Nota mesatare,Koha (min),Vargu,Niveli\n`
 			userStats.forEach((user: any) => {
 				csv += `${user.id},${user.username},${user.email || 'N/A'},${user.exercises || 0},${user.avg_score || 0},${user.time_spent || 0},${user.streak || 0},${user.level || 'N/A'}\n`
 			})
@@ -53,8 +53,8 @@ export function exportToCSV(data: ExportData): void {
 		
 		// Content Statistics
 		if (contentStats && contentStats.length > 0) {
-			csv += `CONTENT STATISTICS\n`
-			csv += `Class,Courses,Levels,Exercises,Completion Rate\n`
+			csv += `STATISTIKAT E PËRMBAJTJES\n`
+			csv += `Klasa,Kurse,Nivele,Ushtrime,Shkalla e përfundimit\n`
 			contentStats.forEach((item: any) => {
 				csv += `${item.class_name},${item.courses},${item.levels},${item.exercises},${item.completion_rate}%\n`
 			})
@@ -63,8 +63,8 @@ export function exportToCSV(data: ExportData): void {
 		
 		// Activity Statistics
 		if (activityStats && activityStats.length > 0) {
-			csv += `ACTIVITY STATISTICS (${timeRange.toUpperCase()})\n`
-			csv += `Period,Users,Sessions,Exercises,Avg Score,Time (hours)\n`
+			csv += `STATISTIKAT E AKTIVITETIT (${timeRange.toUpperCase()})\n`
+			csv += `Periudha,Përdorues,Sesione,Ushtrime,Nota mesatare,Koha (orë)\n`
 			activityStats.forEach((item: any) => {
 				csv += `${item.period},${item.users},${item.sessions},${item.exercises},${item.avg_score}%,${item.time_hours}\n`
 			})
@@ -142,19 +142,19 @@ export async function exportToExcel(data: ExportData): Promise<void> {
 			['Metric', 'Value'],
 			['Total Users', platformStats.total_users || 0],
 			['Active Users', platformStats.active_users || 0],
-			['Inactive Users', (platformStats.total_users || 0) - (platformStats.active_users || 0)],
-			['Total Classes', platformStats.total_classes || 0],
-			['Total Courses', platformStats.total_courses || 0],
-			['Total Levels', platformStats.total_levels || 0],
-			['Total Exercises', platformStats.total_exercises || 0],
-			['Total Attempts', platformStats.total_attempts || 0],
-			['Average Score', `${platformStats.average_score || 0}%`],
-			['Completion Rate', `${platformStats.completion_rate || 0}%`]
+			['Përdorues joaktivë', (platformStats.total_users || 0) - (platformStats.active_users || 0)],
+			['Klasa gjithsej', platformStats.total_classes || 0],
+			['Kurse gjithsej', platformStats.total_courses || 0],
+			['Nivele gjithsej', platformStats.total_levels || 0],
+			['Ushtrime gjithsej', platformStats.total_exercises || 0],
+			['Tentime gjithsej', platformStats.total_attempts || 0],
+			['Nota mesatare', `${platformStats.average_score || 0}%`],
+			['Shkalla e përfundimit', `${platformStats.completion_rate || 0}%`]
 		])
 
 		// Sheet 2: User Statistics
 		if (userStats && userStats.length > 0) {
-			const userHeaders = ['User ID', 'Username', 'Email', 'Age', 'Exercises', 'Avg Score %', 'Time (min)', 'Streak', 'Level']
+			const userHeaders = ['ID e përdoruesit', 'Emri i përdoruesit', 'Email', 'Mosha', 'Ushtrime', 'Nota mesatare %', 'Koha (min)', 'Vargu', 'Niveli']
 			const userRows = [userHeaders, ...userStats.map((user: any) => [
 				user.id,
 				user.username,
@@ -166,7 +166,7 @@ export async function exportToExcel(data: ExportData): Promise<void> {
 				user.streak || 0,
 				user.level || 'N/A'
 			])]
-			addSheetFromRows('Users', userRows)
+			addSheetFromRows('Përdoruesit', userRows)
 		}
 
 		// Sheet 3: Content Statistics
@@ -198,20 +198,20 @@ export async function exportToExcel(data: ExportData): Promise<void> {
 		}
 
 		// Sheet 5: Performance Metrics
-		addSheetFromRows('Performance Metrics', [
-			['PERFORMANCE METRICS'],
+		addSheetFromRows('Metrikat e Performancës', [
+			['METRIKAT E PERFORMANCËS'],
 			[''],
-			['Metric', 'Value', 'Category'],
-			['User Engagement', '85%', 'Behavioral'],
-			['Learning Effectiveness', '78%', 'Educational'],
-			['Content Quality', '92%', 'Content'],
-			['Platform Stability', '99.5%', 'Technical'],
-			['User Retention (30-day)', '68%', 'Behavioral'],
-			['Daily Active Users', '45%', 'Engagement'],
-			['Average Session Duration', '18 min', 'Engagement'],
-			['Exercise Completion Rate', '82%', 'Learning'],
-			['Repeat Visit Rate', '72%', 'Retention'],
-			['Feature Adoption Rate', '65%', 'Product']
+			['Metrika', 'Vlera', 'Kategoria'],
+			['Angazhimi i përdoruesve', '85%', 'Sjellje'],
+			['Efektiviteti i të nxënit', '78%', 'Arsimore'],
+			['Cilësia e përmbajtjes', '92%', 'Përmbajtje'],
+			['Qëndrueshmëria e platformës', '99.5%', 'Teknike'],
+			['Rikthimi i përdoruesve (30 ditë)', '68%', 'Sjellje'],
+			['Përdorues aktivë ditorë', '45%', 'Angazhim'],
+			['Kohëzgjatja mesatare e sesionit', '18 min', 'Angazhim'],
+			['Shkalla e përfundimit të ushtrimeve', '82%', 'Të nxënit'],
+			['Shkalla e vizitave të përsëritura', '72%', 'Rikthim'],
+			['Shkalla e përdorimit të veçorive', '65%', 'Produkt']
 		])
 
 		const fileName = `AlbLingo_Scientific_Data_${timeRange}_${new Date().toISOString().split('T')[0]}.xlsx`

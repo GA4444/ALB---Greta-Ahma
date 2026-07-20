@@ -76,6 +76,7 @@ class SubmitResult(BaseModel):
 	level_completed: bool
 	course_completed: bool
 	message: str
+	correct_answer: Optional[str] = None
 
 
 class PersonalizedPracticeExerciseOut(BaseModel):

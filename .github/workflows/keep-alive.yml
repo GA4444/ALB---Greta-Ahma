@@ -16,11 +16,17 @@ jobs:
     steps:
       - name: Ping backend health endpoint
         run: |
-          for i in 1 2 3; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 https://alblingo-backend.onrender.com/health || echo "000")
+          URL="https://alblingo-backend.onrender.com/health"
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 30 --max-time 120 "$URL" || true)
+            if [ -z "$code" ]; then code="000"; fi
             echo "Attempt $i -> HTTP $code"
-            if [ "$code" = "200" ]; then exit 0; fi
-            sleep 20
+            if [ "$code" = "200" ]; then
+              echo "Backend is awake."
+              exit 0
+            fi
+            sleep 30
           done
-          echo "Backend did not respond with 200 after retries"
+          echo "::warning::Backend did not respond with HTTP 200 after 5 attempts."
+          echo "Check Render dashboard: alblingo-backend -> Logs -> Manual Deploy"
           exit 1

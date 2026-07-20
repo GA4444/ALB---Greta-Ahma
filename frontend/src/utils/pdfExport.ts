@@ -179,7 +179,7 @@ export async function exportUserReportToPDF(
 			{ icon: '✓', label: 'Përfunduar', value: reportData.metrics.completedExercises, color: colors.successGreen },
 			{ icon: '%', label: 'Pikë Mesatare', value: `${reportData.metrics.averageScore}%`, color: colors.accentYellow },
 			{ icon: 'T', label: 'Kohë Totale', value: `${Math.round(reportData.metrics.totalTimeMinutes / 60)}h`, color: colors.warningOrange },
-			{ icon: 'S', label: 'Streak Aktual', value: `${reportData.metrics.currentStreak}`, color: [239, 68, 68] },
+			{ icon: 'S', label: 'Vargu aktual', value: `${reportData.metrics.currentStreak}`, color: [239, 68, 68] },
 			{ icon: 'A', label: 'Arritje', value: reportData.metrics.achievements, color: [168, 85, 247] }
 		]
 
@@ -504,7 +504,7 @@ export async function exportUserReportToPDF(
 			{ icon: '•', label: 'Niveli Aktual', value: reportData.metrics.level, color: [147, 51, 234] },
 			{ icon: '•', label: 'Progres', value: `${reportData.metrics.totalExercises} ushtrime (${Math.round((reportData.metrics.completedExercises / reportData.metrics.totalExercises) * 100)}% të përfunduara)`, color: colors.primaryBlue },
 			{ icon: '•', label: 'Kohë Totale', value: `${Math.round(reportData.metrics.totalTimeMinutes / 60)}h ${reportData.metrics.totalTimeMinutes % 60}min`, color: colors.warningOrange },
-			{ icon: '•', label: 'Rekord Streak', value: `${reportData.metrics.longestStreak} ditë`, color: [239, 68, 68] },
+			{ icon: '•', label: 'Rekordi i vargut', value: `${reportData.metrics.longestStreak} ditë`, color: [239, 68, 68] },
 			{ icon: '•', label: 'Fusha më e Fortë', value: `${reportData.strengths[0]?.area} (${reportData.strengths[0]?.score}%)`, color: colors.successGreen },
 			{ icon: '•', label: 'Për Përmirësim', value: `${reportData.weaknesses[0]?.area} (${reportData.weaknesses[0]?.score}%)`, color: colors.warningOrange }
 		]

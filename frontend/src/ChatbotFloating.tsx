@@ -28,7 +28,7 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 			<button
 				className={`chatbot-float-btn ${isOpen ? 'active' : ''}`}
 				onClick={handleToggle}
-				aria-label="AI Chatbot"
+				aria-label="Bashkëbiseduesi AI"
 			>
 				{isOpen ? '✕' : '💬'}
 				{!isOpen && hasUnread && <span className="unread-badge"></span>}

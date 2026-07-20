@@ -141,6 +141,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 	const [modelTrainingStatus, setModelTrainingStatus] = useState<any>(null)
 	const [trainingCommands, setTrainingCommands] = useState<any>(null)
 	const [researchResult, setResearchResult] = useState<any>(null)
+	const [researchLoadingAction, setResearchLoadingAction] = useState<string | null>(null)
 	const [researchForm, setResearchForm] = useState({
 		seedWord: 'mirë',
 		studentAnswer: 'mrië',
@@ -272,6 +273,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 	}
 
 	const runResearchAction = async (action: 'generate' | 'augment' | 'feedback' | 'evaluate' | 'grade-fit') => {
+		setResearchLoadingAction(action)
+		setResearchResult({ action, loading: true, message: 'Duke ekzekutuar...' })
 		try {
 			let result: any
 			if (action === 'generate') {
@@ -300,11 +303,15 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			}
 			setResearchResult({ action, result })
 		} catch (error: any) {
-			alert(error?.response?.data?.detail || 'Gabim në modulin kërkimor')
+			setResearchResult({ action, error: error?.response?.data?.detail || 'Gabim në modulin kërkimor' })
+		} finally {
+			setResearchLoadingAction(null)
 		}
 	}
 
 	const runAdaptiveResearchAction = async (action: 'kt' | 'adaptive' | 'rag' | 'teacher-review') => {
+		setResearchLoadingAction(action)
+		setResearchResult({ action, loading: true, message: 'Duke ekzekutuar...' })
 		try {
 			let result: any
 			if (action === 'kt') {
@@ -342,11 +349,15 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			}
 			setResearchResult({ action, result })
 		} catch (error: any) {
-			alert(error?.response?.data?.detail || 'Gabim në eksperimentin adaptiv')
+			setResearchResult({ action, error: error?.response?.data?.detail || 'Gabim në eksperimentin adaptiv' })
+		} finally {
+			setResearchLoadingAction(null)
 		}
 	}
 
 	const runFinalExperimentAction = async (action: 'protocol' | 'deep-dataset') => {
+		setResearchLoadingAction(action)
+		setResearchResult({ action, loading: true, message: 'Duke ekzekutuar...' })
 		try {
 			const result = action === 'protocol'
 				? await getFinalExperimentProtocol()
@@ -354,15 +365,25 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			if (action === 'protocol') setFinalProtocol(result)
 			setResearchResult({ action, result })
 		} catch (error: any) {
-			alert(error?.response?.data?.detail || 'Gabim në paketën finale eksperimentale')
+			setResearchResult({ action, error: error?.response?.data?.detail || 'Gabim në paketën finale eksperimentale' })
+		} finally {
+			setResearchLoadingAction(null)
 		}
 	}
 
 	const refreshTrainingStatus = async () => {
-		const [status, commands] = await Promise.all([getModelTrainingStatus(), getTrainingCommands()])
-		setModelTrainingStatus(status)
-		setTrainingCommands(commands)
-		setResearchResult({ action: 'training-status', result: { status, commands } })
+		setResearchLoadingAction('training-status')
+		setResearchResult({ action: 'training-status', loading: true, message: 'Duke kontrolluar statusin e modeleve...' })
+		try {
+			const [status, commands] = await Promise.all([getModelTrainingStatus(), getTrainingCommands()])
+			setModelTrainingStatus(status)
+			setTrainingCommands(commands)
+			setResearchResult({ action: 'training-status', result: { status, commands } })
+		} catch (error: any) {
+			setResearchResult({ action: 'training-status', error: error?.response?.data?.detail || 'Gabim në statusin e modeleve' })
+		} finally {
+			setResearchLoadingAction(null)
+		}
 	}
 
 	const handleCreateCorpusDoc = async (doc: {title: string; content: string; author?: string; year?: number; genre?: string; dialect?: string; source?: string; fuse_class_code?: string}) => {
@@ -880,7 +901,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 	return (
 		<div className="admin-dashboard">
 			<div className="admin-header">
-				<h1>🛡️ Admin Dashboard</h1>
+				<h1>🛡️ Paneli i Administratorit</h1>
 				<button className="admin-logout-btn" onClick={onLogout}>Dil</button>
 			</div>
 
@@ -904,7 +925,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 					📖 Korpusi
 				</button>
 				<button className={activeTab === 'research' ? 'active' : ''} onClick={() => setActiveTab('research')}>
-					🤖 AI Mësimore
+					🤖 Sistemi AI
 				</button>
 			</div>
 
@@ -1329,7 +1350,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											</div>
 
 											<div className="chart-card">
-												<h3 className="chart-title">📈 Engagement Score & Koha e Kaluar (Minutë/Sesion)</h3>
+												<h3 className="chart-title">📈 Nota e angazhimit & Koha e kaluar (minutë/sesion)</h3>
 												<ResponsiveContainer width="100%" height={300}>
 													<ComposedChart
 														data={[
@@ -1469,11 +1490,11 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												<h3 className="chart-title">📚 Performanca e Platformës - Metriks Kyçe (KPIs)</h3>
 												<ResponsiveContainer width="100%" height={300}>
 													<RadarChart data={[
-														{ metrik: 'User Satisfaction', pikë: 92, maksimum: 100 },
+														{ metrik: 'Kënaqësia e përdoruesit', pikë: 92, maksimum: 100 },
 														{ metrik: 'Learning Effectiveness', pikë: 88, maksimum: 100 },
 														{ metrik: 'Content Quality', pikë: 95, maksimum: 100 },
 														{ metrik: 'Platform Stability', pikë: 97, maksimum: 100 },
-														{ metrik: 'User Retention', pikë: 89, maksimum: 100 },
+														{ metrik: 'Rikthimi i përdoruesve', pikë: 89, maksimum: 100 },
 														{ metrik: 'Engagement Rate', pikë: 85, maksimum: 100 },
 													]}>
 														<PolarGrid stroke="#e2e8f0" />
@@ -1545,11 +1566,11 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<thead>
 										<tr>
 											<th>ID</th>
-											<th>Username</th>
+											<th>Emri i përdoruesit</th>
 											<th>Email</th>
 											<th>Moshë</th>
-											<th>Status</th>
-											<th>Admin</th>
+											<th>Gjendja</th>
+											<th>Administrator</th>
 											<th>Veprime</th>
 										</tr>
 									</thead>
@@ -1561,7 +1582,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												<td>{user.email}</td>
 												<td>{user.age || '-'}</td>
 												<td>{user.is_active ? '✅ Aktiv' : '❌ Jo aktiv'}</td>
-												<td>{user.is_admin ? '🛡️ Admin' : '👤 User'}</td>
+												<td>{user.is_admin ? '🛡️ Administrator' : '👤 Përdorues'}</td>
 												<td>
 													<button onClick={() => handleGenerateUserReport(user)}>📊 Raport</button>
 													<button onClick={() => setEditingUser(user)}>✏️ Edito</button>
@@ -1587,7 +1608,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											<th>Emër</th>
 											<th>Përshkrim</th>
 											<th>Kurse</th>
-											<th>Status</th>
+											<th>Gjendja</th>
 											<th>Veprime</th>
 										</tr>
 									</thead>
@@ -1632,7 +1653,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											<th>Klasa</th>
 											<th>Përshkrim</th>
 											<th>Kurs ID</th>
-											<th>Status</th>
+											<th>Gjendja</th>
 											<th>Veprime</th>
 										</tr>
 									</thead>
@@ -1720,8 +1741,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<>
 										<div className="stats-grid">
 											<div className="stat-card"><div className="stat-icon">📄</div><div className="stat-value">{corpusStats.total_documents}</div><div className="stat-label">Dokumente</div></div>
-											<div className="stat-card"><div className="stat-icon">🔤</div><div className="stat-value">{corpusStats.total_tokens.toLocaleString()}</div><div className="stat-label">Tokens (fjalë)</div></div>
-											<div className="stat-card"><div className="stat-icon">📝</div><div className="stat-value">{corpusStats.total_lemmas.toLocaleString()}</div><div className="stat-label">Lemma (unike)</div></div>
+											<div className="stat-card"><div className="stat-icon">🔤</div><div className="stat-value">{corpusStats.total_tokens.toLocaleString()}</div><div className="stat-label">Njësi teksti (fjalë)</div></div>
+											<div className="stat-card"><div className="stat-icon">📝</div><div className="stat-value">{corpusStats.total_lemmas.toLocaleString()}</div><div className="stat-label">Lema (unike)</div></div>
 											<div className="stat-card"><div className="stat-icon">📃</div><div className="stat-value">{corpusStats.total_sentences.toLocaleString()}</div><div className="stat-label">Fjali</div></div>
 											<div className="stat-card"><div className="stat-icon">✅</div><div className="stat-value">{corpusStats.validated_count}</div><div className="stat-label">Të validuara</div></div>
 											<div className="stat-card"><div className="stat-icon">⏳</div><div className="stat-value">{corpusStats.unvalidated_count}</div><div className="stat-label">Në pritje</div></div>
@@ -1822,7 +1843,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 													<th>Dialekti</th>
 													<th>Tokens</th>
 													<th>TTR</th>
-													<th>Status</th>
+													<th>Gjendja</th>
 													<th>Veprime</th>
 												</tr>
 											</thead>
@@ -1993,7 +2014,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 														<XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
 														<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
 														<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-														<Bar dataKey="tokens" fill="#5BBD6C" radius={[8, 8, 0, 0]} name="Tokens" />
+														<Bar dataKey="tokens" fill="#5BBD6C" radius={[8, 8, 0, 0]} name="Njësi teksti" />
 													</BarChart>
 												</ResponsiveContainer>
 											</div>
@@ -2034,7 +2055,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 													{corpusFuseCodes.map(fc => (
 														<div key={fc.code} className="fuse-code-card" onClick={() => { setCorpusFilters({...corpusFilters, fuse_class_code: fc.code} as any); setCorpusSubTab('documents') }}>
 															<div className="fuse-code-label">{fc.code}</div>
-															<div className="fuse-code-stats"><span>{fc.document_count} dok.</span><span>{fc.total_tokens.toLocaleString()} tokens</span></div>
+															<div className="fuse-code-stats"><span>{fc.document_count} dok.</span><span>{fc.total_tokens.toLocaleString()} njësi teksti</span></div>
 														</div>
 													))}
 												</div>
@@ -2060,7 +2081,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 															<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
 															<Legend />
 															<Bar yAxisId="left" dataKey="documents" fill="#4A9FD4" radius={[8, 8, 0, 0]} name="Dokumente" />
-															<Line yAxisId="right" type="monotone" dataKey="tokens" stroke="#5BBD6C" strokeWidth={3} name="Tokens" />
+															<Line yAxisId="right" type="monotone" dataKey="tokens" stroke="#5BBD6C" strokeWidth={3} name="Njësi teksti" />
 														</ComposedChart>
 													</ResponsiveContainer>
 												</div>
@@ -2199,13 +2220,13 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 							<div className="research-ai-panel">
 								<div className="research-hero">
 									<div>
-										<h2>🤖 AI Mësimore për Ushtrime Shqipe</h2>
+										<h2>🤖 Menaxhimi i Sistemit AI</h2>
 										<p>
-											Emri që shfaqet në platformë është i thjeshtë për fëmijë. Në prapavijë,
-											admini përdor të njëjtin modul për gjenerim, feedback, siguri dhe vlerësim shkencor.
+											Këtu kontrollo si krijohen ushtrimet, si jepen shpjegimet dhe si verifikohet
+											saktësia e përgjigjeve. Fëmijët shohin vetëm ndihmë të thjeshtë kur kanë nevojë.
 										</p>
 									</div>
-									<div className="research-badge">DB/Rules decide · LLM explains</div>
+									<div className="research-badge">Përgjigja e saktë nga databaza · AI shpjegon</div>
 								</div>
 
 								{researchOverview && (
@@ -2222,20 +2243,41 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										</div>
 										<div className="stat-card">
 											<div className="stat-icon">🛡️</div>
-											<div className="stat-value">Safe</div>
+											<div className="stat-value">Sigurt</div>
 											<div className="stat-label">Përgjigja nga DB/rregullat</div>
 										</div>
 									</div>
 								)}
 
-								<div className="research-grid">
+								<div className="research-workbench">
+									<div className="research-actions">
+										<div className="research-actions-header">
+											<h3>Veprimet Shkencore</h3>
+											<p>Zgjidh një veprim majtas; rezultati shfaqet gjithmonë në panelin djathtas.</p>
+										</div>
+
+										<div className="research-grid">
 									<div className="research-card">
-										<h3>Instruction Fine-tuning Dataset</h3>
+										<h3>Të dhëna për përshtatje me instruksione</h3>
 										<p>Kthen ushtrimet ekzistuese në çifte <code>instruction → output</code> për LoRA/QLoRA.</p>
-										<button className="create-btn" onClick={async () => setInstructionDataset(await getInstructionDataset(25))}>
-											Rifresko dataset
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'instruction-dataset'} onClick={async () => {
+											setResearchLoadingAction('instruction-dataset')
+											setResearchResult({ action: 'instruction-dataset', loading: true, message: 'Duke rifreskuar dataset-in...' })
+											try {
+												const result = await getInstructionDataset(25)
+												setInstructionDataset(result)
+												setResearchResult({ action: 'instruction-dataset', result })
+											} catch (error: any) {
+												setResearchResult({ action: 'instruction-dataset', error: error?.response?.data?.detail || 'Gabim në dataset' })
+											} finally {
+												setResearchLoadingAction(null)
+											}
+										}}>
+											{researchLoadingAction === 'instruction-dataset' ? 'Duke rifreskuar...' : 'Rifresko dataset'}
 										</button>
-										<pre className="research-json">{JSON.stringify(instructionDataset?.pairs?.[0] || instructionDataset, null, 2)}</pre>
+										<div className="research-card-summary">
+											{instructionDataset?.count ? `${instructionDataset.count} çifte gati për trajnim.` : 'Të dhënat ngarkohen kur hapet tabi ose kur klikon rifresko.'}
+										</div>
 									</div>
 
 									<div className="research-card">
@@ -2251,20 +2293,26 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											<option value="medium">Mesatare</option>
 											<option value="hard">Vështirë</option>
 										</select>
-										<button className="create-btn" onClick={() => runResearchAction('generate')}>Gjenero</button>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'generate'} onClick={() => runResearchAction('generate')}>
+											{researchLoadingAction === 'generate' ? 'Duke gjeneruar...' : 'Gjenero'}
+										</button>
 									</div>
 
 									<div className="research-card">
 										<h3>Data Augmentation me Gabime Shqipe</h3>
 										<textarea value={researchForm.augmentationText} onChange={(e) => setResearchForm({ ...researchForm, augmentationText: e.target.value })} />
-										<button className="create-btn" onClick={() => runResearchAction('augment')}>Krijo gabime të kontrolluara</button>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'augment'} onClick={() => runResearchAction('augment')}>
+											{researchLoadingAction === 'augment' ? 'Duke krijuar...' : 'Krijo gabime të kontrolluara'}
+										</button>
 									</div>
 
 									<div className="research-card">
-										<h3>Feedback Pedagogjik</h3>
+										<h3>Shpjegim pedagogjik</h3>
 										<input value={researchForm.studentAnswer} onChange={(e) => setResearchForm({ ...researchForm, studentAnswer: e.target.value })} placeholder="Përgjigja e nxënësit" />
 										<input value={researchForm.correctAnswer} onChange={(e) => setResearchForm({ ...researchForm, correctAnswer: e.target.value })} placeholder="Forma e saktë" />
-										<button className="create-btn" onClick={() => runResearchAction('feedback')}>Gjenero shpjegim</button>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'feedback'} onClick={() => runResearchAction('feedback')}>
+											{researchLoadingAction === 'feedback' ? 'Duke gjeneruar...' : 'Gjenero shpjegim'}
+										</button>
 									</div>
 
 									<div className="research-card">
@@ -2272,42 +2320,70 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										<input value={researchForm.source} onChange={(e) => setResearchForm({ ...researchForm, source: e.target.value })} placeholder="Teksti gabim" />
 										<input value={researchForm.reference} onChange={(e) => setResearchForm({ ...researchForm, reference: e.target.value })} placeholder="Gold reference" />
 										<input value={researchForm.hypothesis} onChange={(e) => setResearchForm({ ...researchForm, hypothesis: e.target.value })} placeholder="Korrigjimi i sistemit" />
-										<button className="create-btn" onClick={() => runResearchAction('evaluate')}>Vlerëso korrigjimin</button>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'evaluate'} onClick={() => runResearchAction('evaluate')}>
+											{researchLoadingAction === 'evaluate' ? 'Duke vlerësuar...' : 'Vlerëso korrigjimin'}
+										</button>
 									</div>
 
 									<div className="research-card">
-										<h3>Grade Fit + IRT</h3>
+										<h3>Përshtatja me klasën + IRT</h3>
 										<input type="number" min="1" max="8" value={researchForm.grade} onChange={(e) => setResearchForm({ ...researchForm, grade: Number(e.target.value) })} />
 										<textarea value={researchForm.gradeText} onChange={(e) => setResearchForm({ ...researchForm, gradeText: e.target.value })} />
-										<button className="create-btn" onClick={() => runResearchAction('grade-fit')}>Kontrollo nivelin</button>
-										<button className="create-btn secondary" onClick={async () => setIrtSummary(await getIRTSummary(1))}>Rifresko IRT</button>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'grade-fit'} onClick={() => runResearchAction('grade-fit')}>
+											{researchLoadingAction === 'grade-fit' ? 'Duke kontrolluar...' : 'Kontrollo nivelin'}
+										</button>
+										<button type="button" className="create-btn secondary" disabled={researchLoadingAction === 'irt-summary'} onClick={async () => {
+											setResearchLoadingAction('irt-summary')
+											setResearchResult({ action: 'irt-summary', loading: true, message: 'Duke rifreskuar IRT...' })
+											try {
+												const result = await getIRTSummary(1)
+												setIrtSummary(result)
+												setResearchResult({ action: 'irt-summary', result })
+											} catch (error: any) {
+												setResearchResult({ action: 'irt-summary', error: error?.response?.data?.detail || 'Gabim në IRT' })
+											} finally {
+												setResearchLoadingAction(null)
+											}
+										}}>{researchLoadingAction === 'irt-summary' ? 'Duke rifreskuar...' : 'Rifresko IRT'}</button>
 									</div>
 
 									<div className="research-card">
-										<h3>Knowledge Tracing</h3>
+										<h3>Gjurmimi i njohurive</h3>
 										<p>Modelon njohurinë e nxënësit në kohë me një BKT të interpretuar.</p>
-										<input value={researchForm.adaptiveUserId} onChange={(e) => setResearchForm({ ...researchForm, adaptiveUserId: e.target.value })} placeholder="User ID" />
-										<button className="create-btn" onClick={() => runAdaptiveResearchAction('kt')}>Llogarit KT</button>
-										<pre className="research-json compact">{JSON.stringify(ktSummary?.skills?.slice?.(0, 4) || ktSummary, null, 2)}</pre>
+										<input value={researchForm.adaptiveUserId} onChange={(e) => setResearchForm({ ...researchForm, adaptiveUserId: e.target.value })} placeholder="ID e përdoruesit" />
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'kt'} onClick={() => runAdaptiveResearchAction('kt')}>
+											{researchLoadingAction === 'kt' ? 'Duke llogaritur...' : 'Llogarit KT'}
+										</button>
+										<div className="research-card-summary">
+											{ktSummary?.skills?.length ? `${ktSummary.skills.length} aftësi të analizuara për userin.` : 'Kliko për të llogaritur gjurmimin e njohurive.'}
+										</div>
 									</div>
 
 									<div className="research-card">
-										<h3>Adaptive Next Item</h3>
+										<h3>Ushtrimi i radhës i përshtatur</h3>
 										<p>Zgjedh ushtrimin që jep informacion maksimal, as shumë të lehtë as shumë të vështirë.</p>
-										<button className="create-btn" onClick={() => runAdaptiveResearchAction('adaptive')}>Rekomando ushtrimin tjetër</button>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'adaptive'} onClick={() => runAdaptiveResearchAction('adaptive')}>
+											{researchLoadingAction === 'adaptive' ? 'Duke rekomanduar...' : 'Rekomando ushtrimin tjetër'}
+										</button>
 									</div>
 
 									<div className="research-card">
 										<h3>RAG vs No-Context</h3>
 										<p>Mat uljen e gabimeve kur gjenerimi përdor kontekst/rikthim njohurie.</p>
-										<button className="create-btn" onClick={() => runAdaptiveResearchAction('rag')}>Krahaso demo</button>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'rag'} onClick={() => runAdaptiveResearchAction('rag')}>
+											{researchLoadingAction === 'rag' ? 'Duke krahasuar...' : 'Krahaso demo'}
+										</button>
 									</div>
 
 									<div className="research-card">
-										<h3>Teacher Rubric</h3>
+										<h3>Rubrika e mësuesit</h3>
 										<p>Ruaj vlerësime nga mësues/gjuhëtarë: saktësi, qartësi, moshë, vlerë pedagogjike, siguri.</p>
-										<button className="create-btn" onClick={() => runAdaptiveResearchAction('teacher-review')}>Ruaj review demo</button>
-										<pre className="research-json compact">{JSON.stringify(teacherReviewSummary, null, 2)}</pre>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'teacher-review'} onClick={() => runAdaptiveResearchAction('teacher-review')}>
+											{researchLoadingAction === 'teacher-review' ? 'Duke ruajtur...' : 'Ruaj review demo'}
+										</button>
+										<div className="research-card-summary">
+											{teacherReviewSummary?.count ? `${teacherReviewSummary.count} vlerësime të ruajtura.` : 'Rubrika është gati; duhen vlerësime reale nga mësues/gjuhëtarë.'}
+										</div>
 									</div>
 
 									<div className="research-card">
@@ -2316,36 +2392,83 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											Përmbledh gatishmërinë për LoRA/QLoRA, ERRANT/GLEU zyrtar,
 											Deep-IRT/DKT dhe vlerësim njerëzor.
 										</p>
-										<button className="create-btn" onClick={() => runFinalExperimentAction('protocol')}>Shfaq protokollin</button>
-										<button className="create-btn secondary" onClick={() => runFinalExperimentAction('deep-dataset')}>Export Deep-IRT/DKT</button>
-										<pre className="research-json compact">{JSON.stringify(finalProtocol?.readiness || finalProtocol, null, 2)}</pre>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'protocol'} onClick={() => runFinalExperimentAction('protocol')}>
+											{researchLoadingAction === 'protocol' ? 'Duke shfaqur...' : 'Shfaq protokollin'}
+										</button>
+										<button type="button" className="create-btn secondary" disabled={researchLoadingAction === 'deep-dataset'} onClick={() => runFinalExperimentAction('deep-dataset')}>
+											{researchLoadingAction === 'deep-dataset' ? 'Duke eksportuar...' : 'Export Deep-IRT/DKT'}
+										</button>
+										<div className="research-card-summary">
+											{finalProtocol?.readiness ? 'Protokolli është ngarkuar; shiko detajet në panelin djathtas.' : 'Kliko për të parë gatishmërinë e eksperimentit.'}
+										</div>
 									</div>
 
 									<div className="research-card">
-										<h3>Statusi i Modeleve të Trajnuara</h3>
+										<h3>Gjendja e modeleve të trajnuara</h3>
 										<p>
 											Tregon nëse LoRA/QLoRA, Deep-IRT/DKT dhe benchmark-u ERRANT/GLEU
 											kanë artifacts të trajnuara në sistem.
 										</p>
-										<button className="create-btn" onClick={refreshTrainingStatus}>Kontrollo statusin</button>
-										<pre className="research-json compact">{JSON.stringify(modelTrainingStatus?.models || modelTrainingStatus, null, 2)}</pre>
+										<button type="button" className="create-btn" disabled={researchLoadingAction === 'training-status'} onClick={refreshTrainingStatus}>
+											{researchLoadingAction === 'training-status' ? 'Duke kontrolluar...' : 'Kontrollo statusin'}
+										</button>
+										<div className="research-card-summary">
+											{modelTrainingStatus?.models ? 'Gjendja e modeleve është gati në panelin djathtas.' : 'Kliko për të kontrolluar artefaktet.'}
+										</div>
 									</div>
 
 									<div className="research-card">
 										<h3>Komandat e Trajnimit</h3>
 										<p>Këto komanda ekzekutohen në GPU/Colab, pastaj artifacts kopjohen në aplikacion.</p>
-										<pre className="research-json compact">{JSON.stringify(trainingCommands, null, 2)}</pre>
+										<div className="research-card-summary">
+											{trainingCommands ? 'Komandat janë ngarkuar; shfaqen në panelin djathtas për raportim.' : 'Komandat ngarkohen automatikisht me tab-in.'}
+										</div>
 									</div>
-								</div>
+										</div>
+									</div>
 
-								<div className="research-card full">
-									<h3>Rezultati i eksperimentit</h3>
-									<pre className="research-json">{JSON.stringify(researchResult?.result || researchResult || { message: 'Zgjidh një veprim më sipër.' }, null, 2)}</pre>
-								</div>
+									<aside className="research-output-panel">
+										<div className={`research-result-banner ${researchResult?.error ? 'error' : researchResult?.loading ? 'loading' : researchResult ? 'success' : ''}`}>
+											<div className="research-result-banner-header">
+												<strong>
+													{researchResult?.loading
+														? 'Duke ekzekutuar...'
+														: researchResult?.error
+														? 'Gabim në veprim'
+														: researchResult
+														? `Rezultati: ${researchResult.action}`
+														: 'Rezultati / Evidenca'}
+												</strong>
+												{researchLoadingAction && <span className="research-running-pill">{researchLoadingAction}</span>}
+											</div>
+											<pre className="research-json research-output-json">
+												{JSON.stringify(
+													researchResult?.error
+														? { error: researchResult.error }
+														: researchResult?.result || researchResult || { message: 'Kliko një veprim majtas. Të gjitha rezultatet do të shfaqen këtu.' },
+													null,
+													2
+												)}
+											</pre>
+										</div>
 
-								<div className="research-card full">
-									<h3>IRT Difficulty / Ability Summary</h3>
-									<pre className="research-json">{JSON.stringify({ items: irtSummary?.items?.slice?.(0, 5), users: irtSummary?.users?.slice?.(0, 5), interpretation: irtSummary?.interpretation }, null, 2)}</pre>
+										<div className="research-evidence-card">
+											<h4>IRT Snapshot</h4>
+											<pre className="research-json compact">{JSON.stringify({
+												items: irtSummary?.items?.slice?.(0, 3),
+												users: irtSummary?.users?.slice?.(0, 3),
+											}, null, 2)}</pre>
+										</div>
+
+										<div className="research-evidence-card">
+										<h4>Gjendje e shpejtë</h4>
+											<div className="research-status-list">
+												<span>LoRA: {modelTrainingStatus?.models?.lora_qlora?.trained ? 'aktiv' : 'mungon'}</span>
+												<span>Deep-IRT/DKT: {modelTrainingStatus?.models?.deep_irt_dkt?.trained ? 'aktiv' : 'mungon'}</span>
+												<span>Vlerësime nga mësuesit: {teacherReviewSummary?.count || 0}</span>
+											</div>
+										</div>
+									</aside>
 								</div>
 							</div>
 						)}
@@ -2942,7 +3065,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 							<div className="metric-card">
 								<div className="metric-icon">🔥</div>
 								<div className="metric-value">{reportData.metrics.currentStreak}</div>
-								<div className="metric-label">Streak Aktual</div>
+								<div className="metric-label">Vargu aktual</div>
 							</div>
 							<div className="metric-card">
 								<div className="metric-icon">🏆</div>
@@ -3002,7 +3125,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 					{/* Activity Patterns */}
 					<div className="report-section">
-						<h3 className="report-section-title">📅 Patternët e Aktivitetit</h3>
+						<h3 className="report-section-title">📅 Modelet e aktivitetit</h3>
 						<div className="chart-card">
 							<h4 className="chart-subtitle">📊 Aktiviteti sipas Ditëve të Javës</h4>
 							<ResponsiveContainer width="100%" height={300}>
@@ -3141,7 +3264,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 							<p><strong>Niveli Aktual:</strong> {reportData.metrics.level}</p>
 							<p><strong>Ushtrime Totale:</strong> {reportData.metrics.totalExercises} ({Math.round((reportData.metrics.completedExercises / reportData.metrics.totalExercises) * 100)}% përfunduar)</p>
 							<p><strong>Koha Totale:</strong> {Math.round(reportData.metrics.totalTimeMinutes / 60)} orë dhe {reportData.metrics.totalTimeMinutes % 60} minuta</p>
-							<p><strong>Streak më i Gjatë:</strong> {reportData.metrics.longestStreak} ditë</p>
+							<p><strong>Vargu më i gjatë:</strong> {reportData.metrics.longestStreak} ditë</p>
 							<p><strong>Më i fortë në:</strong> {reportData.strengths[0].area} ({reportData.strengths[0].score}%)</p>
 							<p><strong>Duhet të përmirësojë:</strong> {reportData.weaknesses[0].area} ({reportData.weaknesses[0].score}%)</p>
 						</div>

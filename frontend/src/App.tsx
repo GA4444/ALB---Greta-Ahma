@@ -147,6 +147,8 @@ function App() {
     const [childLearningSupport, setChildLearningSupport] = useState<any>(null)
     const [childLearningLoading, setChildLearningLoading] = useState(false)
     const [childFeedback, setChildFeedback] = useState<any>(null)
+    const [childPracticeAnswer, setChildPracticeAnswer] = useState('')
+    const [childPracticeMessage, setChildPracticeMessage] = useState<string | null>(null)
     const [showProfile, setShowProfile] = useState(false)
 
     // Gamification state
@@ -607,6 +609,8 @@ function App() {
 
     useEffect(() => {
         setChildFeedback(null)
+        setChildPracticeAnswer('')
+        setChildPracticeMessage(null)
     }, [currentExerciseIndex, selectedLevel?.id])
 
     const handleSubmitAnswer = async () => {
@@ -718,7 +722,7 @@ function App() {
             } else {
                 console.log('[DEBUG] Incorrect answer')
                 setMessage(`Përgjigja e pasaktë. Provo përsëri! 💪`)
-                const correctAnswer = inferExerciseAnswer(currentExercises[currentIndex])
+                const correctAnswer = result.correct_answer || inferExerciseAnswer(currentExercises[currentIndex])
                 if (correctAnswer) {
                     try {
                         const feedback = await generatePedagogicalFeedback({
@@ -733,6 +737,16 @@ function App() {
                     }
                 } else {
                     setChildFeedback({
+                        child_message: {
+                            title: 'Ndihmë',
+                            what_you_wrote: `Ti shkrove: ${trimmedAnswer}`,
+                            correct_form: 'Kontrollo edhe një herë kërkesën e ushtrimit.',
+                            rule: currentExercises[currentIndex].rule || 'Lexoje pyetjen ngadalë dhe krahasoje përgjigjen me fjalën që kërkohet.',
+                            why: 'Gabimet janë pjesë e mësimit. Provo përsëri me kujdes.',
+                            example: 'Shembull: kontrollo çdo shkronjë dhe çdo shenjë si ë/ç.',
+                            try_next: 'Provo përsëri këtë ushtrim duke kontrolluar çdo shkronjë.',
+                            full_text: 'Lexoje pyetjen ngadalë dhe provo përsëri.',
+                        },
                         simple_rule: currentExercises[currentIndex].rule || 'Lexoje pyetjen ngadalë dhe krahasoje përgjigjen me fjalën që kërkohet.',
                         why: 'Gabimet janë pjesë e mësimit. Provo përsëri me kujdes.',
                         next_practice: {
@@ -745,6 +759,19 @@ function App() {
         } catch (error) {
             console.error('[ERROR] Error submitting answer:', error)
             setMessage('Gabim në dërgimin e përgjigjes. Provo përsëri! ❌')
+        }
+    }
+
+    const handleChildPracticeCheck = () => {
+        const expected = childFeedback?.next_practice?.answer || childFeedback?.correct_form
+        if (!expected) {
+            setChildPracticeMessage('Provo ta shkruash edhe një herë me kujdes.')
+            return
+        }
+        if (normalizeText(childPracticeAnswer) === normalizeText(expected)) {
+            setChildPracticeMessage('Saktë! Shumë mirë, tani provo përsëri ushtrimin kryesor. ✅')
+        } else {
+            setChildPracticeMessage('Afër! Krahasoje me formën e saktë dhe provo edhe një herë. 💪')
         }
     }
 
@@ -1431,6 +1458,10 @@ function App() {
                     childLearningSupport={childLearningSupport}
                     childLearningLoading={childLearningLoading}
                     childFeedback={childFeedback}
+                    childPracticeAnswer={childPracticeAnswer}
+                    setChildPracticeAnswer={setChildPracticeAnswer}
+                    childPracticeMessage={childPracticeMessage}
+                    handleChildPracticeCheck={handleChildPracticeCheck}
                     learningPath={learningPath}
                     progressInsights={progressInsights}
                     aiCoach={aiCoach}
@@ -1488,7 +1519,7 @@ function App() {
             <ChatbotFloating
                 userId={userId || undefined}
                 context={selectedLevel ? {
-                    current_level: selectedLevel.title,
+                    current_level: selectedLevel.name,
                     current_exercise: exercises[currentExerciseIndex]?.prompt,
                 } : undefined}
             />
@@ -1633,7 +1664,7 @@ function App() {
                                     )}
                                     <div className="profile-info-grid">
                                         <div className="profile-info-item">
-                                            <span className="info-label">👤 Username:</span>
+                                            <span className="info-label">👤 Emri i përdoruesit:</span>
                                             <span className="info-value">{userProfile?.username || localStorage.getItem('username') || 'N/A'}</span>
                                         </div>
                                         <div className="profile-info-item">
@@ -1798,7 +1829,7 @@ function App() {
 
                                 {/* AI Insights */}
                                 <div className="profile-section-enhanced">
-                                    <h3 className="profile-section-title">🤖 AI Personalizuar</h3>
+                                    <h3 className="profile-section-title">🤖 AI i Personalizuar</h3>
                                     <div className="profile-ai-enhanced">
                                         {aiRecommendations && (
                                             <div className="ai-card-enhanced">
@@ -1892,7 +1923,7 @@ function App() {
                     <div className="profile-overlay" onClick={() => setShowLeaderboard(false)}>
                         <div className="profile-card leaderboard-card" onClick={(e) => e.stopPropagation()}>
                             <div className="profile-header">
-                                <div className="profile-title">🏆 Leaderboard</div>
+                                <div className="profile-title">🏆 Pozita jote në tabelën e kampionëve</div>
                                 <button className="profile-close" onClick={() => setShowLeaderboard(false)}>×</button>
                             </div>
                             <div className="leaderboard-content">
@@ -2232,7 +2263,7 @@ function Header({
                     </button>
 
                     <button className="leaderboard-btn" onClick={onShowLeaderboard}>
-                        🏆 Leaderboard
+                        🏆 Pozita jote në tabelën e kampionëve
                     </button>
 
                     <button className="logout-btn" onClick={onLogout}>
@@ -2259,6 +2290,10 @@ function MainContent({
     childLearningSupport,
     childLearningLoading,
     childFeedback,
+    childPracticeAnswer,
+    setChildPracticeAnswer,
+    childPracticeMessage,
+    handleChildPracticeCheck,
     learningPath: _learningPath,
     progressInsights: _progressInsights,
     aiCoach,
@@ -2292,15 +2327,15 @@ function MainContent({
     setCurrentExerciseIndex,
     setMessage,
     // AI Practice props
-    aiExercises,
-    aiResponses,
-    aiFeedback,
-    aiLoading,
-    aiError,
-    aiMessage,
-    handleGenerateAIPractice,
-    handleAIResponseChange,
-    handleAIExerciseCheck,
+    aiExercises: _aiExercises,
+    aiResponses: _aiResponses,
+    aiFeedback: _aiFeedback,
+    aiLoading: _aiLoading,
+    aiError: _aiError,
+    aiMessage: _aiMessage,
+    handleGenerateAIPractice: _handleGenerateAIPractice,
+    handleAIResponseChange: _handleAIResponseChange,
+    handleAIExerciseCheck: _handleAIExerciseCheck,
     // OCR props
     ocrLoading,
     ocrError,
@@ -2323,6 +2358,10 @@ function MainContent({
     childLearningSupport: any
     childLearningLoading: boolean
     childFeedback: any
+    childPracticeAnswer: string
+    setChildPracticeAnswer: React.Dispatch<React.SetStateAction<string>>
+    childPracticeMessage: string | null
+    handleChildPracticeCheck: () => void
     learningPath: any
     progressInsights: any
     aiCoach: AICoachResponse | null
@@ -2382,6 +2421,8 @@ function MainContent({
     // Suppress unused variable warnings for simplified layout
     void _learningPath; void _progressInsights; void _aiCoachLoading; void _aiCoachError;
     void _aiCoachLevel; void _aiCoachLevelLoading; void _aiCoachLevelError; void _srsStats;
+    void _aiExercises; void _aiResponses; void _aiFeedback; void _aiLoading; void _aiError;
+    void _aiMessage; void _handleGenerateAIPractice; void _handleAIResponseChange; void _handleAIExerciseCheck;
 
     const getOCRIssueLabel = (type?: string) => {
         const labels: Record<string, string> = {
@@ -2403,6 +2444,43 @@ function MainContent({
             mismatch_expected: 'Nuk përputhet'
         }
         return labels[type || ''] || 'Drejtshkrim'
+    }
+
+    const currentExercise = exercises[currentExerciseIndex]
+    const classLabel = selectedClass ? `Klasa ${selectedClass.order_index || selectedClass.name}` : 'klasa jote'
+    const levelLabel = selectedLevel ? `Niveli ${selectedLevel.order_index}` : 'niveli yt'
+    const getExerciseCategoryLabel = (category?: string) => {
+        const labels: Record<string, string> = {
+            listen_write: 'diktim me dëgjim',
+            missing_letter: 'plotësim shkronje',
+            wrong_letter: 'gjetje gabimi',
+            synonyms_antonyms: 'kuptim fjalësh',
+            number_to_word: 'numra me fjalë',
+            build_sentence: 'ndërtim fjalie',
+            build_word: 'ndërtim fjale',
+            phrases: 'shprehje',
+            spelling_punctuation: 'drejtshkrim dhe pikësim',
+            albanian_or_loanword: 'fjalë shqipe dhe huazime',
+            abstract_concrete: 'fjalë konkrete/abstrakte',
+            word_from_description: 'gjetje fjale',
+        }
+        return labels[category || ''] || 'drejtshkrim'
+    }
+    const getChildGuideText = () => {
+        if (!currentExercise) return 'Po të ndihmojmë të vazhdosh me ritmin tënd.'
+        const focus = getExerciseCategoryLabel(currentExercise.category)
+        if (currentExercise.category === 'listen_write') {
+            return `Në ${classLabel}, ${levelLabel}, ky është ushtrim diktimi. Shtyp “Dëgjo”, dëgjo fjalën ose fjalinë, pastaj shkruaje përgjigjen te fusha poshtë.`
+        }
+        if (currentExercise.category === 'synonyms_antonyms') {
+            return `Në ${classLabel}, ${levelLabel}, fokusi është kuptimi i fjalëve. Lexo pyetjen dhe zgjidh fjalën që përshtatet më mirë.`
+        }
+        return `Në ${classLabel}, ${levelLabel}, fokusi yt tani është ${focus}. Lexo pyetjen ngadalë dhe kontrollo përgjigjen para se ta dërgosh.`
+    }
+    const getAnswerPlaceholder = () => {
+        if (currentExercise?.category === 'listen_write') return 'Shtyp “Dëgjo”, pastaj shkruaj atë që dëgjove...'
+        if (currentExercise?.category === 'synonyms_antonyms') return 'Zgjidh një opsion ose shkruaj përgjigjen...'
+        return 'Shkruani përgjigjen tuaj...'
     }
     
     return (
@@ -2458,7 +2536,7 @@ function MainContent({
                 {userId && aiRecommendations && (
                     <div className="sidebar-section">
                         <div className="sidebar-section-header compact">
-                            <h3>📊 AI Stats</h3>
+                            <h3>📊 Statistika AI</h3>
                             <button className="toggle-btn-compact" onClick={onToggleAIInsights}>
                                 {showAIInsights ? '−' : '+'}
                             </button>
@@ -2483,6 +2561,29 @@ function MainContent({
                                 )}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {selectedLevel && currentExercise && (
+                    <div className="sidebar-section child-ai-sidebar-section">
+                        <div className="child-ai-side-card">
+                            <div className="child-ai-side-header">
+                                <span>🤖</span>
+                                <strong>Ndihma jote</strong>
+                            </div>
+                            <p>{getChildGuideText()}</p>
+                            {childLearningLoading ? (
+                                <div className="child-ai-side-status">Po përshtatim hapin tjetër...</div>
+                            ) : childLearningSupport?.recommended ? (
+                                <div className="child-ai-side-status">
+                                    Hapi tjetër do të zgjidhet sipas ritmit tënd.
+                                </div>
+                            ) : (
+                                <div className="child-ai-side-status muted">
+                                    Vazhdo ushtrimin dhe sistemi mëson nga progresi yt.
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -2772,14 +2873,14 @@ function MainContent({
                                     <div className="feature-icon-wrapper">
                                         <div className="feature-icon-modern">🤖</div>
                                     </div>
-                                    <h4 className="feature-title-modern">AI Personalizuar</h4>
+                                    <h4 className="feature-title-modern">AI i Personalizuar</h4>
                                     <p className="feature-description-modern">Rekomandime inteligjente bazuar në progresin tuaj</p>
                                 </div>
                                 <div className="feature-card-modern">
                                     <div className="feature-icon-wrapper">
                                         <div className="feature-icon-modern">📈</div>
                                     </div>
-                                    <h4 className="feature-title-modern">Leaderboard</h4>
+                                    <h4 className="feature-title-modern">Pozita jote në tabelën e kampionëve</h4>
                                     <p className="feature-description-modern">Krahasoni rezultatet me përdorues të tjerë</p>
                                 </div>
                             </div>
@@ -3065,25 +3166,6 @@ function MainContent({
                                 </div>
                             </div>
 
-                            {(childLearningLoading || childLearningSupport?.recommended) && (
-                                <div className="child-ai-card">
-                                    <div className="child-ai-icon">🤖</div>
-                                    <div className="child-ai-content">
-                                        <div className="child-ai-title">AI Mësimore po të ndihmon</div>
-                                        <p>
-                                            {childLearningLoading
-                                                ? 'Po zgjedhim ushtrime që përshtaten me ritmin tënd...'
-                                                : 'Pas këtij ushtrimi, sistemi do të të rekomandojë një ushtrim as shumë të lehtë, as shumë të vështirë.'}
-                                        </p>
-                                        {childLearningSupport?.recommended?.prompt && (
-                                            <div className="child-ai-next">
-                                                <strong>Ushtrim i përshtatur:</strong> {childLearningSupport.recommended.prompt}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                            
                             <div className="exercise-card-modern">
                                 <div className="exercise-card-header-modern">
                                     <div className="exercise-number-badge-modern">
@@ -3135,22 +3217,27 @@ function MainContent({
                                     </div>
 
                                     {exercises[currentExerciseIndex].category === 'listen_write' && (
-                                        <div className="voice-controls-modern">
-                                            <button
-                                                className="voice-btn-modern primary"
-                                                onClick={() => playAudio(exercises[currentExerciseIndex].id)}
-                                            >
-                                                <span className="voice-icon">🔊</span>
-                                                <span>Dëgjo</span>
-                                            </button>
-                                            <button
-                                                className="voice-btn-modern secondary"
-                                                onClick={() => startRecording()}
-                                                disabled={isRecording}
-                                            >
-                                                <span className="voice-icon">🎤</span>
-                                                <span>{isRecording ? 'Duke regjistruar...' : 'Regjistro'}</span>
-                                            </button>
+                                        <div className="dictation-helper-modern">
+                                            <div className="dictation-helper-text">
+                                                <strong>Si ta bësh këtë ushtrim:</strong> Shtyp “Dëgjo”, pastaj shkruaj fjalën ose fjalinë që dëgjove.
+                                            </div>
+                                            <div className="voice-controls-modern">
+                                                <button
+                                                    className="voice-btn-modern primary"
+                                                    onClick={() => playAudio(exercises[currentExerciseIndex].id)}
+                                                >
+                                                    <span className="voice-icon">🔊</span>
+                                                    <span>Dëgjo</span>
+                                                </button>
+                                                <button
+                                                    className="voice-btn-modern secondary"
+                                                    onClick={() => startRecording()}
+                                                    disabled={isRecording}
+                                                >
+                                                    <span className="voice-icon">🎤</span>
+                                                    <span>{isRecording ? 'Duke regjistruar...' : 'Regjistro'}</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
 
@@ -3195,7 +3282,7 @@ function MainContent({
                                         <input
                                             type="text"
                                             className="answer-input-field"
-                                            placeholder="Shkruani përgjigjen tuaj..."
+                                            placeholder={getAnswerPlaceholder()}
                                             value={answers[exercises[currentExerciseIndex].id] || ''}
                                             onChange={(e) => setAnswers(prev => ({ ...prev, [exercises[currentExerciseIndex].id]: e.target.value }))}
                                             onKeyPress={(e) => e.key === 'Enter' && handleSubmitAnswer()}
@@ -3207,14 +3294,40 @@ function MainContent({
                                         <div className="child-feedback-card">
                                             <div className="child-feedback-header">
                                                 <span>💡</span>
-                                                <strong>Ndihmë e vogël</strong>
+                                                <strong>{childFeedback.child_message?.title || 'Ndihmë'}</strong>
                                             </div>
-                                            <p><strong>Rregulli:</strong> {childFeedback.simple_rule}</p>
-                                            <p><strong>Pse?</strong> {childFeedback.why}</p>
+                                            {(childFeedback.child_message?.what_you_wrote || childFeedback.comparison?.student_to_correct) && (
+                                                <p>
+                                                    <strong>Çfarë shkrove:</strong>{' '}
+                                                    {childFeedback.child_message?.what_you_wrote || childFeedback.comparison?.student_to_correct}
+                                                </p>
+                                            )}
+                                            <p><strong>Forma e saktë:</strong> {childFeedback.child_message?.correct_form || childFeedback.correct_form}</p>
+                                            <p><strong>Rregulli:</strong> {childFeedback.child_message?.rule || childFeedback.simple_rule}</p>
+                                            <p><strong>Pse?</strong> {childFeedback.child_message?.why || childFeedback.why}</p>
+                                            {(childFeedback.child_message?.example || childFeedback.example) && (
+                                                <p><strong>Shembull:</strong> {childFeedback.child_message?.example || childFeedback.example}</p>
+                                            )}
                                             {childFeedback.next_practice?.prompt && (
                                                 <div className="child-practice-box">
                                                     <span>Provo këtë më të lehtë:</span>
-                                                    <strong>{childFeedback.next_practice.prompt}</strong>
+                                                    <strong>{childFeedback.child_message?.try_next || childFeedback.next_practice.prompt}</strong>
+                                                    <div className="child-practice-input-row">
+                                                        <input
+                                                            type="text"
+                                                            value={childPracticeAnswer}
+                                                            onChange={(e) => setChildPracticeAnswer(e.target.value)}
+                                                            onKeyDown={(e) => e.key === 'Enter' && handleChildPracticeCheck()}
+                                                            placeholder="Shkruaje këtu..."
+                                                            className="child-practice-input"
+                                                        />
+                                                        <button type="button" onClick={handleChildPracticeCheck} className="child-practice-check-btn">
+                                                            Kontrollo
+                                                        </button>
+                                                    </div>
+                                                    {childPracticeMessage && (
+                                                        <div className="child-practice-message">{childPracticeMessage}</div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

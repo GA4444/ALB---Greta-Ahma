@@ -75,6 +75,7 @@ export interface SubmitResult {
 	level_completed: boolean
 	course_completed: boolean
 	message: string
+	correct_answer?: string | null
 }
 
 export interface ProgressOut {
@@ -1174,16 +1175,33 @@ export interface ResearchGeneratedExercise {
 export interface ResearchFeedback {
 	what_student_wrote: string
 	correct_form: string
+	comparison?: {
+		expected_to_student: string
+		student_to_correct: string
+	}
 	error_type: string
 	error_label: string
 	simple_rule: string
 	why: string
+	example?: string
 	tone: string
+	child_message?: {
+		title: string
+		what_you_wrote: string
+		correct_form: string
+		rule: string
+		why: string
+		example: string
+		try_next: string
+		full_text: string
+	}
 	next_practice: {
 		prompt: string
 		answer: string
 		difficulty: string
+		type?: string
 	}
+	llm_advisory?: Record<string, unknown>
 	safety: Record<string, unknown>
 }
 
