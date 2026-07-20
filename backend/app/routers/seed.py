@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
 from sqlalchemy.orm import Session
-from ..database import get_db
+import os
+import sys
+import tempfile
+from pathlib import Path
+from ..database import get_db, DATABASE_URL
 from .. import models
 from passlib.context import CryptContext
 from .seed_albanian_corpus import (
@@ -603,3 +607,38 @@ def seed_class_8():
         raise e
 
 
+@router.post("/import-sqlite-backup")
+async def import_sqlite_backup(
+    file: UploadFile = File(...),
+    x_migration_key: str = Header(..., alias="X-Migration-Key"),
+):
+    """One-shot restore: upload local dev.db into the active production PostgreSQL database."""
+    expected = os.getenv("MIGRATION_KEY", "alblingo-restore-2026")
+    if x_migration_key != expected:
+        raise HTTPException(status_code=403, detail="Invalid migration key")
+
+    if not file.filename or not file.filename.lower().endswith((".db", ".sqlite", ".sqlite3")):
+        raise HTTPException(status_code=400, detail="Upload a SQLite .db backup file")
+
+    if DATABASE_URL.startswith("sqlite"):
+        raise HTTPException(status_code=400, detail="Production DATABASE_URL must be PostgreSQL")
+
+    backend_root = Path(__file__).resolve().parents[2]
+    if str(backend_root) not in sys.path:
+        sys.path.insert(0, str(backend_root))
+    from migrate_to_production import run_migration
+
+    content = await file.read()
+    if len(content) < 1024:
+        raise HTTPException(status_code=400, detail="Backup file is too small")
+
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
+            tmp.write(content)
+            tmp_path = tmp.name
+        summary = run_migration(f"sqlite:///{tmp_path}", DATABASE_URL)
+        return {"message": "Migration complete", "summary": summary}
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.unlink(tmp_path)

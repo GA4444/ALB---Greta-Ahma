@@ -124,9 +124,12 @@ def _copy_table(model, src, tgt, inserted):
     return len(ids_ok), skipped
 
 
-def main():
-    src_engine = create_engine(SOURCE_URL)
-    tgt_engine = create_engine(TARGET_URL)
+def run_migration(source_url: str, target_url: str) -> dict:
+    if target_url.startswith("postgres://"):
+        target_url = target_url.replace("postgres://", "postgresql://", 1)
+
+    src_engine = create_engine(source_url)
+    tgt_engine = create_engine(target_url)
 
     Base.metadata.create_all(bind=tgt_engine)
 
@@ -135,9 +138,12 @@ def main():
     src = SrcSession()
     tgt = TgtSession()
 
+    summary = {"cleared": {}, "copied": {}}
+
     print("Clearing target tables...")
     for model in reversed(MIGRATION_ORDER):
         deleted = tgt.query(model).delete()
+        summary["cleared"][model.__tablename__] = deleted
         print(f"  cleared {model.__tablename__}: {deleted}")
     tgt.commit()
 
@@ -146,6 +152,7 @@ def main():
     for model in MIGRATION_ORDER:
         count, skipped = _copy_table(model, src, tgt, inserted)
         note = f" (skipped {skipped} orphaned)" if skipped else ""
+        summary["copied"][model.__tablename__] = {"count": count, "skipped": skipped}
         print(f"  {model.__tablename__}: {count}{note}")
 
     if tgt_engine.dialect.name == "postgresql":
@@ -162,6 +169,14 @@ def main():
     src.close()
     tgt.close()
     print("Migration complete.")
+    return summary
+
+
+def main():
+    if not TARGET_URL:
+        print("ERROR: set TARGET_DATABASE_URL to the Render External Database URL.")
+        sys.exit(1)
+    run_migration(SOURCE_URL, TARGET_URL)
 
 
 if __name__ == "__main__":
