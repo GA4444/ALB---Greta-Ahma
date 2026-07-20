@@ -2220,13 +2220,13 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 							<div className="research-ai-panel">
 								<div className="research-hero">
 									<div>
-										<h2>🤖 Menaxhimi i Sistemit AI</h2>
+										<h2>🤖 Paneli i AI Mësimore</h2>
 										<p>
-											Këtu kontrollo si krijohen ushtrimet, si jepen shpjegimet dhe si verifikohet
-											saktësia e përgjigjeve. Fëmijët shohin vetëm ndihmë të thjeshtë kur kanë nevojë.
+											Gjenerim ushtrimesh, shpjegime pedagogjike dhe vlerësim shkencor.
+											Fëmijët shohin vetëm ndihmën e thjeshtë.
 										</p>
 									</div>
-									<div className="research-badge">Përgjigja e saktë nga databaza · AI shpjegon</div>
+									<div className="research-badge">Saktësia nga rregullat · AI vetëm shpjegon</div>
 								</div>
 
 								{researchOverview && (
