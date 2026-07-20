@@ -27,13 +27,6 @@ from sqlalchemy.orm import sessionmaker
 SOURCE_URL = os.environ.get("SOURCE_DATABASE_URL", "sqlite:///./dev.db")
 TARGET_URL = os.environ.get("TARGET_DATABASE_URL")
 
-if not TARGET_URL:
-    print("ERROR: set TARGET_DATABASE_URL to the Render External Database URL.")
-    sys.exit(1)
-
-if TARGET_URL.startswith("postgres://"):
-    TARGET_URL = TARGET_URL.replace("postgres://", "postgresql://", 1)
-
 # Importing models registers them on Base.metadata.
 from app import models  # noqa: E402
 from app.database import Base  # noqa: E402
@@ -176,7 +169,10 @@ def main():
     if not TARGET_URL:
         print("ERROR: set TARGET_DATABASE_URL to the Render External Database URL.")
         sys.exit(1)
-    run_migration(SOURCE_URL, TARGET_URL)
+    target_url = TARGET_URL
+    if target_url.startswith("postgres://"):
+        target_url = target_url.replace("postgres://", "postgresql://", 1)
+    run_migration(SOURCE_URL, target_url)
 
 
 if __name__ == "__main__":
