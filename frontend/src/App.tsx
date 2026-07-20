@@ -10,6 +10,8 @@ import ChatbotFloating from './ChatbotFloating'
 import './App.css'
 import './mobile-refinements.css'
 
+const LEADERBOARD_TITLE = 'Pozita jote në tabelën e kampionëve'
+
 const normalizeText = (value: string) => {
     return value.normalize('NFKC').toLowerCase().trim().replace(/\s+/g, ' ')
 }
@@ -1923,7 +1925,7 @@ function App() {
                     <div className="profile-overlay" onClick={() => setShowLeaderboard(false)}>
                         <div className="profile-card leaderboard-card" onClick={(e) => e.stopPropagation()}>
                             <div className="profile-header">
-                                <div className="profile-title">🏆 Pozita jote në tabelën e kampionëve</div>
+                                <div className="profile-title">🏆 {LEADERBOARD_TITLE}</div>
                                 <button className="profile-close" onClick={() => setShowLeaderboard(false)}>×</button>
                             </div>
                             <div className="leaderboard-content">
@@ -1936,7 +1938,7 @@ function App() {
                                         <div className="rank-stats">
                                             <span>Nga {userRank.total_users} përdorues</span>
                                             <span>•</span>
-                                            <span>Top {userRank.percentile}%</span>
+                                            <span>Në top {userRank.percentile}%</span>
                                         </div>
                                     </div>
                                 )}
@@ -2262,8 +2264,8 @@ function Header({
                         Profili
                     </button>
 
-                    <button className="leaderboard-btn" onClick={onShowLeaderboard}>
-                        🏆 Pozita jote në tabelën e kampionëve
+                    <button className="leaderboard-btn" onClick={onShowLeaderboard} title={LEADERBOARD_TITLE}>
+                        🏆 {LEADERBOARD_TITLE}
                     </button>
 
                     <button className="logout-btn" onClick={onLogout}>
@@ -2880,7 +2882,7 @@ function MainContent({
                                     <div className="feature-icon-wrapper">
                                         <div className="feature-icon-modern">📈</div>
                                     </div>
-                                    <h4 className="feature-title-modern">Pozita jote në tabelën e kampionëve</h4>
+                                    <h4 className="feature-title-modern">{LEADERBOARD_TITLE}</h4>
                                     <p className="feature-description-modern">Krahasoni rezultatet me përdorues të tjerë</p>
                                 </div>
                             </div>
