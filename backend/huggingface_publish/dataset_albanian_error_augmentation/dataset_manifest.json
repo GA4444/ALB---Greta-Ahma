@@ -1,0 +1,32 @@
+{
+  "created_at_utc": "2026-07-22T11:23:46.879214Z",
+  "records": 2495,
+  "unique_source_words": 732,
+  "error_type_counts": {
+    "extra_letter": 470,
+    "missing_diacritic": 132,
+    "case_ending_error": 505,
+    "c_q_confusion": 51,
+    "missing_letter": 493,
+    "letter_transposition": 588,
+    "digraph_reduction": 228,
+    "drop_final_vowel": 28
+  },
+  "covered_digraphs": [
+    "dh",
+    "gj",
+    "ll",
+    "nj",
+    "rr",
+    "sh",
+    "th",
+    "xh",
+    "zh"
+  ],
+  "format": "jsonl_and_csv",
+  "files": {
+    "jsonl": "/Users/Apple/Desktop/Phd 08:02:2026/backend/huggingface_publish/dataset_albanian_error_augmentation/train.jsonl",
+    "csv": "/Users/Apple/Desktop/Phd 08:02:2026/backend/huggingface_publish/dataset_albanian_error_augmentation/train.csv"
+  },
+  "description": "Controlled Albanian orthographic error augmentation pairs (incorrect -> correct) for spelling correction and GEC research."
+}
