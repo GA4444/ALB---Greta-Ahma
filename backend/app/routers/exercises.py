@@ -14,7 +14,10 @@ router = APIRouter()
 @router.get("/public-stats")
 def get_public_stats(db: Session = Depends(get_db)):
 	"""Get public statistics (no auth required)"""
-	total_classes = db.query(Course).filter(Course.parent_class_id == None).count()
+	total_classes = db.query(Course).filter(
+		Course.parent_class_id == None,
+		Course.name.like("Klasa%"),
+	).count()
 	total_courses = db.query(Course).filter(Course.parent_class_id != None).count()
 	total_levels = db.query(Level).count()
 	total_exercises = db.query(Exercise).count()
@@ -289,8 +292,18 @@ async def get_level_exercises(level_id: int, shuffle_choices: bool = True, db: S
 
 @router.get("/classes")
 async def get_classes(user_id: str = None, db: Session = Depends(get_db)):
-    # Get top-level classes (parent_class_id is None)
-    classes = db.query(Course).filter(Course.parent_class_id == None).order_by(Course.order_index).all()
+    # Top-level classes only: parent_class_id is None AND name starts with "Klasa"
+    # (excludes orphaned "Niveli X" rows that lost their parent and wrongly appear as classes)
+    classes = (
+        db.query(Course)
+        .filter(
+            Course.parent_class_id == None,
+            Course.enabled == True,
+            Course.name.like("Klasa%"),
+        )
+        .order_by(Course.order_index)
+        .all()
+    )
     
     class_data = []
     user_id_int = int(user_id) if user_id and user_id.isdigit() else None

@@ -264,9 +264,11 @@ def get_specific_course_progress(user_id: int, course_id: int, db: Session = Dep
 def initialize_user_course_progress(user_id: int, db: Session = Depends(get_db)):
     """Initialize course progress for a new user - unlock first course in each class"""
     try:
-        # Get all main classes (courses with parent_class_id = None)
+        # Get all main classes (top-level "Klasa ..." only)
         main_classes = db.query(models.Course).filter(
-            models.Course.parent_class_id.is_(None)
+            models.Course.parent_class_id.is_(None),
+            models.Course.enabled == True,
+            models.Course.name.like("Klasa%"),
         ).order_by(models.Course.order_index).all()
         
         for main_class in main_classes:

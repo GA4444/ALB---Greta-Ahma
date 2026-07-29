@@ -607,6 +607,79 @@ def seed_class_8():
         raise e
 
 
+@router.post("/cleanup-orphan-class-entries")
+def cleanup_orphan_class_entries(
+    x_migration_key: str = Header(None, alias="X-Migration-Key"),
+):
+    """Disable orphaned 'Niveli X' rows that wrongly appear as top-level classes.
+
+    These are leftover child courses whose parent class was deleted, so
+    parent_class_id is NULL (or points to a missing id). They pollute /api/classes.
+    """
+    expected = os.getenv("MIGRATION_KEY", "alblingo-restore-2026")
+    if x_migration_key and x_migration_key != expected:
+        raise HTTPException(status_code=403, detail="Invalid migration key")
+
+    db = next(get_db())
+    try:
+        existing_ids = {row[0] for row in db.query(models.Course.id).all()}
+        disabled = []
+
+        # 1) Top-level rows named Niveli* (should never be classes)
+        top_nivele = (
+            db.query(models.Course)
+            .filter(
+                models.Course.parent_class_id == None,
+                models.Course.name.like("Niveli%"),
+            )
+            .all()
+        )
+        for course in top_nivele:
+            if course.enabled:
+                course.enabled = False
+                disabled.append({"id": course.id, "name": course.name, "reason": "top_level_niveli"})
+
+        # 2) Children whose parent id no longer exists
+        children = (
+            db.query(models.Course)
+            .filter(models.Course.parent_class_id != None)
+            .all()
+        )
+        for course in children:
+            if course.parent_class_id not in existing_ids:
+                if course.enabled:
+                    course.enabled = False
+                    disabled.append(
+                        {
+                            "id": course.id,
+                            "name": course.name,
+                            "reason": f"missing_parent_{course.parent_class_id}",
+                        }
+                    )
+                # Also clear parent so they are not ambiguous; keep disabled
+                course.parent_class_id = None
+
+        db.commit()
+        remaining_classes = (
+            db.query(models.Course)
+            .filter(
+                models.Course.parent_class_id == None,
+                models.Course.enabled == True,
+                models.Course.name.like("Klasa%"),
+            )
+            .order_by(models.Course.order_index)
+            .all()
+        )
+        return {
+            "disabled_count": len(disabled),
+            "disabled": disabled,
+            "classes_remaining": [{"id": c.id, "name": c.name} for c in remaining_classes],
+        }
+    except Exception as e:
+        db.rollback()
+        raise e
+
+
 @router.post("/import-sqlite-backup")
 async def import_sqlite_backup(
     file: UploadFile = File(...),

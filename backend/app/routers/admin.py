@@ -138,7 +138,15 @@ def delete_user(user_id: int, target_user_id: int, db: Session = Depends(get_db)
 def get_all_classes(user_id: int, db: Session = Depends(get_db)):
 	"""Get all classes (admin only)"""
 	verify_admin(user_id, db)
-	classes = db.query(models.Course).filter(models.Course.parent_class_id == None).order_by(models.Course.order_index).all()
+	classes = (
+		db.query(models.Course)
+		.filter(
+			models.Course.parent_class_id == None,
+			models.Course.name.like("Klasa%"),
+		)
+		.order_by(models.Course.order_index)
+		.all()
+	)
 	result = []
 	for cls in classes:
 		courses = db.query(models.Course).filter(models.Course.parent_class_id == cls.id).order_by(models.Course.order_index).all()
@@ -456,7 +464,10 @@ def get_admin_stats(user_id: int, db: Session = Depends(get_db)):
 	verify_admin(user_id, db)
 	
 	total_users = db.query(models.User).count()
-	total_classes = db.query(models.Course).filter(models.Course.parent_class_id == None).count()
+	total_classes = db.query(models.Course).filter(
+		models.Course.parent_class_id == None,
+		models.Course.name.like("Klasa%"),
+	).count()
 	total_courses = db.query(models.Course).filter(models.Course.parent_class_id != None).count()
 	total_levels = db.query(models.Level).count()
 	total_exercises = db.query(models.Exercise).count()
