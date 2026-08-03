@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
 from .routers import exercises, progress, seed, auth, ai, audio, course_progression, database_viewer, leaderboard, admin, ocr, gamification, chatbot, chatbot_advanced, ai_advanced_practice, corpus_admin, research_ai
@@ -30,6 +30,8 @@ def create_app() -> FastAPI:
 
 	# Create tables if not exist
 	Base.metadata.create_all(bind=engine)
+	from .email_migrations import migrate_email_notification_schema
+	migrate_email_notification_schema(engine)
 
 	# Routers
 	app.include_router(exercises.router, prefix="/api", tags=["exercises"])
@@ -65,6 +67,15 @@ def startup_event():
 			start_background_tasks()
 		except Exception as e:
 			print(f"[WARNING] Background tasks not started: {e}")
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+	try:
+		from .background_tasks import stop_background_tasks
+		stop_background_tasks()
+	except Exception:
+		pass
 
 # Root endpoint
 @app.get("/")
@@ -107,7 +118,10 @@ def email_status():
 		pass
 	return {
 		"smtp_configured": configured,
-		"smtp_user": smtp_user if configured else "(nuk është vendosur)",
+		"smtp_user": (
+			f"{smtp_user[:2]}***@{smtp_user.split('@', 1)[1]}"
+			if configured and "@" in smtp_user else "(nuk është vendosur)"
+		),
 		"env_file_found": _ENV_PATH.exists(),
 		"env_file_path": str(_ENV_PATH),
 		"welcome_email_on_register": True,
@@ -127,11 +141,15 @@ class _TestEmailBody(_BaseModel):
 
 
 @app.post("/api/email/test")
-def test_email(body: _TestEmailBody):
+def test_email(body: _TestEmailBody, x_email_test_key: str = Header(default="")):
 	"""
 	Dërgo email testues pa pasur nevojë të regjistrohesh.
 	Body: { "to_email": "...", "type": "welcome"|"streak"|"weekly", "username": "..." }
 	"""
+	expected_key = _live_cfg("EMAIL_TEST_KEY")
+	if not expected_key or x_email_test_key != expected_key:
+		raise HTTPException(status_code=403, detail="Email test endpoint is disabled or unauthorized")
+
 	from .services.email_service import (
 		send_welcome_email,
 		send_streak_warning_email,

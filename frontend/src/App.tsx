@@ -1,5 +1,5 @@
 // Updated: 2026-01-05 18:21 - Fixed cls.courses iteration bug
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { ChangeEvent } from 'react'
 import type { CourseOut, LevelOut, ExerciseOut, ProgressOut, ClassData, AIPracticeExercise, AICoachResponse, UserAchievementsResponse, StreakData, DailyChallenge, SRSStatsResponse } from './api'
 import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, login, register, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument, generatePedagogicalFeedback, getAdaptiveNextItem } from './api'
@@ -83,6 +83,11 @@ function App() {
     const [selectedLevel, setSelectedLevel] = useState<LevelOut | null>(null)
     const [exercises, setExercises] = useState<ExerciseOut[]>([])
     const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
+    const exerciseStartedAtRef = useRef(Date.now())
+
+    useEffect(() => {
+        exerciseStartedAtRef.current = Date.now()
+    }, [currentExerciseIndex, exercises])
     
     // Public stats for welcome screen
     const [publicStats, setPublicStats] = useState({
@@ -638,7 +643,15 @@ function App() {
                 response: trimmedAnswer
             })
             
-            const result = await submitAnswer(exercises[currentIndex].id, { user_id: userId!, response: trimmedAnswer })
+            const durationSeconds = Math.max(
+                0,
+                Math.min(3600, Math.round((Date.now() - exerciseStartedAtRef.current) / 1000))
+            )
+            const result = await submitAnswer(exercises[currentIndex].id, {
+                user_id: userId!,
+                response: trimmedAnswer,
+                duration_seconds: durationSeconds,
+            })
             
             console.log('[DEBUG] Submit result:', result)
             
@@ -1340,7 +1353,10 @@ function App() {
                                                 confirmPassword: ''
                                             })
                                         } catch (e: any) {
-                                            setMessage('Gabim në regjistrim. Provo përsëri! ❌')
+                                            setMessage(
+                                                e.response?.data?.detail
+                                                    || 'Gabim në regjistrim. Provo përsëri! ❌'
+                                            )
                                         }
                                     }}
                                 >

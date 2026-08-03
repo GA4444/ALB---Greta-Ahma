@@ -11,7 +11,8 @@ services:
     rootDir: backend
     healthCheckPath: /health
     buildCommand: pip install -r requirements-prod.txt
-    startCommand: gunicorn app.main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    # One worker owns the in-process scheduler and prevents duplicate sends.
+    startCommand: gunicorn app.main:app -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -22,9 +23,21 @@ services:
       - key: CORS_ORIGINS
         value: "https://alblingo.vercel.app,https://alb-greta-ahma.vercel.app"
       - key: ENABLE_EMAIL_NOTIFICATIONS
-        value: "false"
+        value: "true"
       - key: ENABLE_BACKGROUND_TASKS
-        value: "false"
+        value: "true"
+      - key: SMTP_HOST
+        value: "smtp.gmail.com"
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: FROM_EMAIL
+        sync: false
+      - key: FROM_NAME
+        value: "AlbLingo Platform"
       - key: APP_URL
         value: "https://alb-greta-ahma.vercel.app"
       - key: PYTHON_VERSION

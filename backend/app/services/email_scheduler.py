@@ -4,13 +4,10 @@ Handles automatic email sending tasks
 """
 
 from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
-from typing import List
 import logging
 
 from ..database import SessionLocal
-from ..models import User
+from ..models import User, Attempt, Exercise, EmailLog
 from .email_service import email_service
 
 logger = logging.getLogger(__name__)
@@ -27,51 +24,49 @@ class EmailScheduler:
         """
         db = SessionLocal()
         try:
-            # Time threshold (20 orë më parë)
-            threshold = datetime.utcnow() - timedelta(hours=20)
-            
-            # Gjej përdoruesit që:
-            # - Janë aktiv
-            # - Nuk janë futur për 20+ orë
-            # - Kanë email
-            # - Kanë streak > 0
-            
-            # Note: Duhet të kesh një field last_login në User model
-            # Për tani do të përdorim created_at si placeholder
+            now = datetime.utcnow()
+            warning_threshold = now - timedelta(hours=20)
+            expiry_threshold = now - timedelta(hours=24)
+
+            # Activity, not account creation/login, is the source of truth.
+            # Only warn during the 20–24 hour risk window.
             users = db.query(User).filter(
                 User.is_active == True,
                 User.email.isnot(None),
-                User.email != ""
+                User.email != "",
+                User.current_streak > 0,
+                User.last_activity_date.isnot(None),
+                User.last_activity_date <= warning_threshold,
+                User.last_activity_date > expiry_threshold,
             ).all()
             
             sent_count = 0
             for user in users:
-                # Check nëse duhet të dërgojmë email
-                # Këtu do të kontrollosh last_login në të ardhmen
-                
-                # Për demonstrim, dërgo vetëm nëse nuk ka marrë email sot
-                # (në production do të kontrollohet last_login)
-                
-                current_streak = 5  # Placeholder - do të llogaritet nga activity
-                last_login = user.created_at  # Placeholder
-                
-                if (datetime.utcnow() - last_login).total_seconds() > 72000:  # 20 orë
-                    success = email_service.send_streak_warning_email(
-                        user.email,
-                        user.username,
-                        current_streak,
-                        last_login
-                    )
-                    
-                    if success:
-                        sent_count += 1
-                        logger.info(f"Streak warning sent to {user.username}")
+                if (
+                    user.last_streak_warning_at
+                    and user.last_streak_warning_at >= user.last_activity_date
+                ):
+                    continue
+
+                success = email_service.send_streak_warning_email(
+                    user.email,
+                    user.username,
+                    user.current_streak,
+                    user.last_activity_date,
+                    user_id=user.id,
+                )
+
+                if success:
+                    user.last_streak_warning_at = now
+                    db.commit()
+                    sent_count += 1
+                    logger.info("Streak warning sent: user_id=%s", user.id)
             
-            logger.info(f"Sent {sent_count} streak warning emails")
+            logger.info("Streak warning run complete: sent=%s", sent_count)
             return sent_count
             
         except Exception as e:
-            logger.error(f"Error in check_and_send_streak_warnings: {str(e)}")
+            logger.exception("Error in streak warning run")
             return 0
         finally:
             db.close()
@@ -84,7 +79,9 @@ class EmailScheduler:
         """
         db = SessionLocal()
         try:
-            # Gjej të gjithë përdoruesit aktivë me email
+            now = datetime.utcnow()
+            period_start = now - timedelta(days=7)
+
             users = db.query(User).filter(
                 User.is_active == True,
                 User.email.isnot(None),
@@ -93,40 +90,85 @@ class EmailScheduler:
             
             sent_count = 0
             for user in users:
-                # Calculate statistics për javën e kaluar
-                # Këtu do të query-osh attempts, scores, etc.
-                
+                if user.last_weekly_report_at and user.last_weekly_report_at >= period_start:
+                    continue
+
+                attempts = (
+                    db.query(Attempt, Exercise)
+                    .join(Exercise, Exercise.id == Attempt.exercise_id)
+                    .filter(
+                        Attempt.user_id == str(user.id),
+                        Attempt.created_at >= period_start,
+                        Attempt.created_at <= now,
+                    )
+                    .all()
+                )
+
+                total = len(attempts)
+                correct = sum(1 for attempt, _ in attempts if attempt.is_correct)
+                avg_score = round((correct / total) * 100) if total else 0
+                # New clients report exact duration. For legacy attempts, use a
+                # conservative one-minute estimate instead of fabricated totals.
+                total_seconds = sum(
+                    attempt.duration_seconds
+                    if attempt.duration_seconds is not None
+                    else 60
+                    for attempt, _ in attempts
+                )
+
+                category_stats = {}
+                for attempt, exercise in attempts:
+                    label = exercise.category.value if hasattr(exercise.category, "value") else str(exercise.category)
+                    bucket = category_stats.setdefault(label, [0, 0])
+                    bucket[0] += 1
+                    bucket[1] += int(bool(attempt.is_correct))
+
+                ranked = sorted(
+                    (
+                        (category, round(correct_count / count * 100), count)
+                        for category, (count, correct_count) in category_stats.items()
+                    ),
+                    key=lambda row: (row[1], row[2]),
+                    reverse=True,
+                )
+                strengths = [
+                    f"{category.replace('_', ' ').title()} — {accuracy}% saktësi"
+                    for category, accuracy, _ in ranked[:3]
+                    if accuracy >= 70
+                ]
+                weaknesses = [
+                    f"{category.replace('_', ' ').title()} — {accuracy}% saktësi"
+                    for category, accuracy, _ in sorted(ranked, key=lambda row: row[1])[:2]
+                    if accuracy < 70
+                ]
+
                 stats = {
-                    'exercises_completed': 25,  # Placeholder
-                    'avg_score': 78,  # Placeholder
-                    'time_spent_minutes': 150,  # Placeholder
-                    'current_streak': 5,  # Placeholder
-                    'strengths': [
-                        'Vocabulary - 85% sukses',
-                        'Reading - 82% sukses',
-                        'Writing - 79% sukses'
-                    ],
-                    'weaknesses': [
-                        'Grammar - 68% sukses',
-                        'Listening - 72% sukses'
-                    ]
+                    "exercises_completed": total,
+                    "avg_score": avg_score,
+                    "time_spent_minutes": round(total_seconds / 60),
+                    "current_streak": user.current_streak,
+                    "strengths": strengths,
+                    "weaknesses": weaknesses,
                 }
-                
+
                 success = email_service.send_weekly_personalized_email(
                     user.email,
                     user.username,
-                    stats
+                    stats,
+                    user_id=user.id,
                 )
-                
+
                 if success:
+                    user.last_weekly_report_at = now
+                    db.commit()
                     sent_count += 1
-                    logger.info(f"Weekly report sent to {user.username}")
+                    logger.info("Weekly report sent: user_id=%s", user.id)
             
-            logger.info(f"Sent {sent_count} weekly report emails")
+            logger.info("Weekly report run complete: sent=%s", sent_count)
             return sent_count
             
         except Exception as e:
-            logger.error(f"Error in send_weekly_reports: {str(e)}")
+            logger.exception("Error in weekly report run")
             return 0
         finally:
             db.close()
@@ -140,20 +182,13 @@ class EmailScheduler:
         try:
             threshold = datetime.utcnow() - timedelta(days=days)
             
-            # Delete old logs
-            # Note: Duhet të importosh EmailLog model kur të jetë i disponueshëm
-            # deleted = db.query(EmailLog).filter(
-            #     EmailLog.sent_at < threshold
-            # ).delete()
-            
-            # db.commit()
-            # logger.info(f"Deleted {deleted} old email logs")
-            
-            logger.info("Cleanup executed (placeholder)")
-            return 0
+            deleted = db.query(EmailLog).filter(EmailLog.sent_at < threshold).delete()
+            db.commit()
+            logger.info("Old email logs deleted: count=%s", deleted)
+            return deleted
             
         except Exception as e:
-            logger.error(f"Error in cleanup_old_email_logs: {str(e)}")
+            logger.exception("Error cleaning old email logs")
             db.rollback()
             return 0
         finally:

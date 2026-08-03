@@ -102,7 +102,14 @@ async def submit_answer(exercise_id: int, request: SubmitRequest, db: Session = 
         user_id=request.user_id,
         response=request.response,
         is_correct=is_correct,
-        score_delta=points_earned
+        score_delta=points_earned,
+        # Ignore impossible/client-manipulated values; reports fall back to an
+        # estimate when older clients do not provide a duration.
+        duration_seconds=(
+            max(0, min(request.duration_seconds, 3600))
+            if request.duration_seconds is not None
+            else None
+        ),
     )
     db.add(attempt)
     

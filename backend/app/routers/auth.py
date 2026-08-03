@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from ..database import get_db
 from .. import models, schemas
 from passlib.context import CryptContext
@@ -14,13 +16,18 @@ pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 @router.post("/register", response_model=schemas.AuthResponse)
 def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
+	normalized_email = user_data.email.strip().lower()
+
 	# Check if username already exists
 	if db.query(models.User).filter(models.User.username == user_data.username).first():
 		raise HTTPException(status_code=400, detail="Username already registered")
 	
 	# Check if email already exists
-	if db.query(models.User).filter(models.User.email == user_data.email).first():
-		raise HTTPException(status_code=400, detail="Email already registered")
+	if db.query(models.User).filter(func.lower(models.User.email) == normalized_email).first():
+		raise HTTPException(
+			status_code=409,
+			detail="Një llogari me këtë email ekziston tashmë.",
+		)
 	
 	# Validate age
 	if user_data.age and (user_data.age < 5 or user_data.age > 80):
@@ -32,19 +39,35 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
 	# Create user
 	db_user = models.User(
 		username=user_data.username,
-		email=user_data.email,
+		email=normalized_email,
 		age=user_data.age,
 		password_hash=hashed_password,
 		created_at=datetime.utcnow()
 	)
 	
 	db.add(db_user)
-	db.commit()
+	try:
+		db.commit()
+	except IntegrityError:
+		# The database constraint is the final protection against two concurrent
+		# registration requests that pass the pre-check at the same time.
+		db.rollback()
+		if db.query(models.User).filter(func.lower(models.User.email) == normalized_email).first():
+			raise HTTPException(
+				status_code=409,
+				detail="Një llogari me këtë email ekziston tashmë.",
+			)
+		raise HTTPException(status_code=409, detail="Username already registered")
 	db.refresh(db_user)
 	
 	# Dërgo welcome email në thread të veçantë (nuk bllokojë HTTP response-in)
-	if user_data.email:
-		send_welcome_email(user_data.email, user_data.username, blocking=False)
+	if normalized_email:
+		send_welcome_email(
+			normalized_email,
+			user_data.username,
+			blocking=False,
+			user_id=db_user.id,
+		)
 	
 	return schemas.AuthResponse(
 		user_id=db_user.id,
@@ -101,13 +124,14 @@ def update_user_profile(
 	
 	# Update email if provided and not already taken
 	if user_update.email is not None:
+		normalized_email = user_update.email.strip().lower()
 		existing_user = db.query(models.User).filter(
-			models.User.email == user_update.email,
+			func.lower(models.User.email) == normalized_email,
 			models.User.id != user_id
 		).first()
 		if existing_user:
-			raise HTTPException(status_code=400, detail="Email already registered")
-		user.email = user_update.email
+			raise HTTPException(status_code=409, detail="Një llogari me këtë email ekziston tashmë.")
+		user.email = normalized_email
 	
 	# Update other fields
 	if user_update.age is not None:

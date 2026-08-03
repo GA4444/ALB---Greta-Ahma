@@ -7,13 +7,16 @@ so you never need to restart the server after editing .env.
 
 import smtplib
 import threading
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from typing import Optional, Dict, Any
 import os
 from pathlib import Path
-from dotenv import load_dotenv, dotenv_values
+from dotenv import dotenv_values
+
+logger = logging.getLogger(__name__)
 
 # Absolute path to backend/.env  (works regardless of cwd)
 _ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
@@ -35,6 +38,8 @@ def _send_email(
     subject: str,
     html_content: str,
     text_content: Optional[str] = None,
+    user_id: Optional[int] = None,
+    email_type: str = "unknown",
 ) -> bool:
     """
     Sends an HTML email via SMTP.
@@ -43,7 +48,7 @@ def _send_email(
     """
     enabled = _cfg("ENABLE_EMAIL_NOTIFICATIONS", "true").lower() in ("true", "1", "yes")
     if not enabled:
-        print("[EMAIL] Notifications disabled (ENABLE_EMAIL_NOTIFICATIONS=false).")
+        logger.info("Email skipped because notifications are disabled: type=%s", email_type)
         return False
 
     smtp_host = _cfg("SMTP_HOST", "smtp.gmail.com") or "smtp.gmail.com"
@@ -61,13 +66,12 @@ def _send_email(
 
     # Treat placeholders as "not configured" to avoid DNS/connection errors
     if not smtp_user or not smtp_pass:
+        logger.error("Email failed: SMTP credentials are not configured (type=%s)", email_type)
+        _record_email_log(user_id, email_type, to_email, subject, False, "SMTP credentials missing")
         return False
     if "your-gmail" in smtp_user.lower() or "your-app-password" in (smtp_pass or "").lower():
-        print(
-            "[EMAIL] SMTP still using placeholders. Edit backend/.env:\n"
-            "  SMTP_USER=your-real@gmail.com\n"
-            "  SMTP_PASSWORD=16-char-app-password (Gmail: Security > App Passwords)"
-        )
+        logger.error("Email failed: SMTP credentials still contain placeholders (type=%s)", email_type)
+        _record_email_log(user_id, email_type, to_email, subject, False, "SMTP placeholders configured")
         return False
 
     try:
@@ -87,38 +91,70 @@ def _send_email(
             server.login(smtp_user, smtp_pass)
             server.send_message(msg)
 
-        print(f"[EMAIL] ✅ Sent to {to_email}: {subject}")
+        logger.info("Email sent: type=%s recipient=%s", email_type, to_email)
+        _record_email_log(user_id, email_type, to_email, subject, True)
         return True
 
     except smtplib.SMTPAuthenticationError:
-        print(
-            "[EMAIL] ❌ Authentication failed.\n"
-            "  Sigurohuni se keni vendosur App Password te Gmail (jo fjalekalimin normal).\n"
-            "  Hapi: myaccount.google.com > Security > App Passwords"
-        )
+        logger.exception("Email authentication failed: type=%s recipient=%s", email_type, to_email)
+        _record_email_log(user_id, email_type, to_email, subject, False, "SMTP authentication failed")
         return False
     except smtplib.SMTPException as e:
-        print(f"[EMAIL] ❌ SMTP error: {e}")
+        logger.exception("SMTP error: type=%s recipient=%s", email_type, to_email)
+        _record_email_log(user_id, email_type, to_email, subject, False, str(e))
         return False
     except OSError as e:
-        if e.errno == 8 or "nodename" in str(e).lower() or "servname" in str(e).lower():
-            print(
-                "[EMAIL] ❌ Cannot resolve SMTP server (DNS/network).\n"
-                f"  SMTP_HOST={smtp_host!r} – kontrollo .env dhe lidhjen e internetit."
-            )
-        else:
-            print(f"[EMAIL] ❌ Connection error: {e}")
+        logger.exception("SMTP connection error: type=%s recipient=%s host=%s", email_type, to_email, smtp_host)
+        _record_email_log(user_id, email_type, to_email, subject, False, str(e))
         return False
     except Exception as e:
-        print(f"[EMAIL] ❌ Unexpected error: {e}")
+        logger.exception("Unexpected email error: type=%s recipient=%s", email_type, to_email)
+        _record_email_log(user_id, email_type, to_email, subject, False, str(e))
         return False
 
 
-def _send_in_thread(to_email: str, subject: str, html: str, text: str) -> None:
+def _record_email_log(
+    user_id: Optional[int],
+    email_type: str,
+    recipient: str,
+    subject: str,
+    success: bool,
+    error_message: Optional[str] = None,
+) -> None:
+    """Persist delivery outcome without allowing logging failures to affect the request."""
+    try:
+        from ..database import SessionLocal
+        from ..models import EmailLog
+
+        db = SessionLocal()
+        try:
+            db.add(EmailLog(
+                user_id=user_id,
+                email_type=email_type,
+                recipient_email=recipient,
+                subject=subject,
+                success=success,
+                error_message=(error_message or "")[:2000] or None,
+            ))
+            db.commit()
+        finally:
+            db.close()
+    except Exception:
+        logger.exception("Could not persist email delivery log: type=%s", email_type)
+
+
+def _send_in_thread(
+    to_email: str,
+    subject: str,
+    html: str,
+    text: str,
+    user_id: Optional[int],
+    email_type: str,
+) -> None:
     """Fires _send_email in a daemon thread so it never blocks the HTTP response."""
     t = threading.Thread(
         target=_send_email,
-        args=(to_email, subject, html, text),
+        args=(to_email, subject, html, text, user_id, email_type),
         daemon=True,
     )
     t.start()
@@ -175,7 +211,12 @@ def _footer_html() -> str:
 
 # ─────── 1. Welcome ───────
 
-def send_welcome_email(user_email: str, username: str, blocking: bool = False) -> bool:
+def send_welcome_email(
+    user_email: str,
+    username: str,
+    blocking: bool = False,
+    user_id: Optional[int] = None,
+) -> bool:
     """
     Dërgon emailin e mirëseardhjes pas regjistrimit.
     blocking=False (default) → dërgon në thread të veçantë, nuk bllokojë HTTP-në.
@@ -239,8 +280,8 @@ def send_welcome_email(user_email: str, username: str, blocking: bool = False) -
     )
 
     if blocking:
-        return _send_email(user_email, subject, html, text)
-    _send_in_thread(user_email, subject, html, text)
+        return _send_email(user_email, subject, html, text, user_id, "welcome")
+    _send_in_thread(user_email, subject, html, text, user_id, "welcome")
     return True
 
 
@@ -252,6 +293,7 @@ def send_streak_warning_email(
     current_streak: int,
     last_login: datetime,
     blocking: bool = False,
+    user_id: Optional[int] = None,
 ) -> bool:
     app_url = _cfg("APP_URL", "http://localhost:5173")
     hours_since = (datetime.utcnow() - last_login).total_seconds() / 3600
@@ -308,8 +350,8 @@ def send_streak_warning_email(
     )
 
     if blocking:
-        return _send_email(user_email, subject, html, text)
-    _send_in_thread(user_email, subject, html, text)
+        return _send_email(user_email, subject, html, text, user_id, "streak_warning")
+    _send_in_thread(user_email, subject, html, text, user_id, "streak_warning")
     return True
 
 
@@ -320,6 +362,7 @@ def send_weekly_report_email(
     username: str,
     stats: Dict[str, Any],
     blocking: bool = False,
+    user_id: Optional[int] = None,
 ) -> bool:
     app_url = _cfg("APP_URL", "http://localhost:5173")
     exercises = stats.get("exercises_completed", 0)
@@ -400,8 +443,8 @@ def send_weekly_report_email(
     )
 
     if blocking:
-        return _send_email(user_email, subject, html, text)
-    _send_in_thread(user_email, subject, html, text)
+        return _send_email(user_email, subject, html, text, user_id, "weekly_report")
+    _send_in_thread(user_email, subject, html, text, user_id, "weekly_report")
     return True
 
 
@@ -412,18 +455,27 @@ def send_weekly_report_email(
 class EmailService:
     """Thin wrapper kept for backward compatibility with existing call sites."""
 
-    def send_welcome_email(self, user_email: str, username: str) -> bool:
-        return send_welcome_email(user_email, username, blocking=True)
+    def send_welcome_email(
+        self, user_email: str, username: str, user_id: Optional[int] = None
+    ) -> bool:
+        return send_welcome_email(user_email, username, blocking=True, user_id=user_id)
 
     def send_streak_warning_email(
-        self, user_email: str, username: str, current_streak: int, last_login: datetime
+        self, user_email: str, username: str, current_streak: int,
+        last_login: datetime, user_id: Optional[int] = None
     ) -> bool:
-        return send_streak_warning_email(user_email, username, current_streak, last_login, blocking=True)
+        return send_streak_warning_email(
+            user_email, username, current_streak, last_login,
+            blocking=True, user_id=user_id,
+        )
 
     def send_weekly_personalized_email(
-        self, user_email: str, username: str, stats: Dict[str, Any]
+        self, user_email: str, username: str, stats: Dict[str, Any],
+        user_id: Optional[int] = None
     ) -> bool:
-        return send_weekly_report_email(user_email, username, stats, blocking=True)
+        return send_weekly_report_email(
+            user_email, username, stats, blocking=True, user_id=user_id
+        )
 
 
 email_service = EmailService()

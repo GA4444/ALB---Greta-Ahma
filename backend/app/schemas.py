@@ -1,7 +1,17 @@
 from typing import Optional, List, Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from .models import CategoryEnum
 from datetime import datetime
+import re
+
+
+def _normalize_email(value: Optional[str]) -> Optional[str]:
+	if value is None:
+		return None
+	email = value.strip().lower()
+	if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+		raise ValueError("Vendosni një adresë email të vlefshme.")
+	return email
 
 
 class CourseOut(BaseModel):
@@ -64,6 +74,7 @@ class ExerciseOut(BaseModel):
 class SubmitRequest(BaseModel):
 	user_id: str
 	response: str
+	duration_seconds: Optional[int] = None
 
 
 class SubmitResult(BaseModel):
@@ -168,6 +179,8 @@ class UserCreate(BaseModel):
 	age: Optional[int] = None
 	password: str
 
+	_normalize_email = field_validator("email")(_normalize_email)
+
 class UserOut(BaseModel):
 	id: int
 	username: str
@@ -188,6 +201,8 @@ class UserUpdate(BaseModel):
 	address: Optional[str] = None
 	phone_number: Optional[str] = None
 
+	_normalize_email = field_validator("email")(_normalize_email)
+
 class UserLogin(BaseModel):
 	username: str
 	password: str
@@ -203,6 +218,8 @@ class AdminUserCreate(BaseModel):
 	email: str
 	password: str
 	age: Optional[int] = None
+
+	_normalize_email = field_validator("email")(_normalize_email)
 
 class ExerciseCreate(BaseModel):
 	category: CategoryEnum

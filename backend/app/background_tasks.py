@@ -96,36 +96,20 @@ class BackgroundScheduler:
         """
         logger.info(f"⏰ {task_name} scheduled every Sunday at 20:00")
         
+        last_run_date = None
         while self.running:
             now = datetime.now()
-            
-            # Calculate next Sunday 20:00
-            days_until_sunday = (6 - now.weekday()) % 7
-            if days_until_sunday == 0 and now.hour >= 20:
-                days_until_sunday = 7
-            
-            next_run = datetime(
-                now.year, now.month, now.day, 20, 0
-            ) + timedelta(days=days_until_sunday)
-            
-            # Wait until next run
-            wait_seconds = (next_run - now).total_seconds()
-            logger.info(f"⏰ {task_name} next run: {next_run.strftime('%Y-%m-%d %H:%M')}")
-            
-            if wait_seconds > 0:
-                time.sleep(min(wait_seconds, 3600))  # Check every hour
-                continue
-            
-            # Execute task
-            try:
-                logger.info(f"▶️ Executing {task_name}...")
-                task_func()
-                logger.info(f"✅ {task_name} completed")
-            except Exception as e:
-                logger.error(f"❌ Error in {task_name}: {str(e)}")
-            
-            # Wait 1 hour before checking again
-            time.sleep(3600)
+            if now.weekday() == 6 and now.hour >= 20 and last_run_date != now.date():
+                try:
+                    logger.info(f"▶️ Executing {task_name}...")
+                    task_func()
+                    last_run_date = now.date()
+                    logger.info(f"✅ {task_name} completed")
+                except Exception:
+                    logger.exception("❌ Error in %s", task_name)
+
+            # Poll frequently enough to survive delayed starts and Render wakeups.
+            time.sleep(15 * 60)
     
     def _run_daily_task(self, task_func, run_time: dt_time, task_name: str):
         """

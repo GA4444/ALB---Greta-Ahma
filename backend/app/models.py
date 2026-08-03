@@ -124,6 +124,8 @@ class Attempt(Base):
 	response = Column(Text, nullable=False)
 	is_correct = Column(Boolean, default=False)
 	score_delta = Column(Integer, default=0)
+	created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+	duration_seconds = Column(Integer, nullable=True)
 
 	exercise = relationship("Exercise", back_populates="attempts")
 
@@ -195,6 +197,24 @@ class User(Base):
 	longest_streak = Column(Integer, default=0, nullable=False)
 	last_activity_date = Column(DateTime, nullable=True)
 	total_achievements = Column(Integer, default=0, nullable=False)
+	last_streak_warning_at = Column(DateTime, nullable=True)
+	last_weekly_report_at = Column(DateTime, nullable=True)
+
+
+class EmailLog(Base):
+	"""Audit trail for every attempted transactional or scheduled email."""
+	__tablename__ = "email_logs"
+
+	id = Column(Integer, primary_key=True, index=True)
+	user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+	email_type = Column(String(50), nullable=False, index=True)
+	recipient_email = Column(String(255), nullable=False)
+	subject = Column(String(255), nullable=False)
+	sent_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+	success = Column(Boolean, default=False, nullable=False)
+	error_message = Column(Text, nullable=True)
+
+	user = relationship("User")
 
 
 class Achievement(Base):

@@ -63,6 +63,7 @@ export interface ExerciseOut {
 export interface SubmitRequest {
 	user_id: string
 	response: string
+	duration_seconds?: number
 }
 
 export interface SubmitResult {
