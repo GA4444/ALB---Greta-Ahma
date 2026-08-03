@@ -361,9 +361,11 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 				</div>
 				<div className="header-right">
 					<button
-						className="icon-btn"
+						className={`icon-btn ${showSettings ? 'active' : ''}`}
 						onClick={() => setShowSettings(!showSettings)}
 						title="Cilësimet"
+						aria-label="Hap cilësimet e bashkëbiseduesit"
+						aria-expanded={showSettings}
 					>
 						⚙️
 					</button>
@@ -394,96 +396,142 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 			</div>
 
 			{showSettings && (
-				<div className="chatbot-settings">
-					<div className="settings-grid">
-						{/* Opsionet AI */}
-						<div className="setting-group">
-							<label className="setting-label">🤖 Opsionet AI</label>
-							<label className="setting-item checkbox">
-								<input
-									type="checkbox"
-									checked={useLLM}
-									onChange={(e) => setUseLLM(e.target.checked)}
-								/>
-								<span>Përdor LLM (AI i avancuar) ✨</span>
-							</label>
-							<label className="setting-item checkbox">
-								<input
-									type="checkbox"
-									checked={generateExercise}
-									onChange={(e) => setGenerateExercise(e.target.checked)}
-								/>
-								<span>Gjeneroje ushtrime të reja 📝</span>
-							</label>
-						</div>
-
-						{/* Cilësimet e përgjigjes */}
-						<div className="setting-group">
-							<label className="setting-label">💬 Gjatësia e Përgjigjes</label>
-							<select
-								value={responseLength}
-								onChange={(e) => setResponseLength(e.target.value as any)}
-								className="setting-select"
+				<div className="settings-overlay" role="dialog" aria-modal="true" aria-labelledby="chatbot-settings-title">
+					<button
+						className="settings-backdrop"
+						onClick={() => setShowSettings(false)}
+						aria-label="Mbyll cilësimet"
+					/>
+					<section className="chatbot-settings">
+						<div className="settings-header">
+							<div>
+								<span className="settings-eyebrow">PREFERENCAT</span>
+								<h4 id="chatbot-settings-title">Cilësimet e bashkëbiseduesit</h4>
+								<p>Përshtat mënyrën se si AI komunikon dhe të ndihmon.</p>
+							</div>
+							<button
+								className="settings-close"
+								onClick={() => setShowSettings(false)}
+								aria-label="Mbyll cilësimet"
 							>
-								<option value="short">E shkurtër (disa fjali)</option>
-								<option value="medium">Mesatare (1-2 paragrafe)</option>
-								<option value="detailed">E detajuar (me shembuj)</option>
-							</select>
+								✕
+							</button>
 						</div>
 
-						{/* Niveli i vështirësisë */}
-						<div className="setting-group">
-							<label className="setting-label">🎯 Niveli i Vështirësisë</label>
-							<select
-								value={difficultyLevel}
-								onChange={(e) => setDifficultyLevel(e.target.value as any)}
-								className="setting-select"
-							>
-								<option value="easy">I Lehtë (për fëmijë)</option>
-								<option value="medium">Mesatar (standard)</option>
-								<option value="advanced">I Avancuar (profesional)</option>
-							</select>
+						<div className="settings-content">
+							<div className="settings-section">
+								<div className="settings-section-title">Aftësitë e AI</div>
+								<label className="settings-toggle-row">
+									<span className="settings-option-copy">
+										<span className="settings-option-icon">✦</span>
+										<span>
+											<strong>AI i avancuar</strong>
+											<small>Përgjigje më të plota dhe të përshtatura.</small>
+										</span>
+									</span>
+									<input
+										type="checkbox"
+										checked={useLLM}
+										onChange={(e) => setUseLLM(e.target.checked)}
+									/>
+									<span className="settings-switch" aria-hidden="true" />
+								</label>
+								<label className="settings-toggle-row">
+									<span className="settings-option-copy">
+										<span className="settings-option-icon">＋</span>
+										<span>
+											<strong>Gjenerim ushtrimesh</strong>
+											<small>Krijon ushtrime të reja gjatë bisedës.</small>
+										</span>
+									</span>
+									<input
+										type="checkbox"
+										checked={generateExercise}
+										onChange={(e) => setGenerateExercise(e.target.checked)}
+									/>
+									<span className="settings-switch" aria-hidden="true" />
+								</label>
+							</div>
+
+							<div className="settings-section">
+								<div className="settings-section-title">Stili i përgjigjes</div>
+								<div className="settings-fields">
+									<label className="settings-field">
+										<span>Gjatësia</span>
+										<select
+											value={responseLength}
+											onChange={(e) => setResponseLength(e.target.value as typeof responseLength)}
+										>
+											<option value="short">E shkurtër</option>
+											<option value="medium">Mesatare</option>
+											<option value="detailed">E detajuar</option>
+										</select>
+									</label>
+									<label className="settings-field">
+										<span>Vështirësia</span>
+										<select
+											value={difficultyLevel}
+											onChange={(e) => setDifficultyLevel(e.target.value as typeof difficultyLevel)}
+										>
+											<option value="easy">E lehtë</option>
+											<option value="medium">Mesatare</option>
+											<option value="advanced">E avancuar</option>
+										</select>
+									</label>
+									<label className="settings-field">
+										<span>Toni</span>
+										<select
+											value={chatbotTone}
+											onChange={(e) => setChatbotTone(e.target.value as typeof chatbotTone)}
+										>
+											<option value="friendly">Miqësor</option>
+											<option value="professional">Profesional</option>
+											<option value="playful">Argëtues</option>
+										</select>
+									</label>
+								</div>
+							</div>
+
+							<div className="settings-section">
+								<div className="settings-section-title">Paraqitja dhe audio</div>
+								<label className="settings-toggle-row">
+									<span className="settings-option-copy">
+										<span className="settings-option-icon">◖</span>
+										<span>
+											<strong>Audio automatike</strong>
+											<small>Lexon përgjigjet sapo të përfundojnë.</small>
+										</span>
+									</span>
+									<input
+										type="checkbox"
+										checked={autoAudio}
+										onChange={(e) => setAutoAudio(e.target.checked)}
+									/>
+									<span className="settings-switch" aria-hidden="true" />
+								</label>
+								<label className="settings-toggle-row">
+									<span className="settings-option-copy">
+										<span className="settings-option-icon">⌁</span>
+										<span>
+											<strong>Statistikat teknike</strong>
+											<small>Shfaq modelin, kohën dhe tokenët.</small>
+										</span>
+									</span>
+									<input
+										type="checkbox"
+										checked={showStats}
+										onChange={(e) => setShowStats(e.target.checked)}
+									/>
+									<span className="settings-switch" aria-hidden="true" />
+								</label>
+							</div>
 						</div>
 
-						{/* Toni i bashkëbiseduesit */}
-						<div className="setting-group">
-							<label className="setting-label">😊 Toni i Chatbot-it</label>
-							<select
-								value={chatbotTone}
-								onChange={(e) => setChatbotTone(e.target.value as any)}
-								className="setting-select"
-							>
-								<option value="friendly">Miqësor (i ngrohtë)</option>
-								<option value="professional">Profesional (formal)</option>
-								<option value="playful">Argëtues (me humor)</option>
-							</select>
+						<div className="settings-footer">
+							<span>Ndryshimet zbatohen menjëherë.</span>
+							<button onClick={() => setShowSettings(false)}>U krye</button>
 						</div>
-
-						{/* Audio & Display Options */}
-						<div className="setting-group">
-							<label className="setting-label">🔊 Opsione Shtesë</label>
-							<label className="setting-item checkbox">
-								<input
-									type="checkbox"
-									checked={autoAudio}
-									onChange={(e) => setAutoAudio(e.target.checked)}
-								/>
-								<span>Audio automatikisht 🔊</span>
-							</label>
-							<label className="setting-item checkbox">
-								<input
-									type="checkbox"
-									checked={showStats}
-									onChange={(e) => setShowStats(e.target.checked)}
-								/>
-								<span>Shfaq statistika 📊</span>
-							</label>
-						</div>
-					</div>
-
-					<div className="setting-note">
-						💡 LLM përdor modele të avancuara si GPT-4 ose Claude për përgjigje më të mira.
-					</div>
+					</section>
 				</div>
 			)}
 
