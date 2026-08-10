@@ -251,8 +251,8 @@ def send_welcome_email(
              <span>Shih ecurinë tënde dhe arritjet në çdo nivel</span></div>
       </div>
       <div class="row"><span class="icon">🔥</span>
-        <div><strong>Streak &amp; Gamifikim</strong>
-             <span>Qëndro i motivuar duke praktikuar çdo ditë</span></div>
+        <div><strong>Ushtrime çdo ditë dhe shpërblime</strong>
+             <span>Qëndro i motivuar duke ushtruar çdo ditë</span></div>
       </div>
     </div>
 
@@ -274,7 +274,7 @@ def send_welcome_email(
         "- Kurse të strukturuara\n"
         "- Ushtrime me AI\n"
         "- Progres i detajuar\n"
-        "- Gamifikim dhe streak\n\n"
+        "- Ushtrime çdo ditë dhe shpërblime\n\n"
         f"Fillo mësimin: {app_url}\n\n"
         "Ekipi i AlbLingo"
     )
@@ -298,7 +298,7 @@ def send_streak_warning_email(
     app_url = _cfg("APP_URL", "http://localhost:5173")
     hours_since = (datetime.utcnow() - last_login).total_seconds() / 3600
     hours_left = max(0, 24 - hours_since)
-    subject = f"{username}, streak-u yt i {current_streak} ditëve është në rrezik!"
+    subject = f"{username}, mos i humbni ditët radhazi në AlbLingo!"
 
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -306,20 +306,21 @@ def send_streak_warning_email(
 <div class="wrap">
   <div class="hdr" style="background:linear-gradient(135deg,#dc2626 0%,#ef4444 100%)">
     <span class="ico">🔥</span>
-    <h1>Streak-u yt është në rrezik!</h1>
+    <h1>Mos i humbni ditët radhazi!</h1>
   </div>
   <div class="body">
     <h2>Përshëndetje, {username}!</h2>
 
     <div class="box-warn">
-      Ti nuk je futur në AlbLingo prej <strong>{int(hours_since)} orësh</strong>.
-      Nëse nuk praktikon sot, humb streak-un tënd të <strong>{current_streak} ditëve</strong>!
+      Keni ushtruar <strong>{current_streak} ditë radhazi</strong>, por nuk jeni futur
+      në AlbLingo prej <strong>{int(hours_since)} orësh</strong>.
+      Nëse nuk ushtroni sot, numërimi do të fillojë përsëri nga zero.
     </div>
 
     <div class="stat-grid">
       <div class="stat-box">
         <div class="num">{current_streak}</div>
-        <div class="lbl">Ditë streak</div>
+        <div class="lbl">Ditë radhazi</div>
       </div>
       <div class="stat-box">
         <div class="num">~{int(hours_left)}h</div>
@@ -327,14 +328,14 @@ def send_streak_warning_email(
       </div>
     </div>
 
-    <p>Vetëm <strong>5 minuta praktikë</strong> janë të mjaftueshme për ta mbajtur streakun gjallë!</p>
+    <p>Vetëm <strong>5 minuta ushtrime</strong> mjaftojnë për ta ruajtur numrin e ditëve radhazi!</p>
 
     <div class="center">
-      <a href="{app_url}" class="btn" style="background:#dc2626">Praktiko tani</a>
+      <a href="{app_url}" class="btn" style="background:#dc2626">Ushtroni tani</a>
     </div>
 
     <p style="text-align:center;color:#94a3b8;font-size:13px;">
-      <em>"Konsistenca është çelësi i suksesit."</em>
+      <em>"Pak ushtrime çdo ditë sjellin rezultate të mëdha."</em>
     </p>
   </div>
   {_footer_html()}
@@ -343,9 +344,10 @@ def send_streak_warning_email(
 
     text = (
         f"Përshëndetje {username},\n\n"
-        f"Streak-u yt i {current_streak} ditëve është në rrezik!\n"
-        f"Nuk je futur prej {int(hours_since)} orësh. Koha e mbetur: ~{int(hours_left)} orë.\n\n"
-        f"Praktiko tani: {app_url}\n\n"
+        f"Keni ushtruar {current_streak} ditë radhazi!\n"
+        f"Nuk jeni futur prej {int(hours_since)} orësh. Koha e mbetur: ~{int(hours_left)} orë.\n\n"
+        "Nëse nuk ushtroni sot, numërimi do të fillojë përsëri nga zero.\n\n"
+        f"Ushtroni tani: {app_url}\n\n"
         "Ekipi i AlbLingo"
     )
 
@@ -373,11 +375,11 @@ def send_weekly_report_email(
     weaknesses = stats.get("weaknesses", [])
 
     if avg_score >= 85:
-        perf_msg, perf_color = "Performanca jote ka qenë SHKËLQYESE! 🌟", "#10b981"
+        perf_msg, perf_color = "Arritjet tuaja këtë javë kanë qenë të shkëlqyera! 🌟", "#10b981"
     elif avg_score >= 70:
-        perf_msg, perf_color = "Po bën progres të mirë! 👍", "#3b82f6"
+        perf_msg, perf_color = "Keni bërë përparim të mirë këtë javë! 👍", "#3b82f6"
     else:
-        perf_msg, perf_color = "Vazhdo me përpjekjet! 💪", "#f59e0b"
+        perf_msg, perf_color = "Vazhdoni të ushtroni dhe rezultatet do të përmirësohen! 💪", "#f59e0b"
 
     strengths_html = "".join(
         f'<div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:6px;'
@@ -390,7 +392,7 @@ def send_weekly_report_email(
         for w in weaknesses[:2]
     )
 
-    subject = f"Raporti yt javor në AlbLingo — {username}"
+    subject = f"Raporti juaj javor në AlbLingo — {username}"
 
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -398,17 +400,17 @@ def send_weekly_report_email(
 <div class="wrap">
   <div class="hdr" style="background:linear-gradient(135deg,#7c3aed 0%,#6366f1 100%)">
     <span class="ico">📊</span>
-    <h1>Raporti Yt Javor</h1>
+    <h1>Raporti juaj javor</h1>
   </div>
   <div class="body">
     <h2>Përshëndetje, {username}!</h2>
-    <p>Ja çfarë arrite këtë javë në AlbLingo:</p>
+    <p>Ja çfarë keni arritur këtë javë në AlbLingo:</p>
 
     <div class="stat-grid">
       <div class="stat-box"><div class="num">{exercises}</div><div class="lbl">Ushtrime</div></div>
       <div class="stat-box"><div class="num">{avg_score}%</div><div class="lbl">Saktësi</div></div>
-      <div class="stat-box"><div class="num">{time_spent}m</div><div class="lbl">Kohë</div></div>
-      <div class="stat-box"><div class="num">{streak}🔥</div><div class="lbl">Streak</div></div>
+      <div class="stat-box"><div class="num">{time_spent} min</div><div class="lbl">Koha e mësimit</div></div>
+      <div class="stat-box"><div class="num">{streak}🔥</div><div class="lbl">Ditë radhazi</div></div>
     </div>
 
     <div style="background:{perf_color};color:#fff;border-radius:10px;
@@ -416,15 +418,15 @@ def send_weekly_report_email(
       {perf_msg}
     </div>
 
-    {"<h2>Pikat e Forta</h2>" + strengths_html if strengths_html else ""}
-    {"<h2>Fusha për Përmirësim</h2>" + weaknesses_html if weaknesses_html else ""}
+    {"<h2>Pikat e forta</h2>" + strengths_html if strengths_html else ""}
+    {"<h2>Fushat që kërkojnë përmirësim</h2>" + weaknesses_html if weaknesses_html else ""}
 
     <div class="center">
-      <a href="{app_url}" class="btn" style="background:#7c3aed">Vazhdo mësimin</a>
+      <a href="{app_url}" class="btn" style="background:#7c3aed">Vazhdoni mësimin</a>
     </div>
 
     <p style="text-align:center;color:#94a3b8;font-size:13px;">
-      <em>"Çdo ditë praktike të afron drejt qëllimit tënd!"</em>
+      <em>"Çdo ditë ushtrimesh ju afron më shumë drejt qëllimit tuaj!"</em>
     </p>
   </div>
   {_footer_html()}
@@ -432,13 +434,13 @@ def send_weekly_report_email(
 </body></html>"""
 
     text = (
-        f"Raporti javor — {username}\n\n"
+        f"Raporti juaj javor — {username}\n\n"
         f"Ushtrime: {exercises}\n"
         f"Saktësi: {avg_score}%\n"
-        f"Kohë: {time_spent} min\n"
-        f"Streak: {streak} ditë\n\n"
+        f"Koha e mësimit: {time_spent} min\n"
+        f"Ditë radhazi: {streak}\n\n"
         f"{perf_msg}\n\n"
-        f"Vazhdo: {app_url}\n\n"
+        f"Vazhdoni mësimin: {app_url}\n\n"
         "Ekipi i AlbLingo"
     )
 

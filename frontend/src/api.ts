@@ -435,6 +435,11 @@ export async function getUser(userId: number, targetUserId: number) {
 	return data
 }
 
+export async function getUserReport(userId: number, targetUserId: number) {
+	const { data } = await client.get(`/api/admin/users/${targetUserId}/report?user_id=${userId}`)
+	return data
+}
+
 export async function getUserProfile(userId: number) {
 	const { data } = await client.get<UserOut>(`/api/user/${userId}`)
 	return data

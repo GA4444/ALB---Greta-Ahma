@@ -176,10 +176,10 @@ export async function exportUserReportToPDF(
 		// Metrics Grid (2x3) with enhanced design
 		const metrics = [
 			{ icon: 'U', label: 'Ushtrime Totale', value: reportData.metrics.totalExercises, color: colors.primaryBlue },
-			{ icon: '✓', label: 'Përfunduar', value: reportData.metrics.completedExercises, color: colors.successGreen },
+			{ icon: '✓', label: 'Të sakta', value: reportData.metrics.completedExercises, color: colors.successGreen },
 			{ icon: '%', label: 'Pikë Mesatare', value: `${reportData.metrics.averageScore}%`, color: colors.accentYellow },
 			{ icon: 'T', label: 'Kohë Totale', value: `${Math.round(reportData.metrics.totalTimeMinutes / 60)}h`, color: colors.warningOrange },
-			{ icon: 'S', label: 'Vargu aktual', value: `${reportData.metrics.currentStreak}`, color: [239, 68, 68] },
+			{ icon: 'D', label: 'Ditë radhazi', value: `${reportData.metrics.currentStreak}`, color: [239, 68, 68] },
 			{ icon: 'A', label: 'Arritje', value: reportData.metrics.achievements, color: [168, 85, 247] }
 		]
 
@@ -502,11 +502,11 @@ export async function exportUserReportToPDF(
 
 		const summaryItems = [
 			{ icon: '•', label: 'Niveli Aktual', value: reportData.metrics.level, color: [147, 51, 234] },
-			{ icon: '•', label: 'Progres', value: `${reportData.metrics.totalExercises} ushtrime (${Math.round((reportData.metrics.completedExercises / reportData.metrics.totalExercises) * 100)}% të përfunduara)`, color: colors.primaryBlue },
+			{ icon: '•', label: 'Progres', value: `${reportData.metrics.totalExercises} ushtrime (${reportData.metrics.totalExercises > 0 ? Math.round((reportData.metrics.completedExercises / reportData.metrics.totalExercises) * 100) : 0}% të sakta)`, color: colors.primaryBlue },
 			{ icon: '•', label: 'Kohë Totale', value: `${Math.round(reportData.metrics.totalTimeMinutes / 60)}h ${reportData.metrics.totalTimeMinutes % 60}min`, color: colors.warningOrange },
-			{ icon: '•', label: 'Rekordi i vargut', value: `${reportData.metrics.longestStreak} ditë`, color: [239, 68, 68] },
-			{ icon: '•', label: 'Fusha më e Fortë', value: `${reportData.strengths[0]?.area} (${reportData.strengths[0]?.score}%)`, color: colors.successGreen },
-			{ icon: '•', label: 'Për Përmirësim', value: `${reportData.weaknesses[0]?.area} (${reportData.weaknesses[0]?.score}%)`, color: colors.warningOrange }
+			{ icon: '•', label: 'Më së shumti ditë radhazi', value: `${reportData.metrics.longestStreak} ditë`, color: [239, 68, 68] },
+			{ icon: '•', label: 'Fusha më e fortë', value: reportData.strengths[0] ? `${reportData.strengths[0].area} (${reportData.strengths[0].score}%)` : 'Pa të dhëna', color: colors.successGreen },
+			{ icon: '•', label: 'Për përmirësim', value: reportData.weaknesses[0] ? `${reportData.weaknesses[0].area} (${reportData.weaknesses[0].score}%)` : 'Pa të dhëna', color: colors.warningOrange }
 		]
 
 		summaryItems.forEach((item, idx) => {

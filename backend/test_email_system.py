@@ -79,13 +79,13 @@ def test_weekly_report():
         'time_spent_minutes': 150,
         'current_streak': 5,
         'strengths': [
-            'Vocabulary - 85% sukses',
-            'Reading - 82% sukses',
-            'Writing - 79% sukses'
+            'Fjalor — 85% saktësi',
+            'Lexim — 82% saktësi',
+            'Shkrim — 79% saktësi'
         ],
         'weaknesses': [
-            'Grammar - 68% sukses',
-            'Listening - 72% sukses'
+            'Gramatikë — 68% saktësi',
+            'Dëgjim — 72% saktësi'
         ]
     }
     

@@ -8,6 +8,7 @@ import logging
 
 from ..database import SessionLocal
 from ..models import User, Attempt, Exercise, EmailLog
+from .category_labels import category_label_sq
 from .email_service import email_service
 
 logger = logging.getLogger(__name__)
@@ -132,12 +133,12 @@ class EmailScheduler:
                     reverse=True,
                 )
                 strengths = [
-                    f"{category.replace('_', ' ').title()} — {accuracy}% saktësi"
+                    f"{category_label_sq(category)} — {accuracy}% saktësi"
                     for category, accuracy, _ in ranked[:3]
                     if accuracy >= 70
                 ]
                 weaknesses = [
-                    f"{category.replace('_', ' ').title()} — {accuracy}% saktësi"
+                    f"{category_label_sq(category)} — {accuracy}% saktësi"
                     for category, accuracy, _ in sorted(ranked, key=lambda row: row[1])[:2]
                     if accuracy < 70
                 ]

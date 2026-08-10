@@ -9,6 +9,7 @@ import AdvancedAIPractice from './AdvancedAIPractice'
 import ChatbotFloating from './ChatbotFloating'
 import './App.css'
 import './mobile-refinements.css'
+import './professional-polish.css'
 
 const LEADERBOARD_TITLE = 'Vendi yt në renditje'
 

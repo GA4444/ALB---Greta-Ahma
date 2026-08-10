@@ -5,6 +5,7 @@ import {
 	getAllClasses,
 	getAllLevels,
 	getAllExercises,
+	getUserReport,
 	createClass,
 	createLevel,
 	createExercise,
@@ -503,90 +504,15 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 
 	const handleGenerateUserReport = async (user: UserOut) => {
 		setShowUserReport(user)
-		
-		// Generate mock data for user report
-		// In production, this would fetch from backend API
-		const mockReportData = {
-			// Strengths & Weaknesses
-			strengths: [
-				{ area: 'Vocabulary', score: 92, exercises: 145 },
-				{ area: 'Reading', score: 88, exercises: 98 },
-				{ area: 'Writing', score: 85, exercises: 76 }
-			],
-			weaknesses: [
-				{ area: 'Grammar', score: 68, exercises: 54 },
-				{ area: 'Listening', score: 72, exercises: 42 }
-			],
-			
-			// Usage patterns
-			activityByDay: [
-				{ day: 'E Hënë', sessions: 8, minutes: 45 },
-				{ day: 'E Martë', sessions: 12, minutes: 62 },
-				{ day: 'E Mërkurë', sessions: 15, minutes: 78 },
-				{ day: 'E Enjte', sessions: 10, minutes: 52 },
-				{ day: 'E Premte', sessions: 7, minutes: 38 },
-				{ day: 'E Shtunë', sessions: 3, minutes: 18 },
-				{ day: 'E Diel', sessions: 2, minutes: 12 }
-			],
-			
-			peakHours: [
-				{ hour: '08:00', activity: 5 },
-				{ hour: '10:00', activity: 12 },
-				{ hour: '14:00', activity: 18 },
-				{ hour: '16:00', activity: 25 },
-				{ hour: '18:00', activity: 15 },
-				{ hour: '20:00', activity: 8 }
-			],
-			
-			// Progress over time
-			progressOverTime: [
-				{ month: 'Shtator', avgScore: 65, exercises: 45 },
-				{ month: 'Tetor', avgScore: 72, exercises: 68 },
-				{ month: 'Nëntor', avgScore: 78, exercises: 89 },
-				{ month: 'Dhjetor', avgScore: 82, exercises: 102 },
-				{ month: 'Janar', avgScore: 85, exercises: 124 },
-				{ month: 'Shkurt', avgScore: 88, exercises: 145 }
-			],
-			
-			// Performance by category
-			categoryPerformance: [
-				{ category: 'Fillestare', completed: 45, total: 50, percentage: 90 },
-				{ category: 'Mesatare', completed: 32, total: 45, percentage: 71 },
-				{ category: 'E Avancuar', completed: 12, total: 30, percentage: 40 }
-			],
-			
-			// Key metrics
-			metrics: {
-				totalExercises: 315,
-				completedExercises: 289,
-				averageScore: 82,
-				totalTimeMinutes: 1850,
-				currentStreak: 12,
-				longestStreak: 28,
-				achievements: 18,
-				level: 'Mesatar-Avancuar'
-			},
-			
-			// Learning patterns
-			learningStyle: {
-				preferredTime: 'Pasdite (14:00-18:00)',
-				averageSessionLength: '18 minuta',
-				studyFrequency: '5-6 ditë/javë',
-				bestPerformanceDay: 'E Mërkurë',
-				completionRate: 92
-			},
-			
-			// Recommendations
-			recommendations: [
-				'Fokusohu më shumë në ushtrimin e Grammar - pikët janë 20% më poshtë mesatares',
-				'Konsidero të shtosh më shumë sesione Listening - kjo është fusha më e dobët',
-				'Vazhdo punën e shkëlqyer në Vocabulary! 🌟',
-				'Përpiqu të mbash streak-un aktual - je në rrugën e duhur!',
-				'Shto 2-3 minuta në sesionet e Grammar për rezultate më të mira'
-			]
+		setUserReportData(null)
+		try {
+			const reportData = await getUserReport(userId, user.id)
+			setUserReportData(reportData)
+		} catch (error: any) {
+			console.error('Gabim në ngarkimin e raportit të përdoruesit:', error)
+			alert(error.response?.data?.detail || 'Raporti i përdoruesit nuk mund të ngarkohet')
+			setShowUserReport(null)
 		}
-		
-		setUserReportData(mockReportData)
 	}
 
 	const handleDeleteUser = async (targetUserId: number) => {
@@ -594,8 +520,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			try {
 				await deleteUser(userId, targetUserId)
 				await loadData()
-			} catch (error) {
-				alert('Gabim në fshirjen e përdoruesit')
+			} catch (error: any) {
+				alert(error.response?.data?.detail || 'Gabim në fshirjen e përdoruesit')
 			}
 		}
 	}
@@ -3026,6 +2952,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 							<h2>📊 Raporti i Përdoruesit</h2>
 							<p className="report-username">{user.username}</p>
 							<p className="report-email">{user.email || 'Email jo i specifikuar'}</p>
+							{reportData.dataSource && <p className="report-email">✓ {reportData.dataSource}</p>}
 						</div>
 					</div>
 					<button 
@@ -3050,12 +2977,12 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 							<div className="metric-card">
 								<div className="metric-icon">✅</div>
 								<div className="metric-value">{reportData.metrics.completedExercises}</div>
-								<div className="metric-label">Përfunduar</div>
+								<div className="metric-label">Përgjigje të sakta</div>
 							</div>
 							<div className="metric-card">
 								<div className="metric-icon">🎯</div>
 								<div className="metric-value">{reportData.metrics.averageScore}%</div>
-								<div className="metric-label">Pikë Mesatare</div>
+								<div className="metric-label">Saktësia mesatare</div>
 							</div>
 							<div className="metric-card">
 								<div className="metric-icon">⏱️</div>
@@ -3065,7 +2992,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 							<div className="metric-card">
 								<div className="metric-icon">🔥</div>
 								<div className="metric-value">{reportData.metrics.currentStreak}</div>
-								<div className="metric-label">Vargu aktual</div>
+								<div className="metric-label">Ditë radhazi</div>
 							</div>
 							<div className="metric-card">
 								<div className="metric-icon">🏆</div>
@@ -3091,6 +3018,9 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 									</BarChart>
 								</ResponsiveContainer>
 								<div className="strength-list">
+									{reportData.strengths.length === 0 && (
+										<div className="strength-item">Nuk ka ende të dhëna të mjaftueshme.</div>
+									)}
 									{reportData.strengths.map((s: any, i: number) => (
 										<div key={i} className="strength-item">
 											<span className="strength-badge success">✓</span>
@@ -3112,6 +3042,9 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 									</BarChart>
 								</ResponsiveContainer>
 								<div className="weakness-list">
+									{reportData.weaknesses.length === 0 && (
+										<div className="weakness-item">Nuk është identifikuar ende ndonjë fushë e dobët.</div>
+									)}
 									{reportData.weaknesses.map((w: any, i: number) => (
 										<div key={i} className="weakness-item">
 											<span className="strength-badge warning">!</span>
@@ -3136,7 +3069,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 									<YAxis yAxisId="right" orientation="right" tick={{ fill: '#64748b', fontSize: 12 }} />
 									<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
 									<Legend />
-									<Bar yAxisId="left" dataKey="sessions" fill="#4A9FD4" radius={[8, 8, 0, 0]} name="Sesione" />
+									<Bar yAxisId="left" dataKey="sessions" fill="#4A9FD4" radius={[8, 8, 0, 0]} name="Ushtrime" />
 									<Line yAxisId="right" type="monotone" dataKey="minutes" stroke="#5BBD6C" strokeWidth={3} name="Minutë" />
 								</ComposedChart>
 							</ResponsiveContainer>
@@ -3262,11 +3195,26 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 						<h3 className="summary-title">📋 Përmbledhje e Plotë</h3>
 						<div className="summary-content">
 							<p><strong>Niveli Aktual:</strong> {reportData.metrics.level}</p>
-							<p><strong>Ushtrime Totale:</strong> {reportData.metrics.totalExercises} ({Math.round((reportData.metrics.completedExercises / reportData.metrics.totalExercises) * 100)}% përfunduar)</p>
+							<p>
+								<strong>Ushtrime totale:</strong> {reportData.metrics.totalExercises}
+								{' '}({reportData.metrics.totalExercises > 0
+									? Math.round((reportData.metrics.completedExercises / reportData.metrics.totalExercises) * 100)
+									: 0}% të sakta)
+							</p>
 							<p><strong>Koha Totale:</strong> {Math.round(reportData.metrics.totalTimeMinutes / 60)} orë dhe {reportData.metrics.totalTimeMinutes % 60} minuta</p>
-							<p><strong>Vargu më i gjatë:</strong> {reportData.metrics.longestStreak} ditë</p>
-							<p><strong>Më i fortë në:</strong> {reportData.strengths[0].area} ({reportData.strengths[0].score}%)</p>
-							<p><strong>Duhet të përmirësojë:</strong> {reportData.weaknesses[0].area} ({reportData.weaknesses[0].score}%)</p>
+							<p><strong>Numri më i madh i ditëve radhazi:</strong> {reportData.metrics.longestStreak} ditë</p>
+							<p>
+								<strong>Më i fortë në:</strong>{' '}
+								{reportData.strengths[0]
+									? `${reportData.strengths[0].area} (${reportData.strengths[0].score}%)`
+									: 'Nuk ka ende të dhëna të mjaftueshme'}
+							</p>
+							<p>
+								<strong>Duhet të përmirësojë:</strong>{' '}
+								{reportData.weaknesses[0]
+									? `${reportData.weaknesses[0].area} (${reportData.weaknesses[0].score}%)`
+									: 'Nuk është identifikuar ende'}
+							</p>
 						</div>
 					</div>
 				</div>

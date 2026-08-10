@@ -5,6 +5,9 @@ from .. import models, schemas
 from passlib.context import CryptContext
 from datetime import datetime
 from typing import List, Optional
+from collections import defaultdict
+from sqlalchemy.exc import SQLAlchemyError
+from ..services.category_labels import category_label_sq
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -69,6 +72,214 @@ def get_user(user_id: int, target_user_id: int, db: Session = Depends(get_db)):
 	return user
 
 
+@router.get("/users/{target_user_id}/report")
+def get_user_report(user_id: int, target_user_id: int, db: Session = Depends(get_db)):
+	"""Build an admin report exclusively from the selected user's stored activity."""
+	verify_admin(user_id, db)
+	user = db.query(models.User).filter(models.User.id == target_user_id).first()
+	if not user:
+		raise HTTPException(status_code=404, detail="Përdoruesi nuk u gjet")
+
+	attempt_rows = (
+		db.query(models.Attempt, models.Exercise)
+		.join(models.Exercise, models.Exercise.id == models.Attempt.exercise_id)
+		.filter(models.Attempt.user_id == str(target_user_id))
+		.order_by(models.Attempt.created_at.asc())
+		.all()
+	)
+
+	def duration_minutes(attempt) -> float:
+		seconds = attempt.duration_seconds if attempt.duration_seconds is not None else 60
+		return max(0, min(seconds, 3600)) / 60
+
+	total_attempts = len(attempt_rows)
+	correct_attempts = sum(int(bool(attempt.is_correct)) for attempt, _ in attempt_rows)
+	average_score = round(correct_attempts / total_attempts * 100) if total_attempts else 0
+	total_minutes = round(sum(duration_minutes(attempt) for attempt, _ in attempt_rows))
+
+	category_stats = defaultdict(lambda: {"total": 0, "correct": 0})
+	day_stats = defaultdict(lambda: {"attempts": 0, "minutes": 0.0, "correct": 0})
+	hour_stats = defaultdict(int)
+	active_dates = set()
+	period_stats = defaultdict(int)
+
+	day_names = [
+		"E hënë", "E martë", "E mërkurë", "E enjte",
+		"E premte", "E shtunë", "E diel",
+	]
+	periods = [
+		("Natën (00:00–05:59)", 0, 6),
+		("Paradite (06:00–11:59)", 6, 12),
+		("Pasdite (12:00–17:59)", 12, 18),
+		("Mbrëmje (18:00–23:59)", 18, 24),
+	]
+
+	for attempt, exercise in attempt_rows:
+		raw_category = (
+			exercise.category.value
+			if hasattr(exercise.category, "value")
+			else str(exercise.category)
+		)
+		category = category_label_sq(raw_category)
+		category_stats[category]["total"] += 1
+		category_stats[category]["correct"] += int(bool(attempt.is_correct))
+
+		if attempt.created_at:
+			day_index = attempt.created_at.weekday()
+			day_stats[day_index]["attempts"] += 1
+			day_stats[day_index]["minutes"] += duration_minutes(attempt)
+			day_stats[day_index]["correct"] += int(bool(attempt.is_correct))
+			hour_stats[attempt.created_at.hour // 4] += 1
+			active_dates.add(attempt.created_at.date())
+			for period_name, start_hour, end_hour in periods:
+				if start_hour <= attempt.created_at.hour < end_hour:
+					period_stats[period_name] += 1
+					break
+
+	category_rows = []
+	for category, values in category_stats.items():
+		accuracy = round(values["correct"] / values["total"] * 100)
+		category_rows.append({
+			"area": category,
+			"category": category,
+			"score": accuracy,
+			"exercises": values["total"],
+			"completed": values["correct"],
+			"total": values["total"],
+			"percentage": accuracy,
+		})
+	category_rows.sort(key=lambda row: (row["score"], row["exercises"]), reverse=True)
+
+	strengths = [row for row in category_rows if row["score"] >= 70][:3]
+	weaknesses = sorted(
+		(row for row in category_rows if row["score"] < 70),
+		key=lambda row: (row["score"], -row["exercises"]),
+	)[:3]
+
+	activity_by_day = [
+		{
+			"day": day_names[index],
+			"sessions": day_stats[index]["attempts"],
+			"minutes": round(day_stats[index]["minutes"]),
+		}
+		for index in range(7)
+	]
+	peak_hours = [
+		{"hour": f"{bucket * 4:02d}:00–{bucket * 4 + 3:02d}:59", "activity": hour_stats[bucket]}
+		for bucket in range(6)
+	]
+
+	now = datetime.utcnow()
+	month_names = [
+		"Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor",
+		"Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor",
+	]
+	month_keys = []
+	for offset in range(5, -1, -1):
+		month_number = now.year * 12 + now.month - 1 - offset
+		month_keys.append((month_number // 12, month_number % 12 + 1))
+	monthly_stats = defaultdict(lambda: {"total": 0, "correct": 0})
+	for attempt, _ in attempt_rows:
+		if attempt.created_at:
+			key = (attempt.created_at.year, attempt.created_at.month)
+			if key in month_keys:
+				monthly_stats[key]["total"] += 1
+				monthly_stats[key]["correct"] += int(bool(attempt.is_correct))
+	progress_over_time = [
+		{
+			"month": month_names[month - 1],
+			"avgScore": (
+				round(monthly_stats[(year, month)]["correct"] / monthly_stats[(year, month)]["total"] * 100)
+				if monthly_stats[(year, month)]["total"] else 0
+			),
+			"exercises": monthly_stats[(year, month)]["total"],
+		}
+		for year, month in month_keys
+	]
+
+	best_day = "Nuk ka ende të dhëna"
+	days_with_activity = [
+		(index, values)
+		for index, values in day_stats.items()
+		if values["attempts"] > 0
+	]
+	if days_with_activity:
+		best_day_index, _ = max(
+			days_with_activity,
+			key=lambda item: (
+				item[1]["correct"] / item[1]["attempts"],
+				item[1]["attempts"],
+			),
+		)
+		best_day = day_names[best_day_index]
+
+	preferred_time = (
+		max(period_stats.items(), key=lambda item: item[1])[0]
+		if period_stats else "Nuk ka ende të dhëna"
+	)
+	if active_dates:
+		span_days = max(1, (max(active_dates) - min(active_dates)).days + 1)
+		active_days_per_week = min(7, len(active_dates) / max(1, span_days / 7))
+		study_frequency = f"{active_days_per_week:.1f} ditë në javë"
+	else:
+		study_frequency = "Nuk ka ende aktivitet"
+
+	recommendations = []
+	if weaknesses:
+		recommendations.append(
+			f"Ushtroni më shumë te “{weaknesses[0]['area']}”; saktësia aktuale është {weaknesses[0]['score']}%."
+		)
+	if strengths:
+		recommendations.append(
+			f"Vazhdoni punën e mirë te “{strengths[0]['area']}”, ku saktësia është {strengths[0]['score']}%."
+		)
+	if total_attempts == 0:
+		recommendations.append("Përdoruesi nuk ka përfunduar ende asnjë ushtrim.")
+	elif total_attempts < 10:
+		recommendations.append("Nevojiten më shumë ushtrime që analiza të bëhet më e qëndrueshme.")
+	if user.current_streak:
+		recommendations.append(
+			f"Ruani ritmin aktual prej {user.current_streak} ditësh radhazi."
+		)
+
+	achievement_count = db.query(models.UserAchievement).filter(
+		models.UserAchievement.user_id == target_user_id
+	).count()
+	level = "Fillestar" if average_score < 60 else "Mesatar" if average_score < 80 else "I avancuar"
+
+	return {
+		"generatedAt": now.isoformat(),
+		"dataSource": "Të dhëna reale nga tentativat e përdoruesit",
+		"strengths": strengths,
+		"weaknesses": weaknesses,
+		"activityByDay": activity_by_day,
+		"peakHours": peak_hours,
+		"progressOverTime": progress_over_time,
+		"categoryPerformance": category_rows,
+		"metrics": {
+			"totalExercises": total_attempts,
+			"completedExercises": correct_attempts,
+			"averageScore": average_score,
+			"totalTimeMinutes": total_minutes,
+			"currentStreak": user.current_streak or 0,
+			"longestStreak": user.longest_streak or 0,
+			"achievements": achievement_count,
+			"level": level,
+		},
+		"learningStyle": {
+			"preferredTime": preferred_time,
+			"averageSessionLength": (
+				f"{round(total_minutes / total_attempts, 1)} minuta për ushtrim"
+				if total_attempts else "Nuk ka ende të dhëna"
+			),
+			"studyFrequency": study_frequency,
+			"bestPerformanceDay": best_day,
+			"completionRate": average_score,
+		},
+		"recommendations": recommendations,
+	}
+
+
 @router.put("/users/{target_user_id}")
 def update_user(
 	user_id: int,
@@ -123,12 +334,64 @@ def update_user(
 def delete_user(user_id: int, target_user_id: int, db: Session = Depends(get_db)):
 	"""Delete user (admin only)"""
 	verify_admin(user_id, db)
+	if user_id == target_user_id:
+		raise HTTPException(status_code=400, detail="Nuk mund ta fshini llogarinë tuaj të administratorit")
 	user = db.query(models.User).filter(models.User.id == target_user_id).first()
 	if not user:
 		raise HTTPException(status_code=404, detail="User not found")
-	
-	db.delete(user)
-	db.commit()
+
+	try:
+		# Delete dependent learning/account data first so PostgreSQL foreign-key
+		# constraints cannot leave the admin action half-completed.
+		session_ids = [
+			row[0] for row in db.query(models.ChatSession.id).filter(
+				models.ChatSession.user_id == target_user_id
+			).all()
+		]
+		if session_ids:
+			db.query(models.ChatMessage).filter(
+				models.ChatMessage.session_id.in_(session_ids)
+			).delete(synchronize_session=False)
+			db.query(models.ChatSession).filter(
+				models.ChatSession.id.in_(session_ids)
+			).delete(synchronize_session=False)
+
+		db.query(models.EmailLog).filter(
+			models.EmailLog.user_id == target_user_id
+		).delete(synchronize_session=False)
+		db.query(models.SpacedRepetitionCard).filter(
+			models.SpacedRepetitionCard.user_id == target_user_id
+		).delete(synchronize_session=False)
+		db.query(models.UserDailyProgress).filter(
+			models.UserDailyProgress.user_id == target_user_id
+		).delete(synchronize_session=False)
+		db.query(models.UserAchievement).filter(
+			models.UserAchievement.user_id == target_user_id
+		).delete(synchronize_session=False)
+		db.query(models.CourseProgress).filter(
+			models.CourseProgress.user_id == target_user_id
+		).delete(synchronize_session=False)
+		db.query(models.Attempt).filter(
+			models.Attempt.user_id == str(target_user_id)
+		).delete(synchronize_session=False)
+		db.query(models.Progress).filter(
+			models.Progress.user_id == str(target_user_id)
+		).delete(synchronize_session=False)
+		db.query(models.PedagogicalReview).filter(
+			models.PedagogicalReview.reviewer_user_id == target_user_id
+		).update(
+			{models.PedagogicalReview.reviewer_user_id: None},
+			synchronize_session=False,
+		)
+
+		db.delete(user)
+		db.commit()
+	except SQLAlchemyError:
+		db.rollback()
+		raise HTTPException(
+			status_code=409,
+			detail="Përdoruesi nuk mund të fshihet sepse ka të dhëna të lidhura",
+		)
 	return {"message": "User deleted successfully"}
 
 
