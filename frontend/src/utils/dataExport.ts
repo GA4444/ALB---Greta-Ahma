@@ -3,9 +3,7 @@
  * Supports: CSV, JSON, PDF, Excel
  */
 
-import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
-import jsPDF from 'jspdf'
 
 export interface ExportData {
 	timeRange: 'weekly' | 'monthly' | 'yearly'
@@ -121,6 +119,7 @@ export function exportToJSON(data: ExportData): void {
  */
 export async function exportToExcel(data: ExportData): Promise<void> {
 	try {
+		const { default: ExcelJS } = await import('exceljs')
 		const { timeRange, platformStats, userStats, contentStats, activityStats } = data
 		const wb = new ExcelJS.Workbook()
 
@@ -228,8 +227,9 @@ export async function exportToExcel(data: ExportData): Promise<void> {
 /**
  * Generate comprehensive PDF report for scientific research
  */
-export function exportScientificPDF(data: ExportData): void {
+export async function exportScientificPDF(data: ExportData): Promise<void> {
 	try {
+		const { default: jsPDF } = await import('jspdf')
 		const { timeRange, platformStats } = data
 		
 		const pdf = new jsPDF({

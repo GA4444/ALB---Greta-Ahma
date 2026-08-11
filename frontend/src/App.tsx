@@ -1,15 +1,19 @@
 // Updated: 2026-01-05 18:21 - Fixed cls.courses iteration bug
-import { useState, useEffect, useRef } from 'react'
+import { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import type { ChangeEvent } from 'react'
 import type { CourseOut, LevelOut, ExerciseOut, ProgressOut, ClassData, AIPracticeExercise, AICoachResponse, UserAchievementsResponse, StreakData, DailyChallenge, SRSStatsResponse } from './api'
 import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, login, register, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument, generatePedagogicalFeedback, getAdaptiveNextItem } from './api'
 import type { CorpusDocument } from './api'
-import AdminDashboard from './AdminDashboard'
-import AdvancedAIPractice from './AdvancedAIPractice'
-import ChatbotFloating from './ChatbotFloating'
+import { AppFooter, AppHeader } from './components/AppChrome'
+import LazyErrorBoundary from './components/LazyErrorBoundary'
+import { useModalAccessibility } from './hooks/useModalAccessibility'
 import './App.css'
 import './mobile-refinements.css'
 import './professional-polish.css'
+
+const AdminDashboard = lazy(() => import('./AdminDashboard'))
+const AdvancedAIPractice = lazy(() => import('./AdvancedAIPractice'))
+const ChatbotFloating = lazy(() => import('./ChatbotFloating'))
 
 const LEADERBOARD_TITLE = 'Vendi yt në renditje'
 
@@ -193,6 +197,13 @@ function App() {
     })
     const [profileLoading, setProfileLoading] = useState(false)
     const [profileError, setProfileError] = useState<string | null>(null)
+    const profileModalRef = useModalAccessibility(showProfile, () => setShowProfile(false))
+    const leaderboardModalRef = useModalAccessibility(showLeaderboard, () => setShowLeaderboard(false))
+    const levelInfoModalRef = useModalAccessibility(showLevelInfo, () => setShowLevelInfo(false))
+    const corpusModalRef = useModalAccessibility(showCorpusBrowse, () => {
+        setShowCorpusBrowse(false)
+        setSelectedCorpusDoc(null)
+    })
 
     // Enhanced user registration state
     const [registrationData, setRegistrationData] = useState({
@@ -1202,9 +1213,9 @@ function App() {
     // Always show auth form if no valid userId
     if (shouldShowAuth) {
         return (
-            <div className="app" style={{ minHeight: '100vh', width: '100%', position: 'relative', backgroundColor: '#f0f0f0' }}>
-                <div className="auth-container" style={{ display: 'flex', minHeight: '100vh', width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 9999, backgroundColor: 'transparent' }}>
-                    <div className="auth-card" style={{ display: 'block', visibility: 'visible', opacity: 1, position: 'relative', zIndex: 10, backgroundColor: 'white', padding: '2rem', borderRadius: '1rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+            <div className="app auth-app">
+                <div className="auth-container">
+                    <div className="auth-card">
                         <div className="auth-header">
                             <div className="auth-logo">🇦🇱</div>
                             <h2>Mirësevini në AlbLingo!</h2>
@@ -1378,16 +1389,20 @@ function App() {
             const adminUserId = parseInt(userId)
             if (!isNaN(adminUserId)) {
                 return (
-                    <AdminDashboard 
-                        userId={adminUserId} 
-                        onLogout={() => {
-                            setUserId(null)
-                            setIsAdmin(false)
-                            localStorage.removeItem('user_id')
-                            localStorage.removeItem('is_admin')
-                            localStorage.removeItem('username')
-                        }}
-                    />
+                    <LazyErrorBoundary label="panelit të administratorit">
+                        <Suspense fallback={<div className="route-loading">Duke ngarkuar panelin e administratorit…</div>}>
+                            <AdminDashboard
+                                userId={adminUserId}
+                                onLogout={() => {
+                                    setUserId(null)
+                                    setIsAdmin(false)
+                                    localStorage.removeItem('user_id')
+                                    localStorage.removeItem('is_admin')
+                                    localStorage.removeItem('username')
+                                }}
+                            />
+                        </Suspense>
+                    </LazyErrorBoundary>
                 )
             }
         } catch (e) {
@@ -1399,7 +1414,7 @@ function App() {
     return (
         <div className="app">
             {/* HEADER SECTION */}
-            <Header
+            <AppHeader
                 userStats={userStats}
                 selectedClass={selectedClass}
                 selectedCourse={selectedCourse}
@@ -1535,20 +1550,32 @@ function App() {
             </main>
 
             {/* Advanced AI Chatbot (floating) */}
-            <ChatbotFloating
-                userId={userId || undefined}
-                context={selectedLevel ? {
-                    current_level: selectedLevel.name,
-                    current_exercise: exercises[currentExerciseIndex]?.prompt,
-                } : undefined}
-            />
+            <LazyErrorBoundary label="bashkëbiseduesit">
+                <Suspense fallback={null}>
+                    <ChatbotFloating
+                        userId={userId || undefined}
+                        context={selectedLevel ? {
+                            current_level: selectedLevel.name,
+                            current_exercise: exercises[currentExerciseIndex]?.prompt,
+                        } : undefined}
+                    />
+                </Suspense>
+            </LazyErrorBoundary>
 
                 {showProfile && (
                     <div className="profile-overlay" onClick={() => setShowProfile(false)}>
-                        <div className="profile-card enhanced-profile-card" onClick={(e) => e.stopPropagation()}>
+                        <div
+                            ref={profileModalRef}
+                            className="profile-card enhanced-profile-card"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="profile-modal-title"
+                            tabIndex={-1}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <div className="profile-header">
-                                <div className="profile-title">👤 Profili im</div>
-                                <button className="profile-close" onClick={() => setShowProfile(false)}>×</button>
+                                <div className="profile-title" id="profile-modal-title">👤 Profili im</div>
+                                <button className="profile-close" aria-label="Mbyll profilin" onClick={() => setShowProfile(false)}>×</button>
                             </div>
                             
                             <div className="profile-content-enhanced">
@@ -1940,10 +1967,18 @@ function App() {
 
                 {showLeaderboard && (
                     <div className="profile-overlay" onClick={() => setShowLeaderboard(false)}>
-                        <div className="profile-card leaderboard-card" onClick={(e) => e.stopPropagation()}>
+                        <div
+                            ref={leaderboardModalRef}
+                            className="profile-card leaderboard-card"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="leaderboard-modal-title"
+                            tabIndex={-1}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <div className="profile-header">
-                                <div className="profile-title">🏆 {LEADERBOARD_TITLE}</div>
-                                <button className="profile-close" onClick={() => setShowLeaderboard(false)}>×</button>
+                                <div className="profile-title" id="leaderboard-modal-title">🏆 {LEADERBOARD_TITLE}</div>
+                                <button className="profile-close" aria-label="Mbyll renditjen" onClick={() => setShowLeaderboard(false)}>×</button>
                             </div>
                             <div className="leaderboard-content">
                                 {userRank && (
@@ -2002,10 +2037,18 @@ function App() {
 
                 {showLevelInfo && (
                     <div className="profile-overlay" onClick={() => setShowLevelInfo(false)}>
-                        <div className="profile-card level-info-card" onClick={(e) => e.stopPropagation()}>
+                        <div
+                            ref={levelInfoModalRef}
+                            className="profile-card level-info-card"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="level-info-modal-title"
+                            tabIndex={-1}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <div className="profile-header">
-                                <div className="profile-title">⭐ Informacion i Nivelit</div>
-                                <button className="profile-close" onClick={() => setShowLevelInfo(false)}>×</button>
+                                <div className="profile-title" id="level-info-modal-title">⭐ Informacion i Nivelit</div>
+                                <button className="profile-close" aria-label="Mbyll informacionin e nivelit" onClick={() => setShowLevelInfo(false)}>×</button>
                             </div>
                             <div className="level-info-content">
                                 <div className="level-summary">
@@ -2112,10 +2155,18 @@ function App() {
                 {/* Corpus Browse Overlay */}
                 {showCorpusBrowse && (
                     <div className="profile-overlay" onClick={() => { setShowCorpusBrowse(false); setSelectedCorpusDoc(null) }}>
-                        <div className="profile-card corpus-browse-card" onClick={(e) => e.stopPropagation()}>
+                        <div
+                            ref={corpusModalRef}
+                            className="profile-card corpus-browse-card"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="corpus-modal-title"
+                            tabIndex={-1}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <div className="profile-header">
-                                <div className="profile-title">📖 Korpusi i Drejtshkrimit</div>
-                                <button className="profile-close" onClick={() => { setShowCorpusBrowse(false); setSelectedCorpusDoc(null) }}>×</button>
+                                <div className="profile-title" id="corpus-modal-title">📖 Korpusi i Drejtshkrimit</div>
+                                <button className="profile-close" aria-label="Mbyll korpusin" onClick={() => { setShowCorpusBrowse(false); setSelectedCorpusDoc(null) }}>×</button>
                             </div>
                             <div className="corpus-browse-content">
                                 {selectedCorpusDoc ? (
@@ -2191,106 +2242,9 @@ function App() {
                 )}
 
             {/* FOOTER SECTION */}
-            <Footer />
+            <AppFooter />
             {message && <div className="message">{message}</div>}
         </div>
-    )
-}
-
-// Header Component
-function Header({ 
-    userStats, 
-    selectedClass, 
-    selectedCourse, 
-    onBackToClasses, 
-    onBackToCourses, 
-    onLogout,
-    onShowProfile,
-    onShowLeaderboard,
-    onShowLevelInfo,
-}: {
-    userStats: any
-    selectedClass: any
-    selectedCourse: any
-    onBackToClasses: () => void
-    onBackToCourses: () => void
-    onLogout: () => void
-    onShowProfile: () => void
-    onShowLeaderboard: () => void
-    onShowLevelInfo: () => void
-}) {
-    return (
-        <header className="header">
-            <div className="header-content">
-                <div className="header-main">
-                    <div className="header-logo">
-                        <span className="header-emoji">🇦🇱</span>
-                        <h1>AlbLingo</h1>
-                    </div>
-                    <div className="header-navigation">
-                        <button 
-                            className={`nav-btn ${!selectedClass ? 'active' : ''}`}
-                            onClick={onBackToClasses}
-                        >
-                            🏠 Shtëpia
-                        </button>
-                        {selectedClass && (
-                            <button 
-                                className="nav-btn"
-                                onClick={onBackToClasses}
-                            >
-                                ← Kthehu te Klasat
-                            </button>
-                        )}
-                        {selectedCourse && (
-                            <button 
-                                className="nav-btn"
-                                onClick={onBackToCourses}
-                            >
-                                ← Kthehu te Kurset
-                            </button>
-                        )}
-                    </div>
-                </div>
-                
-                {/* User Progress Bar */}
-                <div className="user-progress">
-                    <div 
-                        className="user-progress-fill" 
-                        style={{ width: `${(userStats.experience / userStats.nextLevelExp) * 100}%` }}
-                    ></div>
-                </div>
-                
-                <div className="user-info">
-                    <div className="user-stats">
-                        <div className="stat-item clickable-stat" onClick={onShowLevelInfo} title="Kliko për detaje">
-                            <span className="stat-icon">⭐</span>
-                            <span className="stat-value">Niveli {userStats.level}</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-icon">🏆</span>
-                            <span className="stat-value">{userStats.totalPoints} pikë</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-icon">🔥</span>
-                            <span className="stat-value">{userStats.streakDays} ditë</span>
-                        </div>
-                    </div>
-
-                    <button className="profile-btn" onClick={onShowProfile}>
-                        Profili
-                    </button>
-
-                    <button className="leaderboard-btn" onClick={onShowLeaderboard} title={LEADERBOARD_TITLE}>
-                        🏆 {LEADERBOARD_TITLE}
-                    </button>
-
-                    <button className="logout-btn" onClick={onLogout}>
-                        Dil
-                    </button>
-                </div>
-            </div>
-        </header>
     )
 }
 
@@ -2442,6 +2396,12 @@ function MainContent({
     void _aiCoachLevel; void _aiCoachLevelLoading; void _aiCoachLevelError; void _srsStats;
     void _aiExercises; void _aiResponses; void _aiFeedback; void _aiLoading; void _aiError;
     void _aiMessage; void _handleGenerateAIPractice; void _handleAIResponseChange; void _handleAIExerciseCheck;
+
+    const [isOCRWorkspaceOpen, setIsOCRWorkspaceOpen] = useState(false)
+    const ocrModalRef = useModalAccessibility<HTMLElement>(
+        isOCRWorkspaceOpen,
+        () => setIsOCRWorkspaceOpen(false)
+    )
 
     const getOCRIssueLabel = (type?: string) => {
         const labels: Record<string, string> = {
@@ -2646,12 +2606,44 @@ function MainContent({
                     </div>
                 )}
 
-                {/* OCR Container - positioned under sidebar-compact */}
+                {/* Compact OCR entry remains in the sidebar; the workspace opens in a focused modal. */}
                 {!selectedClass && !selectedCourse && !selectedLevel && (
-                    <section className="ocr-main-container ocr-left-positioned">
+                    <>
+                        <section className="ocr-launch-card">
+                            <div className="ocr-launch-icon" aria-hidden="true">📝</div>
+                            <div className="ocr-launch-copy">
+                                <h3>Kontrollo diktimin</h3>
+                                <p>Ngarko një foto dhe merr korrigjime të qarta të drejtshkrimit.</p>
+                            </div>
+                            <button className="ocr-launch-button" onClick={() => setIsOCRWorkspaceOpen(true)}>
+                                Hap kontrollin
+                            </button>
+                        </section>
+
+                        {isOCRWorkspaceOpen && (
+                            <div
+                                className="ocr-modal-overlay"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="ocr-modal-title"
+                                onClick={() => setIsOCRWorkspaceOpen(false)}
+                            >
+                                <section
+                                    ref={ocrModalRef}
+                                    className="ocr-main-container ocr-workspace-modal"
+                                    tabIndex={-1}
+                                    onClick={(event) => event.stopPropagation()}
+                                >
+                                    <button
+                                        className="ocr-modal-close"
+                                        onClick={() => setIsOCRWorkspaceOpen(false)}
+                                        aria-label="Mbyll kontrollin e diktimit"
+                                    >
+                                        ×
+                                    </button>
                     <div className="ocr-header">
                         <div>
-                            <h3>📝 Kontrollo Diktimin Tënd!</h3>
+                            <h3 id="ocr-modal-title">📝 Kontrollo diktimin tënd</h3>
                             <p className="ocr-subtitle">
                                 Bëj një foto të diktimit tënd dhe ne do ta kontrollojmë së bashku! Do të shohim nëse ka gabime dhe do të mësojmë si t'i rregullojmë. 🎯
                             </p>
@@ -2816,7 +2808,10 @@ function MainContent({
                             </div>
                         </div>
                     )}
-                </section>
+                                </section>
+                            </div>
+                        )}
+                    </>
                 )}
             </aside>
 
@@ -3404,63 +3399,27 @@ function MainContent({
                         
                         {/* AI Practice Section - ULTRA ADVANCED VERSION */}
                         {userId && selectedLevel && (
-                            <AdvancedAIPractice
-                                userId={userId}
-                                levelId={selectedLevel.id}
-                                onGenerateRequest={async () => {
-                                    return await generateAdvancedPractice({
-                                        user_id: userId,
-                                        level_id: selectedLevel.id,
-                                        count: 5,
-                                        difficulty: 'adaptive'
-                                    })
-                                }}
-                            />
+                            <LazyErrorBoundary label="ushtrimeve me AI">
+                                <Suspense fallback={<div className="section-loading">Duke ngarkuar ushtrimet me AI…</div>}>
+                                    <AdvancedAIPractice
+                                        userId={userId}
+                                        levelId={selectedLevel.id}
+                                        onGenerateRequest={async () => {
+                                            return await generateAdvancedPractice({
+                                                user_id: userId,
+                                                level_id: selectedLevel.id,
+                                                count: 5,
+                                                difficulty: 'adaptive'
+                                            })
+                                        }}
+                                    />
+                                </Suspense>
+                            </LazyErrorBoundary>
                         )}
                     </div>
                 ) : null}
             </div>
         </div>
-    )
-}
-
-// Footer Component
-function Footer() {
-    return (
-        <footer className="footer">
-            <div className="footer-content">
-                <div className="footer-section">
-                    <h4>🇦🇱AlbLingo</h4>
-                    <p>Platforma e mësimit të gjuhës shqipe për fëmijë</p>
-                </div>
-                <div className="footer-section">
-                    <h4>📚 Burimet</h4>
-                    <ul>
-                        <li>Klasat</li>
-                        <li>Kurset</li>
-                        <li>Ushtrimet</li>
-                        <li>AI Insights</li>
-                    </ul>
-                </div>
-                <div className="footer-section">
-                    <h4>🎯 Objektivat</h4>
-                    <ul>
-                        <li>Mësimi i gjuhës</li>
-                        <li>Përmirësimi i shkrimit</li>
-                        <li>Rritja e fjalorit</li>
-                        <li>Gramatika e saktë</li>
-                    </ul>
-                </div>
-                <div className="footer-section">
-                    <h4>📞 Kontakti</h4>
-                    <p>info@alblingo.al</p>
-                    <p>+355 XX XXX XXX</p>
-                </div>
-            </div>
-            <div className="footer-bottom">
-                <p>&copy; 2025 AlbLingo. Të gjitha të drejtat e rezervuara.</p>
-            </div>
-        </footer>
     )
 }
 

@@ -71,12 +71,13 @@
   }
 
   /* Progress bar spans the full width for a cleaner look */
-  .user-progress {
+  .header-progress-summary .user-progress {
     width: 100%;
   }
 
   /* User actions: a single tidy row that wraps gracefully */
-  .user-info {
+  .header-account,
+  .header-actions {
     flex-wrap: wrap;
     justify-content: center;
     gap: 8px;

@@ -1,6 +1,8 @@
-import { useState } from 'react'
-import AdvancedChatbot from './AdvancedChatbot'
+import { lazy, Suspense, useState } from 'react'
+import LazyErrorBoundary from './components/LazyErrorBoundary'
 import './ChatbotFloating.css'
+
+const AdvancedChatbot = lazy(() => import('./AdvancedChatbot'))
 
 interface ChatbotFloatingProps {
 	userId?: string
@@ -29,6 +31,8 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 				className={`chatbot-float-btn ${isOpen ? 'active' : ''}`}
 				onClick={handleToggle}
 				aria-label="Bashkëbiseduesi AI"
+				aria-expanded={isOpen}
+				aria-controls="chatbot-floating-panel"
 			>
 				{isOpen ? '✕' : '💬'}
 				{!isOpen && hasUnread && <span className="unread-badge"></span>}
@@ -37,12 +41,21 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 
 			{/* Chatbot Panel */}
 			{isOpen && (
-				<div className="chatbot-floating-panel">
-					<AdvancedChatbot
-						userId={userId}
-						context={context}
-						onClose={() => setIsOpen(false)}
-					/>
+				<div
+					id="chatbot-floating-panel"
+					className="chatbot-floating-panel"
+					role="dialog"
+					aria-label="Bashkëbiseduesi AI"
+				>
+					<LazyErrorBoundary label="bashkëbiseduesit">
+						<Suspense fallback={<div className="chatbot-panel-loading">Duke hapur bashkëbiseduesin…</div>}>
+							<AdvancedChatbot
+								userId={userId}
+								context={context}
+								onClose={() => setIsOpen(false)}
+							/>
+						</Suspense>
+					</LazyErrorBoundary>
 				</div>
 			)}
 		</>

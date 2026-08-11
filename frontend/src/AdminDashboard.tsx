@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import {
 	getAdminStats,
 	getAllUsers,
@@ -62,38 +62,37 @@ import {
 	type LinguisticMetrics,
 	type ResearchAIOverview,
 } from './api'
-import {
-	BarChart,
-	Bar,
-	PieChart,
-	Pie,
-	Cell,
-	LineChart,
-	Line,
-	AreaChart,
-	Area,
-	RadarChart,
-	PolarGrid,
-	PolarAngleAxis,
-	PolarRadiusAxis,
-	Radar,
-	ComposedChart,
-	XAxis,
-	YAxis,
-	CartesianGrid,
-	Tooltip,
-	Legend,
-	ResponsiveContainer
-} from 'recharts'
 import './AdminDashboard.css'
-import { exportUserReportToPDF } from './utils/pdfExport'
-import {
-	exportToCSV,
-	exportToJSON,
-	exportToExcel,
-	exportScientificPDF,
-	type ExportData
-} from './utils/dataExport'
+import type { ExportData } from './utils/dataExport'
+
+const AdminCharts = lazy(() => import('./admin/AdminCharts'))
+const BarChart = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.BarChart })))
+const Bar = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.Bar })))
+const PieChart = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.PieChart })))
+const Pie = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.Pie })))
+const Cell = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.Cell })))
+const LineChart = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.LineChart })))
+const Line = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.Line })))
+const AreaChart = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.AreaChart })))
+const Area = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.Area })))
+const RadarChart = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.RadarChart })))
+const PolarGrid = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.PolarGrid })))
+const PolarAngleAxis = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.PolarAngleAxis })))
+const PolarRadiusAxis = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.PolarRadiusAxis })))
+const Radar = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.Radar })))
+const ComposedChart = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.ComposedChart })))
+const XAxis = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.XAxis })))
+const YAxis = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.YAxis })))
+const CartesianGrid = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.CartesianGrid })))
+const Tooltip = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.Tooltip })))
+const Legend = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.Legend })))
+const ResponsiveContainer = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.ResponsiveContainer })))
+
+const chartFallback = (
+	<div className="admin-loading" role="status" aria-live="polite">
+		Duke ngarkuar grafikët...
+	</div>
+)
 
 interface AdminDashboardProps {
 	userId: number
@@ -618,6 +617,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 		setIsExporting(true)
 		try {
 			const exportData = prepareExportData()
+			const { exportToCSV } = await import('./utils/dataExport')
 			exportToCSV(exportData)
 			alert('✅ Të dhënat u eksportuan me sukses në CSV!')
 		} catch (error) {
@@ -632,6 +632,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 		setIsExporting(true)
 		try {
 			const exportData = prepareExportData()
+			const { exportToJSON } = await import('./utils/dataExport')
 			exportToJSON(exportData)
 			alert('✅ Të dhënat u eksportuan me sukses në JSON!')
 		} catch (error) {
@@ -646,7 +647,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 		setIsExporting(true)
 		try {
 			const exportData = prepareExportData()
-			exportScientificPDF(exportData)
+			const { exportScientificPDF } = await import('./utils/dataExport')
+			await exportScientificPDF(exportData)
 			alert('✅ Raporti shkencor u gjenerua me sukses në PDF!')
 		} catch (error) {
 			console.error('Gabim në gjenerimin e PDF:', error)
@@ -660,6 +662,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 		setIsExporting(true)
 		try {
 			const exportData = prepareExportData()
+			const { exportToExcel } = await import('./utils/dataExport')
 			await exportToExcel(exportData)
 			alert('✅ Të dhënat u eksportuan me sukses në Excel!')
 		} catch (error) {
@@ -826,6 +829,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 
 	return (
 		<div className="admin-dashboard">
+			<Suspense fallback={chartFallback}>
 			<div className="admin-header">
 				<h1>🛡️ Paneli i Administratorit</h1>
 				<button className="admin-logout-btn" onClick={onLogout}>Dil</button>
@@ -861,6 +865,21 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 				) : (
 					<>
 					{activeTab === 'stats' && stats && (
+						<Suspense fallback={chartFallback}>
+							<AdminCharts
+								kind="stats"
+								stats={stats}
+								timeRange={timeRange}
+								onTimeRangeChange={setTimeRange}
+								isExporting={isExporting}
+								onExportCSV={handleExportCSV}
+								onExportJSON={handleExportJSON}
+								onExportPDF={handleExportPDF}
+								onExportExcel={handleExportExcel}
+							/>
+						</Suspense>
+					)}
+					{false && activeTab === 'stats' && stats && (
 						<>
 							<div className="stats-grid">
 								<div className="stat-card">
@@ -2475,6 +2494,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 					}}
 				/>
 			)}
+			</Suspense>
 		</div>
 	)
 }
@@ -2914,6 +2934,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 		setIsExporting(true)
 		try {
 			// Method 1: Text-based PDF (faster, smaller file)
+			const { exportUserReportToPDF } = await import('./utils/pdfExport')
 			await exportUserReportToPDF(
 				user.username,
 				user.email || 'Email jo i specifikuar',

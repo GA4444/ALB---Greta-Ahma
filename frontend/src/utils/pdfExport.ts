@@ -1,6 +1,3 @@
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
-
 interface UserReportData {
 	user_info?: {
 		username: string
@@ -34,6 +31,7 @@ export async function exportUserReportToPDF(
 	reportData: UserReportData
 ): Promise<void> {
 	try {
+		const { default: jsPDF } = await import('jspdf')
 		// Create PDF with better settings
 		const pdf = new jsPDF({
 			orientation: 'p',
@@ -611,6 +609,10 @@ export async function exportUserReportWithChartsToPDF(
 	username: string
 ): Promise<void> {
 	try {
+		const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+			import('html2canvas'),
+			import('jspdf'),
+		])
 		// Hide buttons and non-essential elements
 		const exportBtn = modalElement.querySelector('.export-report-btn') as HTMLElement
 		const closeBtn = modalElement.querySelector('.modal-close') as HTMLElement
