@@ -1,8 +1,45 @@
+import logging
 import os
+import threading
+import time
+from datetime import datetime, timezone
+
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .database import Base, engine
+
+from .database import database_dialect, init_database
 from .routers import exercises, progress, seed, auth, ai, audio, course_progression, database_viewer, leaderboard, admin, ocr, gamification, chatbot, chatbot_advanced, ai_advanced_practice, corpus_admin, research_ai
+
+logger = logging.getLogger(__name__)
+_db_ready = False
+
+
+def _init_database_async() -> None:
+	global _db_ready
+	last_error = None
+	for attempt in range(1, 6):
+		try:
+			init_database()
+			_db_ready = True
+			logger.info("Database schema ready on attempt %s (%s)", attempt, database_dialect())
+			_start_background_tasks()
+			return
+		except Exception as exc:
+			last_error = exc
+			logger.warning("Database init attempt %s failed: %s", attempt, exc)
+			time.sleep(min(5 * attempt, 20))
+	logger.error("Database init gave up after retries: %s", last_error)
+
+
+def _start_background_tasks() -> None:
+	enabled = os.getenv("ENABLE_BACKGROUND_TASKS", "false").lower() in ("true", "1", "yes")
+	if not enabled:
+		return
+	try:
+		from .background_tasks import start_background_tasks
+		start_background_tasks()
+	except Exception as exc:
+		logger.warning("Background tasks not started: %s", exc)
 
 
 def create_app() -> FastAPI:
@@ -28,10 +65,20 @@ def create_app() -> FastAPI:
 		allow_headers=["*"],
 	)
 
-	# Create tables if not exist
-	Base.metadata.create_all(bind=engine)
-	from .email_migrations import migrate_email_notification_schema
-	migrate_email_notification_schema(engine)
+	# Liveness must be registered before any database work so Render/GitHub
+	# keep-alive can succeed while Postgres is still waking up.
+	@app.get("/")
+	def read_root():
+		return {"message": "Welcome to Shqipto API", "status": "running"}
+
+	@app.get("/health")
+	def health_check():
+		return {
+			"status": "healthy",
+			"timestamp": datetime.now(timezone.utc).isoformat(),
+			"database": database_dialect(),
+			"database_ready": _db_ready,
+		}
 
 	# Routers
 	app.include_router(exercises.router, prefix="/api", tags=["exercises"])
@@ -52,40 +99,26 @@ def create_app() -> FastAPI:
 	app.include_router(corpus_admin.router, prefix="/api/admin", tags=["corpus-admin"])
 	app.include_router(research_ai.router, prefix="/api", tags=["research-ai"])
 
+	@app.on_event("startup")
+	def startup_event():
+		threading.Thread(
+			target=_init_database_async,
+			daemon=True,
+			name="db-init",
+		).start()
+
+	@app.on_event("shutdown")
+	def shutdown_event():
+		try:
+			from .background_tasks import stop_background_tasks
+			stop_background_tasks()
+		except Exception:
+			pass
+
 	return app
 
 
 app = create_app()
-
-# Start background email scheduler if enabled
-@app.on_event("startup")
-def startup_event():
-	enabled = os.getenv("ENABLE_BACKGROUND_TASKS", "false").lower() in ("true", "1", "yes")
-	if enabled:
-		try:
-			from .background_tasks import start_background_tasks
-			start_background_tasks()
-		except Exception as e:
-			print(f"[WARNING] Background tasks not started: {e}")
-
-
-@app.on_event("shutdown")
-def shutdown_event():
-	try:
-		from .background_tasks import stop_background_tasks
-		stop_background_tasks()
-	except Exception:
-		pass
-
-# Root endpoint
-@app.get("/")
-def read_root():
-	return {"message": "Welcome to Shqipto API", "status": "running"}
-
-# Health check endpoint
-@app.get("/health")
-def health_check():
-	return {"status": "healthy", "timestamp": "2024-08-21T15:44:00Z"}
 
 
 # ─────────────────────────────────────────────────────────

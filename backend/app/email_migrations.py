@@ -40,7 +40,6 @@ def migrate_email_notification_schema(engine: Engine) -> None:
             if "duration_seconds" not in attempt_columns:
                 connection.execute(text("ALTER TABLE attempts ADD COLUMN duration_seconds INTEGER"))
                 logger.info("Added attempts.duration_seconds")
-
-        connection.execute(text(
-            "CREATE INDEX IF NOT EXISTS ix_attempts_created_at ON attempts (created_at)"
-        ))
+            connection.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_attempts_created_at ON attempts (created_at)"
+            ))

@@ -1,24 +1,72 @@
+import logging
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 load_dotenv()
+logger = logging.getLogger(__name__)
+
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./dev.db")
 
 # Render.com provides postgres:// but SQLAlchemy 2.x requires postgresql://
 if DATABASE_URL.startswith("postgres://"):
 	DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-connect_args = {}
-if DATABASE_URL.startswith("sqlite"):
-	connect_args = {"check_same_thread": False}
 
-engine = create_engine(DATABASE_URL, echo=False, future=True, connect_args=connect_args)
+def _engine_kwargs(url: str) -> dict:
+	kwargs = {
+		"echo": False,
+		"future": True,
+		"pool_pre_ping": True,
+	}
+	if url.startswith("sqlite"):
+		kwargs["connect_args"] = {"check_same_thread": False}
+		return kwargs
+
+	kwargs["pool_recycle"] = 300
+	kwargs["pool_timeout"] = 10
+	kwargs["connect_args"] = {"connect_timeout": 10}
+	return kwargs
+
+
+engine = create_engine(DATABASE_URL, **_engine_kwargs(DATABASE_URL))
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)
 
 Base = declarative_base()
+
+
+def database_dialect() -> str:
+	if DATABASE_URL.startswith("sqlite"):
+		return "sqlite"
+	if DATABASE_URL.startswith("postgresql"):
+		return "postgresql"
+	return "other"
+
+
+def check_database() -> bool:
+	try:
+		with engine.connect() as connection:
+			connection.execute(text("SELECT 1"))
+		return True
+	except Exception as exc:
+		logger.warning("Database readiness check failed: %s", exc)
+		return False
+
+
+def init_database() -> None:
+	"""Create missing tables and apply lightweight migrations.
+
+	Must stay off the import path so Gunicorn can bind and serve /health
+	even when Render Postgres is asleep or unreachable.
+	"""
+	from . import models  # noqa: F401  — register metadata
+	from .email_migrations import migrate_email_notification_schema
+
+	Base.metadata.create_all(bind=engine)
+	migrate_email_notification_schema(engine)
+
 
 def get_db():
 	from sqlalchemy.orm import Session
