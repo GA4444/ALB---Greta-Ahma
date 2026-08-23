@@ -2908,6 +2908,16 @@ html, body, #root {
   border: 1px solid var(--border-light);
 }
 
+.stat-item.curriculum-stat {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.stat-item.curriculum-stat .stat-value {
+  color: #1e40af;
+  font-weight: 700;
+}
+
 .stat-icon {
   font-size: var(--font-size-lg);
 }

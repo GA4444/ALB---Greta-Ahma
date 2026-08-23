@@ -17,6 +17,40 @@ const ChatbotFloating = lazy(() => import('./ChatbotFloating'))
 
 const LEADERBOARD_TITLE = 'Vendi yt në renditje'
 
+/** Curriculum "Niveli N" lives on the Course; each course often has a single Level with order_index=1. */
+const getClassNumber = (selectedClass: ClassData | null | undefined, classes: ClassData[] = []): number => {
+	if (!selectedClass) return 1
+	if (selectedClass.order_index && selectedClass.order_index > 0) return selectedClass.order_index
+	const fromName = selectedClass.name?.match(/Klasa\s+(\d+)/i)
+	if (fromName) return parseInt(fromName[1], 10)
+	const idx = classes.findIndex((c) => c.id === selectedClass.id)
+	return idx >= 0 ? idx + 1 : 1
+}
+
+const getCurriculumLevelNumber = (
+	selectedCourse: CourseOut | null | undefined,
+	selectedLevel: LevelOut | null | undefined,
+): number => {
+	if (selectedCourse?.order_index && selectedCourse.order_index > 0) return selectedCourse.order_index
+	const fromCourseName = selectedCourse?.name?.match(/Niveli\s+(\d+)/i)
+	if (fromCourseName) return parseInt(fromCourseName[1], 10)
+	if (selectedLevel?.order_index && selectedLevel.order_index > 0) return selectedLevel.order_index
+	const fromLevelName = selectedLevel?.name?.match(/Niveli\s+(\d+)/i)
+	if (fromLevelName) return parseInt(fromLevelName[1], 10)
+	return 1
+}
+
+const formatCurriculumLabel = (
+	selectedClass: ClassData | null | undefined,
+	selectedCourse: CourseOut | null | undefined,
+	selectedLevel: LevelOut | null | undefined,
+	classes: ClassData[] = [],
+): string => {
+	const classNumber = getClassNumber(selectedClass, classes)
+	const levelNumber = getCurriculumLevelNumber(selectedCourse, selectedLevel)
+	return `Niveli ${levelNumber} Klasa ${classNumber}`
+}
+
 const normalizeText = (value: string) => {
     return value.normalize('NFKC').toLowerCase().trim().replace(/\s+/g, ' ')
 }
@@ -1399,6 +1433,13 @@ function App() {
                 userStats={userStats}
                 selectedClass={selectedClass}
                 selectedCourse={selectedCourse}
+                curriculumLabel={
+                    selectedClass && selectedCourse
+                        ? formatCurriculumLabel(selectedClass, selectedCourse, selectedLevel, classes)
+                        : selectedClass
+                            ? `Klasa ${getClassNumber(selectedClass, classes)}`
+                            : null
+                }
                 onBackToClasses={() => handleClassClick(null)}
                 onBackToCourses={() => handleCourseClick(null)}
                 onLogout={handleLogout}
@@ -2410,8 +2451,10 @@ function MainContent({
     }
 
     const currentExercise = exercises[currentExerciseIndex]
-    const classLabel = selectedClass ? `Klasa ${selectedClass.order_index || selectedClass.name}` : 'klasa jote'
-    const levelLabel = selectedLevel ? `Niveli ${selectedLevel.order_index}` : 'niveli yt'
+    const classLabel = selectedClass ? `Klasa ${getClassNumber(selectedClass, classes)}` : 'klasa jote'
+    const levelLabel = selectedCourse || selectedLevel
+        ? formatCurriculumLabel(selectedClass, selectedCourse, selectedLevel, classes)
+        : 'niveli yt'
     const getExerciseCategoryLabel = (category?: string) => {
         const labels: Record<string, string> = {
             listen_write: 'diktim me dëgjim',
@@ -3070,15 +3113,11 @@ function MainContent({
                                 </>
                             ) : courseLevels.map((level, index) => {
                                 const levelProgress = getLevelProgress(level.id)
-                                
-                                // Format level name as "Niveli X Klasa Y" (each class starts from Niveli 1)
-                                // Get class number with fallback
-                                const classNumber = selectedClass 
-                                    ? (selectedClass.order_index || classes.findIndex(c => c.id === selectedClass.id) + 1 || 1)
-                                    : 1
-                                const levelDisplayName = selectedClass
-                                    ? `Niveli ${level.order_index} Klasa ${classNumber}`
-                                    : level.name
+                                const levelDisplayName = selectedClass && selectedCourse
+                                    ? formatCurriculumLabel(selectedClass, selectedCourse, level, classes)
+                                    : selectedClass
+                                        ? `Niveli ${getCurriculumLevelNumber(selectedCourse, level)} Klasa ${getClassNumber(selectedClass, classes)}`
+                                        : level.name
                                 return (
                                     <div
                                         key={level.id}
@@ -3086,7 +3125,9 @@ function MainContent({
                                         onClick={() => onLevelClick(level)}
                                     >
                                         <div className="level-card-header-modern">
-                                            <div className="level-number-circle">{index + 1}</div>
+                                            <div className="level-number-circle">
+                                                {getCurriculumLevelNumber(selectedCourse, level) || index + 1}
+                                            </div>
                                             <div className="level-info-wrapper">
                                                 <h3 className="level-name-modern">{levelDisplayName}</h3>
                                                 <p className="level-description-modern">{level.description}</p>
@@ -3129,18 +3170,14 @@ function MainContent({
                                 <div className="exercise-badge-modern">Ushtrimet</div>
                                 <h2 className="exercise-title-modern">
                                     {selectedLevel && selectedClass && selectedCourse
-                                        ? (() => {
-                                            const classNumber = selectedClass.order_index || classes.findIndex(c => c.id === selectedClass.id) + 1 || 1
-                                            return `Niveli ${selectedLevel.order_index} Klasa ${classNumber}`
-                                          })()
+                                        ? formatCurriculumLabel(selectedClass, selectedCourse, selectedLevel, classes)
                                         : selectedLevel?.name || 'Ushtrimet'
                                     }
                                 </h2>
                                 <p className="exercise-subtitle-modern">
                                     {selectedLevel.description ? selectedLevel.description : (() => {
                                         if (selectedLevel && selectedClass && selectedCourse) {
-                                            const classNumber = selectedClass.order_index || classes.findIndex(c => c.id === selectedClass.id) + 1 || 1
-                                            return `Përgjigjuni pyetjeve për të përfunduar Niveli ${selectedLevel.order_index} Klasa ${classNumber}`
+                                            return `Përgjigjuni pyetjeve për të përfunduar ${formatCurriculumLabel(selectedClass, selectedCourse, selectedLevel, classes)}`
                                         }
                                         return `Përgjigjuni pyetjeve për të përfunduar ${selectedLevel?.name || 'ushtrimet'}`
                                     })()}
@@ -3180,9 +3217,9 @@ function MainContent({
                                  exercises[currentExerciseIndex].category === 'synonyms_antonyms' && (
                                     <div className="exercise-instruction-text">
                                         {(() => {
-                                            // For Class 1, Level 3: first 5 are antonyms, rest are synonyms
-                                            const isClass1 = selectedClass?.order_index === 1
-                                            const isLevel3 = selectedLevel?.order_index === 3
+                                            // For Class 1, Niveli 3 (course): first 5 are antonyms, rest are synonyms
+                                            const isClass1 = getClassNumber(selectedClass, classes) === 1
+                                            const isLevel3 = getCurriculumLevelNumber(selectedCourse, selectedLevel) === 3
                                             
                                             if (isClass1 && isLevel3) {
                                                 // First 5 exercises (0-4) are antonyms

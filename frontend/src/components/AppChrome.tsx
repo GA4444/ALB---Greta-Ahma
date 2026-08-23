@@ -10,6 +10,7 @@ interface AppHeaderProps {
 	}
 	selectedClass: unknown
 	selectedCourse: unknown
+	curriculumLabel?: string | null
 	onBackToClasses: () => void
 	onBackToCourses: () => void
 	onLogout: () => void
@@ -22,6 +23,7 @@ export function AppHeader({
 	userStats,
 	selectedClass,
 	selectedCourse,
+	curriculumLabel,
 	onBackToClasses,
 	onBackToCourses,
 	onLogout,
@@ -75,14 +77,20 @@ export function AppHeader({
 						</div>
 
 						<div className="user-stats">
+							{curriculumLabel && (
+								<div className="stat-item curriculum-stat" title="Pozicioni yt në mësim">
+									<span className="stat-icon">📚</span>
+									<span className="stat-value">{curriculumLabel}</span>
+								</div>
+							)}
 							<button
 								type="button"
 								className="stat-item clickable-stat"
 								onClick={onShowLevelInfo}
-								title="Kliko për detaje"
+								title="Niveli i përvojës (nga pikët)"
 							>
 								<span className="stat-icon">⭐</span>
-								<span className="stat-value">Niveli {userStats.level}</span>
+								<span className="stat-value">XP {userStats.level}</span>
 							</button>
 							<div className="stat-item">
 								<span className="stat-icon">🏆</span>
