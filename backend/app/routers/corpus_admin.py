@@ -351,7 +351,23 @@ def linguistic_metrics(
 
     docs = q.all()
     if not docs:
-        return {"error": "Nuk ka dokumente për këto filtra"}
+        return {
+            "empty": True,
+            "document_count": 0,
+            "total_tokens": 0,
+            "unique_tokens": 0,
+            "type_token_ratio": 0.0,
+            "avg_word_length": 0.0,
+            "avg_sentence_length": 0.0,
+            "hapax_legomena": 0,
+            "dis_legomena": 0,
+            "yules_k": 0.0,
+            "top_short_words": [],
+            "top_long_words": [],
+            "word_length_distribution": [],
+            "sentence_length_stats": {"min": 0, "max": 0, "avg": 0.0, "median": 0},
+            "message": "Korpusi është bosh. Përdorni «Populim Automatik nga Kurset» për ta mbushur.",
+        }
 
     all_tokens: list[str] = []
     total_chars = 0

@@ -1029,6 +1029,8 @@ export interface CorpusFuseCode {
 }
 
 export interface LinguisticMetrics {
+	empty?: boolean
+	message?: string
 	document_count: number
 	total_tokens: number
 	unique_tokens: number

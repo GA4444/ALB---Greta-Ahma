@@ -1803,9 +1803,32 @@ textarea:focus-visible {
 /* Action buttons */
 .corpus-actions {
 	display: flex;
-	gap: 0.75rem;
 	flex-wrap: wrap;
-	margin-top: 0.5rem;
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+
+.corpus-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.75rem;
+	padding: 1.25rem 1.5rem;
+	margin-top: 1rem;
+	border: 1px solid #dbe7f1;
+	border-radius: 12px;
+	background: #f7fbff;
+	color: #334155;
+}
+
+.corpus-empty-state p {
+	margin: 0;
+	max-width: 42rem;
+	line-height: 1.5;
+}
+
+.corpus-empty-state .corpus-action-btn {
+	margin-right: 0.5rem;
 }
 .corpus-action-btn {
 	padding: 0.65rem 1.25rem;

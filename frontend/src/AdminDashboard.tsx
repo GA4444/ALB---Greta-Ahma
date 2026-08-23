@@ -132,6 +132,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 	const [corpusFuseCodes, setCorpusFuseCodes] = useState<CorpusFuseCode[]>([])
 	const [corpusPage, setCorpusPage] = useState(0)
 	const [linguisticMetrics, setLinguisticMetrics] = useState<LinguisticMetrics | null>(null)
+	const [corpusAnalysisLoading, setCorpusAnalysisLoading] = useState(false)
+	const [corpusAnalysisError, setCorpusAnalysisError] = useState<string | null>(null)
 	const [researchOverview, setResearchOverview] = useState<ResearchAIOverview | null>(null)
 	const [instructionDataset, setInstructionDataset] = useState<any>(null)
 	const [irtSummary, setIrtSummary] = useState<any>(null)
@@ -235,22 +237,51 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 		try {
 			const res = await getCorpusWordFrequencies(userId, { top_n: 100 })
 			setCorpusWordFreqs(res)
-		} catch (e) { console.error(e) }
+		} catch (e) {
+			console.error(e)
+			setCorpusWordFreqs({ total_unique_words: 0, top_words: [] })
+		}
 	}
 
 	const loadCorpusDuplicates = async () => {
 		try {
 			const res = await getCorpusDuplicates(userId)
 			setCorpusDuplicates(res)
-		} catch (e) { console.error(e) }
+		} catch (e) {
+			console.error(e)
+			setCorpusDuplicates({ total_duplicate_groups: 0, groups: [] })
+		}
 	}
 
 	const loadLinguisticMetrics = async () => {
+		setCorpusAnalysisLoading(true)
+		setCorpusAnalysisError(null)
 		try {
 			const res = await getCorpusLinguisticMetrics(userId)
-			setLinguisticMetrics(res)
-		} catch (e) { console.error(e) }
+			if ((res as any)?.error || res.empty) {
+				setLinguisticMetrics(res)
+				setCorpusAnalysisError(res.message || (res as any).error || 'Korpusi është bosh.')
+			} else {
+				setLinguisticMetrics(res)
+			}
+		} catch (e: any) {
+			console.error(e)
+			setLinguisticMetrics(null)
+			setCorpusAnalysisError(e?.response?.data?.detail || 'Analiza linguistike dështoi.')
+		} finally {
+			setCorpusAnalysisLoading(false)
+		}
 	}
+
+	const renderCorpusEmptyState = (title: string) => (
+		<div className="corpus-empty-state" role="status">
+			<strong>{title}</strong>
+			<p>Korpusi është bosh pas migrimit të databazës. Mbusheni nga ushtrimet e klasave.</p>
+			<button type="button" className="corpus-action-btn primary" onClick={handleAutoPopulate}>
+				Populim Automatik nga Kurset
+			</button>
+		</div>
+	)
 
 	const runResearchAction = async (action: 'generate' | 'augment' | 'feedback' | 'evaluate' | 'grade-fit') => {
 		setResearchLoadingAction(action)
@@ -437,7 +468,14 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 		try {
 			const result = await autoPopulateCorpus(userId)
 			alert(`U krijuan ${result.created} dokumente të reja. ${result.skipped_duplicates} u kapërcyen (dublikatë).`)
+			setLinguisticMetrics(null)
+			setCorpusWordFreqs(null)
+			setCorpusDuplicates(null)
+			setCorpusAnalysisError(null)
 			await loadData()
+			if (result.created > 0) {
+				await Promise.all([loadLinguisticMetrics(), loadCorpusWordFreqs(), loadCorpusDuplicates()])
+			}
 		} catch (error) {
 			alert('Gabim në populim automatik')
 		}
@@ -1721,6 +1759,12 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										<button className="corpus-action-btn" onClick={handleValidateAll}>Valido Të Gjitha</button>
 										<button className="corpus-action-btn" onClick={handleReprocessAll}>Ripërpuno Të Gjitha</button>
 									</div>
+									{corpusStats.total_documents === 0 && (
+										<div className="corpus-empty-state" style={{ marginTop: '1rem' }}>
+											<strong>Korpusi është bosh.</strong>
+											<p>Pas kalimit në Neon, dokumentet e korpusit nuk u transferuan. Kliko «Populim Automatik nga Kurset» për ta mbushur nga ushtrimet.</p>
+										</div>
+									)}
 									</>
 								)}
 
@@ -1823,17 +1867,22 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 								{corpusSubTab === 'linguistic' && (
 									<div className="corpus-linguistic-section">
 										<h2>Analiza Linguistike e Korpusit</h2>
-										{linguisticMetrics ? (
+										{corpusAnalysisLoading ? (
+											<div className="admin-loading">Duke analizuar korpusin...</div>
+										) : corpusStats && corpusStats.total_documents === 0 ? (
+											renderCorpusEmptyState('Nuk ka tekst për analizë linguistike')
+										) : linguisticMetrics && !linguisticMetrics.empty ? (
 											<>
 												<div className="corpus-kpi-grid">
-													<div className="corpus-kpi-card"><div className="kpi-label">TTR (Type-Token Ratio)</div><div className="kpi-value">{linguisticMetrics.type_token_ratio.toFixed(4)}</div><div className="kpi-desc">Diversiteti leksikor</div></div>
-													<div className="corpus-kpi-card"><div className="kpi-label">Gjatësia Mesatare e Fjalës</div><div className="kpi-value">{linguisticMetrics.avg_word_length.toFixed(2)}</div><div className="kpi-desc">Karaktere për fjalë</div></div>
-													<div className="corpus-kpi-card"><div className="kpi-label">Gjatësia Mesatare e Fjalisë</div><div className="kpi-value">{linguisticMetrics.avg_sentence_length.toFixed(1)}</div><div className="kpi-desc">Fjalë për fjali</div></div>
-													<div className="corpus-kpi-card"><div className="kpi-label">Hapax Legomena</div><div className="kpi-value">{linguisticMetrics.hapax_legomena.toLocaleString()}</div><div className="kpi-desc">Fjalë që shfaqen vetëm 1 herë</div></div>
-													<div className="corpus-kpi-card"><div className="kpi-label">Dis Legomena</div><div className="kpi-value">{linguisticMetrics.dis_legomena.toLocaleString()}</div><div className="kpi-desc">Fjalë që shfaqen vetëm 2 herë</div></div>
-													<div className="corpus-kpi-card"><div className="kpi-label">Yule's K</div><div className="kpi-value">{linguisticMetrics.yules_k.toFixed(2)}</div><div className="kpi-desc">Konstanta e pasurueshmërisë leksikore</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">TTR (Type-Token Ratio)</div><div className="kpi-value">{Number(linguisticMetrics.type_token_ratio || 0).toFixed(4)}</div><div className="kpi-desc">Diversiteti leksikor</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">Gjatësia Mesatare e Fjalës</div><div className="kpi-value">{Number(linguisticMetrics.avg_word_length || 0).toFixed(2)}</div><div className="kpi-desc">Karaktere për fjalë</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">Gjatësia Mesatare e Fjalisë</div><div className="kpi-value">{Number(linguisticMetrics.avg_sentence_length || 0).toFixed(1)}</div><div className="kpi-desc">Fjalë për fjali</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">Hapax Legomena</div><div className="kpi-value">{Number(linguisticMetrics.hapax_legomena || 0).toLocaleString()}</div><div className="kpi-desc">Fjalë që shfaqen vetëm 1 herë</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">Dis Legomena</div><div className="kpi-value">{Number(linguisticMetrics.dis_legomena || 0).toLocaleString()}</div><div className="kpi-desc">Fjalë që shfaqen vetëm 2 herë</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">Yule's K</div><div className="kpi-value">{Number(linguisticMetrics.yules_k || 0).toFixed(2)}</div><div className="kpi-desc">Konstanta e pasurueshmërisë leksikore</div></div>
 												</div>
 
+												{(linguisticMetrics.word_length_distribution?.length ?? 0) > 0 && (
 												<div className="charts-container">
 													<div className="chart-card chart-card-full">
 														<h3 className="chart-title">Shpërndarja e Gjatësisë së Fjalëve</h3>
@@ -1848,8 +1897,9 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 														</ResponsiveContainer>
 													</div>
 												</div>
+												)}
 
-												{corpusWordFreqs && (
+												{corpusWordFreqs && (corpusWordFreqs.top_words?.length ?? 0) > 0 && (
 													<>
 														<h3 className="corpus-section-title">Top 30 Fjalët Më të Shpeshta</h3>
 														<div className="chart-card chart-card-full">
@@ -1863,7 +1913,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 																</BarChart>
 															</ResponsiveContainer>
 														</div>
-														<p className="corpus-freq-summary">Fjalë unike totale: <strong>{corpusWordFreqs.total_unique_words.toLocaleString()}</strong></p>
+														<p className="corpus-freq-summary">Fjalë unike totale: <strong>{Number(corpusWordFreqs.total_unique_words || 0).toLocaleString()}</strong></p>
 													</>
 												)}
 
@@ -1872,7 +1922,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 														<h3 className="chart-title">Fjalët e Shkurtra (1–3 karaktere)</h3>
 														<div className="corpus-freq-table">
 															<table className="admin-table"><thead><tr><th>Fjala</th><th>Frekuenca</th></tr></thead><tbody>
-																{linguisticMetrics.top_short_words.map(w => <tr key={w.word}><td><strong>{w.word}</strong></td><td>{w.count.toLocaleString()}</td></tr>)}
+																{(linguisticMetrics.top_short_words || []).map(w => <tr key={w.word}><td><strong>{w.word}</strong></td><td>{w.count.toLocaleString()}</td></tr>)}
 															</tbody></table>
 														</div>
 													</div>
@@ -1880,7 +1930,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 														<h3 className="chart-title">Fjalët e Gjata (8+ karaktere)</h3>
 														<div className="corpus-freq-table">
 															<table className="admin-table"><thead><tr><th>Fjala</th><th>Frekuenca</th></tr></thead><tbody>
-																{linguisticMetrics.top_long_words.map(w => <tr key={w.word}><td><strong>{w.word}</strong></td><td>{w.count.toLocaleString()}</td></tr>)}
+																{(linguisticMetrics.top_long_words || []).map(w => <tr key={w.word}><td><strong>{w.word}</strong></td><td>{w.count.toLocaleString()}</td></tr>)}
 															</tbody></table>
 														</div>
 													</div>
@@ -1888,14 +1938,22 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 
 												<h3 className="corpus-section-title">Statistikat e Fjalive</h3>
 												<div className="corpus-kpi-grid">
-													<div className="corpus-kpi-card"><div className="kpi-label">Min</div><div className="kpi-value">{linguisticMetrics.sentence_length_stats.min}</div><div className="kpi-desc">Fjalia më e shkurtër</div></div>
-													<div className="corpus-kpi-card"><div className="kpi-label">Max</div><div className="kpi-value">{linguisticMetrics.sentence_length_stats.max}</div><div className="kpi-desc">Fjalia më e gjatë</div></div>
-													<div className="corpus-kpi-card"><div className="kpi-label">Mesatarja</div><div className="kpi-value">{linguisticMetrics.sentence_length_stats.avg.toFixed(1)}</div><div className="kpi-desc">Fjalë për fjali</div></div>
-													<div className="corpus-kpi-card"><div className="kpi-label">Mediana</div><div className="kpi-value">{linguisticMetrics.sentence_length_stats.median}</div><div className="kpi-desc">Vlera e mesme</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">Min</div><div className="kpi-value">{linguisticMetrics.sentence_length_stats?.min ?? 0}</div><div className="kpi-desc">Fjalia më e shkurtër</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">Max</div><div className="kpi-value">{linguisticMetrics.sentence_length_stats?.max ?? 0}</div><div className="kpi-desc">Fjalia më e gjatë</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">Mesatarja</div><div className="kpi-value">{Number(linguisticMetrics.sentence_length_stats?.avg || 0).toFixed(1)}</div><div className="kpi-desc">Fjalë për fjali</div></div>
+													<div className="corpus-kpi-card"><div className="kpi-label">Mediana</div><div className="kpi-value">{linguisticMetrics.sentence_length_stats?.median ?? 0}</div><div className="kpi-desc">Vlera e mesme</div></div>
 												</div>
 											</>
 										) : (
-											<div className="admin-loading">Duke analizuar korpusin...</div>
+											<div className="corpus-empty-state" role="alert">
+												<strong>{corpusAnalysisError || 'Analiza nuk është gati.'}</strong>
+												<button type="button" className="corpus-action-btn primary" onClick={() => loadLinguisticMetrics()}>
+													Provo përsëri
+												</button>
+												<button type="button" className="corpus-action-btn" onClick={handleAutoPopulate}>
+													Populim Automatik nga Kurset
+												</button>
+											</div>
 										)}
 									</div>
 								)}
@@ -1904,6 +1962,10 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 								{corpusSubTab === 'classification' && corpusStats && (
 									<div className="corpus-classification-section">
 										<h2>Klasifikimi & Segmentimi i Korpusit</h2>
+										{corpusStats.total_documents === 0 ? (
+											renderCorpusEmptyState('Nuk ka dokumente për klasifikim')
+										) : (
+										<>
 										<div className="charts-container">
 											<div className="chart-card">
 												<h3 className="chart-title">Sipas Zhanrit</h3>
@@ -1993,6 +2055,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 													))}
 												</div>
 											</div>
+										)}
+										</>
 										)}
 									</div>
 								)}
