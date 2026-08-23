@@ -27,7 +27,10 @@ def _engine_kwargs(url: str) -> dict:
 
 	kwargs["pool_recycle"] = 300
 	kwargs["pool_timeout"] = 10
-	kwargs["connect_args"] = {"connect_timeout": 10}
+	connect_args = {"connect_timeout": 10}
+	if "sslmode=" not in url:
+		connect_args["sslmode"] = "require"
+	kwargs["connect_args"] = connect_args
 	return kwargs
 
 
@@ -61,11 +64,24 @@ def init_database() -> None:
 	Must stay off the import path so Gunicorn can bind and serve /health
 	even when Render Postgres is asleep or unreachable.
 	"""
+	if not check_database():
+		raise RuntimeError("Database is not reachable")
+
 	from . import models  # noqa: F401  — register metadata
 	from .email_migrations import migrate_email_notification_schema
 
-	Base.metadata.create_all(bind=engine)
-	migrate_email_notification_schema(engine)
+	try:
+		Base.metadata.create_all(bind=engine)
+	except Exception:
+		logger.exception("create_all failed; continuing if the database already answers queries")
+
+	try:
+		migrate_email_notification_schema(engine)
+	except Exception:
+		logger.exception("Email schema migration failed")
+
+	if not check_database():
+		raise RuntimeError("Database became unreachable after schema setup")
 
 
 def get_db():

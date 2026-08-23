@@ -12,23 +12,25 @@ from .routers import exercises, progress, seed, auth, ai, audio, course_progress
 
 logger = logging.getLogger(__name__)
 _db_ready = False
+_db_error = None
 
 
 def _init_database_async() -> None:
-	global _db_ready
-	last_error = None
-	for attempt in range(1, 6):
+	global _db_ready, _db_error
+	attempt = 0
+	while not _db_ready:
+		attempt += 1
 		try:
 			init_database()
 			_db_ready = True
+			_db_error = None
 			logger.info("Database schema ready on attempt %s (%s)", attempt, database_dialect())
 			_start_background_tasks()
 			return
 		except Exception as exc:
-			last_error = exc
+			_db_error = str(exc)[:240]
 			logger.warning("Database init attempt %s failed: %s", attempt, exc)
-			time.sleep(min(5 * attempt, 20))
-	logger.error("Database init gave up after retries: %s", last_error)
+			time.sleep(min(5 * attempt, 60))
 
 
 def _start_background_tasks() -> None:
@@ -78,6 +80,7 @@ def create_app() -> FastAPI:
 			"timestamp": datetime.now(timezone.utc).isoformat(),
 			"database": database_dialect(),
 			"database_ready": _db_ready,
+			"database_error": _db_error,
 		}
 
 	# Routers
