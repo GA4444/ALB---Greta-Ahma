@@ -38,7 +38,10 @@ def _normalize_url(url: str) -> str:
 
 
 def _engine(url: str):
-	return create_engine(url, pool_pre_ping=True, connect_args={"connect_timeout": 20})
+	kwargs = {"pool_pre_ping": True}
+	if url.startswith("postgresql"):
+		kwargs["connect_args"] = {"connect_timeout": 20}
+	return create_engine(url, **kwargs)
 
 
 def _row_dict(obj) -> Dict[str, Any]:
