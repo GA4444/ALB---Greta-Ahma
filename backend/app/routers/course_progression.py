@@ -9,42 +9,53 @@ from typing import List
 router = APIRouter()
 
 def calculate_course_progress(db: Session, user_id: int, course_id: int) -> dict:
-    """Calculate progress for a specific course"""
-    # Get all exercises for this course
-    total_exercises = db.query(models.Exercise).filter(
-        models.Exercise.course_id == course_id
-    ).count()
-    
-    # Get user's attempts for this course
-    attempts = db.query(models.Attempt).join(models.Exercise).filter(
-        and_(
-            models.Attempt.user_id == str(user_id),
-            models.Exercise.course_id == course_id
-        )
-    ).all()
-    
-    # Calculate stats
-    completed_exercises = len(set(attempt.exercise_id for attempt in attempts))
-    correct_answers = sum(1 for attempt in attempts if attempt.is_correct)
-    total_points = sum(attempt.score_delta for attempt in attempts if attempt.score_delta > 0)
-    
-    # Calculate accuracy
-    accuracy_percentage = (correct_answers / len(attempts)) * 100 if attempts else 0.0
-    
-    # Check if course is completed (80%+ accuracy and all exercises attempted)
-    is_completed = (
-        completed_exercises >= total_exercises and 
-        accuracy_percentage >= 80.0 and
-        total_exercises > 0
+    """Calculate progress for a specific course using one SQL aggregate query."""
+    from sqlalchemy import case
+
+    total_exercises = (
+        db.query(func.count(models.Exercise.id))
+        .filter(models.Exercise.course_id == course_id)
+        .scalar()
+        or 0
     )
-    
+
+    attempt_count, completed_exercises, correct_answers, total_points = (
+        db.query(
+            func.count(models.Attempt.id),
+            func.count(func.distinct(models.Attempt.exercise_id)),
+            func.coalesce(
+                func.sum(case((models.Attempt.is_correct == True, 1), else_=0)),
+                0,
+            ),
+            func.coalesce(
+                func.sum(case((models.Attempt.score_delta > 0, models.Attempt.score_delta), else_=0)),
+                0,
+            ),
+        )
+        .join(models.Exercise)
+        .filter(
+            and_(
+                models.Attempt.user_id == str(user_id),
+                models.Exercise.course_id == course_id,
+            )
+        )
+        .one()
+    )
+
+    accuracy_percentage = (correct_answers / attempt_count) * 100 if attempt_count else 0.0
+    is_completed = (
+        completed_exercises >= total_exercises
+        and accuracy_percentage >= 80.0
+        and total_exercises > 0
+    )
+
     return {
-        'total_exercises': total_exercises,
-        'completed_exercises': completed_exercises,
-        'correct_answers': correct_answers,
-        'total_points': total_points,
-        'accuracy_percentage': accuracy_percentage,
-        'is_completed': is_completed
+        "total_exercises": total_exercises,
+        "completed_exercises": int(completed_exercises or 0),
+        "correct_answers": int(correct_answers or 0),
+        "total_points": int(total_points or 0),
+        "accuracy_percentage": accuracy_percentage,
+        "is_completed": is_completed,
     }
 
 def update_course_progress(db: Session, user_id: int, course_id: int) -> models.CourseProgress:

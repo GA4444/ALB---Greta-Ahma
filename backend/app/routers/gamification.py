@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, case
 from typing import List, Optional
 from datetime import datetime, timedelta
 from .. import models, schemas
@@ -78,6 +78,13 @@ def check_and_award_achievements(db: Session, user_id: str):
 	
 	all_achievements = db.query(models.Achievement).all()
 	newly_awarded = []
+
+	# Shared lightweight counters (avoid loading all attempts repeatedly)
+	attempt_count = None
+	today_attempts = None
+	overall_accuracy = None
+	has_perfect_level = None
+	completed_courses = None
 	
 	for achievement in all_achievements:
 		if achievement.id in earned_achievement_ids:
@@ -87,34 +94,29 @@ def check_and_award_achievements(db: Session, user_id: str):
 		should_award = False
 		
 		if achievement.code == "first_exercise":
-			# Award for completing first exercise
-			attempt_count = db.query(models.Attempt).filter(models.Attempt.user_id == user_id).count()
+			if attempt_count is None:
+				attempt_count = db.query(models.Attempt).filter(models.Attempt.user_id == user_id).count()
 			should_award = attempt_count >= 1
 		
 		elif achievement.code == "perfect_level":
-			# Award for completing a level with 100% accuracy
-			attempts = (
-				db.query(models.Attempt)
-				.join(models.Exercise)
-				.filter(models.Attempt.user_id == user_id)
-				.all()
-			)
-			# Group by level and check if any level has 100% accuracy
-			level_attempts = {}
-			for att in attempts:
-				exercise = db.get(models.Exercise, att.exercise_id)
-				if exercise:
-					level_id = exercise.level_id
-					if level_id not in level_attempts:
-						level_attempts[level_id] = {"correct": 0, "total": 0}
-					level_attempts[level_id]["total"] += 1
-					if att.is_correct:
-						level_attempts[level_id]["correct"] += 1
-			
-			for level_stats in level_attempts.values():
-				if level_stats["total"] >= 5 and level_stats["correct"] == level_stats["total"]:
-					should_award = True
-					break
+			if has_perfect_level is None:
+				# Find any level with >=5 attempts and 100% correct via SQL grouping
+				rows = (
+					db.query(
+						models.Exercise.level_id,
+						func.count(models.Attempt.id).label("total"),
+						func.sum(case((models.Attempt.is_correct == True, 1), else_=0)).label("correct"),
+					)
+					.join(models.Exercise, models.Exercise.id == models.Attempt.exercise_id)
+					.filter(models.Attempt.user_id == user_id)
+					.group_by(models.Exercise.level_id)
+					.all()
+				)
+				has_perfect_level = any(
+					(row.total or 0) >= 5 and (row.correct or 0) == (row.total or 0)
+					for row in rows
+				)
+			should_award = has_perfect_level
 		
 		elif achievement.code.startswith("streak_"):
 			# Streak achievements
@@ -122,37 +124,48 @@ def check_and_award_achievements(db: Session, user_id: str):
 			should_award = user.current_streak >= required_streak
 		
 		elif achievement.code == "class_master":
-			# Award for completing an entire class
-			completed_courses = (
-				db.query(models.CourseProgress)
-				.filter(
-					models.CourseProgress.user_id == user_id,
-					models.CourseProgress.is_completed == True
+			if completed_courses is None:
+				completed_courses = (
+					db.query(models.CourseProgress)
+					.filter(
+						models.CourseProgress.user_id == user_id,
+						models.CourseProgress.is_completed == True
+					)
+					.count()
 				)
-				.count()
-			)
 			should_award = completed_courses >= 10  # Assuming ~10 courses per class
 		
 		elif achievement.code == "speed_demon":
-			# Award for completing 20+ exercises in one day
-			today = datetime.utcnow().date()
-			today_attempts = (
-				db.query(models.Attempt)
-				.filter(
-					models.Attempt.user_id == user_id,
-					func.date(models.Attempt.created_at) == today
+			if today_attempts is None:
+				today = datetime.utcnow().date()
+				today_attempts = (
+					db.query(models.Attempt)
+					.filter(
+						models.Attempt.user_id == user_id,
+						func.date(models.Attempt.created_at) == today
+					)
+					.count()
 				)
-				.count()
-			)
 			should_award = today_attempts >= 20
 		
 		elif achievement.code == "accuracy_master":
-			# Award for 95%+ overall accuracy with at least 50 attempts
-			attempts = db.query(models.Attempt).filter(models.Attempt.user_id == user_id).all()
-			if len(attempts) >= 50:
-				correct = sum(1 for a in attempts if a.is_correct)
-				accuracy = correct / len(attempts)
-				should_award = accuracy >= 0.95
+			if overall_accuracy is None:
+				if attempt_count is None:
+					attempt_count = db.query(models.Attempt).filter(models.Attempt.user_id == user_id).count()
+				if attempt_count >= 50:
+					correct = (
+						db.query(func.count(models.Attempt.id))
+						.filter(
+							models.Attempt.user_id == user_id,
+							models.Attempt.is_correct == True,
+						)
+						.scalar()
+						or 0
+					)
+					overall_accuracy = correct / attempt_count
+				else:
+					overall_accuracy = 0.0
+			should_award = overall_accuracy >= 0.95
 		
 		# Award achievement if criteria met
 		if should_award:
@@ -190,7 +203,7 @@ def get_user_streak(user_id: str, db: Session = Depends(get_db)):
 	}
 
 
-def update_user_streak(db: Session, user_id: str):
+def update_user_streak(db: Session, user_id: str, award_achievements: bool = True):
 	"""Update user's streak after an activity. Call this after submitting an exercise."""
 	user = db.query(models.User).filter(models.User.id == user_id).first()
 	if not user:
@@ -218,8 +231,9 @@ def update_user_streak(db: Session, user_id: str):
 	user.last_activity_date = datetime.utcnow()
 	db.commit()
 	
-	# Check for streak achievements
-	check_and_award_achievements(db, user_id)
+	# Check for streak achievements (optional; submit path awards once in background)
+	if award_achievements:
+		check_and_award_achievements(db, user_id)
 
 
 # ============================================================================

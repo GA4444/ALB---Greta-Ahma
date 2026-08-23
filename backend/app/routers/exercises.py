@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, distinct
-from app.database import get_db
+from app.database import get_db, SessionLocal
 from app.models import Exercise, Progress, User, Course, Level, Attempt, CourseProgress
 from app.schemas import SubmitRequest, SubmitResult, ExerciseOut
 from typing import List
@@ -10,6 +10,31 @@ import unicodedata
 import re
 
 router = APIRouter()
+
+
+def _post_submit_side_effects(user_id: str, exercise_id: int, is_correct: bool) -> None:
+	"""Run streak / challenges / achievements / SRS after the client already got feedback."""
+	db = SessionLocal()
+	try:
+		from .gamification import (
+			update_user_streak,
+			check_and_award_achievements,
+			update_daily_challenge_progress,
+			create_srs_card_for_mistake,
+		)
+
+		update_user_streak(db, user_id, award_achievements=False)
+		update_daily_challenge_progress(db, user_id, "complete_n_exercises", increment=1)
+		if is_correct:
+			update_daily_challenge_progress(db, user_id, "perfect_accuracy", increment=1)
+		check_and_award_achievements(db, user_id)
+		if not is_correct:
+			create_srs_card_for_mistake(db, user_id, exercise_id)
+	except Exception as e:
+		print(f"[WARNING] Gamification error: {e}")
+	finally:
+		db.close()
+
 
 @router.get("/public-stats")
 def get_public_stats(db: Session = Depends(get_db)):
@@ -33,7 +58,12 @@ def get_public_stats(db: Session = Depends(get_db)):
 	}
 
 @router.post("/{exercise_id}/submit")
-async def submit_answer(exercise_id: int, request: SubmitRequest, db: Session = Depends(get_db)):
+async def submit_answer(
+	exercise_id: int,
+	request: SubmitRequest,
+	background_tasks: BackgroundTasks,
+	db: Session = Depends(get_db),
+):
     # Get the exercise
     exercise = db.query(Exercise).filter(Exercise.id == exercise_id).first()
     if not exercise:
@@ -71,27 +101,6 @@ async def submit_answer(exercise_id: int, request: SubmitRequest, db: Session = 
         # Accept if they match without spaces (handles both "e kuqe" vs "ekuqe" and "zogi" vs "z ogi")
         if exercise_no_spaces == user_no_spaces and exercise_no_spaces:
             is_correct = True
-    
-    # Log for debugging when answer doesn't match (only in development)
-    if not is_correct:
-        print(f"[DEBUG] Answer mismatch for exercise {exercise_id}:")
-        print(f"  Exercise answer (original): '{exercise.answer}' (type: {type(exercise.answer)})")
-        print(f"  Exercise answer (cleaned): '{exercise_answer_clean}' (len={len(exercise_answer_clean)})")
-        print(f"  User response (original): '{request.response}' (type: {type(request.response)})")
-        print(f"  User response (cleaned): '{user_response_clean}' (len={len(user_response_clean)})")
-        print(f"  Exercise bytes: {exercise_answer_clean.encode('utf-8')}")
-        print(f"  User bytes: {user_response_clean.encode('utf-8')}")
-        print(f"  Characters comparison:")
-        max_len = max(len(exercise_answer_clean), len(user_response_clean))
-        for i in range(max_len):
-            ec = exercise_answer_clean[i] if i < len(exercise_answer_clean) else None
-            uc = user_response_clean[i] if i < len(user_response_clean) else None
-            if ec != uc:
-                ec_str = f"'{ec}' (code: {ord(ec)})" if ec else "None"
-                uc_str = f"'{uc}' (code: {ord(uc)})" if uc else "None"
-                print(f"    Position {i}: {ec_str} vs {uc_str}")
-        if len(exercise_answer_clean) != len(user_response_clean):
-            print(f"  Length mismatch: {len(exercise_answer_clean)} vs {len(user_response_clean)}")
     
     # Calculate points (use exercise.points directly)
     points_earned = exercise.points if is_correct else 0
@@ -145,76 +154,45 @@ async def submit_answer(exercise_id: int, request: SubmitRequest, db: Session = 
     else:
         progress.errors += 1
     
-    # Check if level is completed (all exercises in level attempted with 80% accuracy)
-    level_exercises = db.query(Exercise).filter(Exercise.level_id == exercise.level_id).all()
-    total_exercises = len(level_exercises)
-    
-    # Get all progress records for this level
-    level_progress = db.query(Progress).filter(
-        Progress.user_id == request.user_id,
-        Progress.level_id == exercise.level_id
-    ).first()
-    
-    if level_progress:
-        # Calculate accuracy based on points vs total possible points
-        total_possible_points = sum(ex.points for ex in level_exercises)
-        accuracy = (level_progress.points / total_possible_points) * 100 if total_possible_points > 0 else 0
-        
-        if accuracy >= 80:
-            level_progress.completed = True
-            level_completed = True
-        else:
-            level_completed = False
-    else:
-        level_completed = False
-    
-    # Check if course is completed (all levels in course completed)
-    course_levels = db.query(Level).filter(Level.course_id == exercise.course_id).all()
+    # Level completion via aggregate points (no full exercise load)
+    total_possible_points = (
+        db.query(func.coalesce(func.sum(Exercise.points), 0))
+        .filter(Exercise.level_id == exercise.level_id)
+        .scalar()
+        or 0
+    )
+    accuracy = (progress.points / total_possible_points) * 100 if total_possible_points > 0 else 0
+    level_completed = accuracy >= 80
+    if level_completed:
+        progress.completed = True
+
+    # Course completion: all levels completed
+    total_levels = (
+        db.query(func.count(Level.id))
+        .filter(Level.course_id == exercise.course_id)
+        .scalar()
+        or 0
+    )
     completed_levels = db.query(Progress).filter(
         Progress.user_id == request.user_id,
         Progress.course_id == exercise.course_id,
         Progress.completed == True
     ).count()
-    
-    # Course is completed only if all levels are completed AND we have at least one level
-    course_completed = (completed_levels == len(course_levels)) and len(course_levels) > 0 and completed_levels > 0
+    course_completed = total_levels > 0 and completed_levels == total_levels
     
     db.commit()
     
-    # Update course progress
+    # Update course progress (SQL aggregates; needed for unlock / course_completed flag)
     from .course_progression import update_course_progress
     course_progress = update_course_progress(db, int(request.user_id), exercise.course_id)
-    
-    # ========== GAMIFICATION INTEGRATION ==========
-    try:
-        from .gamification import (
-            update_user_streak,
-            check_and_award_achievements,
-            update_daily_challenge_progress,
-            create_srs_card_for_mistake
-        )
-        
-        # 1. Update streak (every submission)
-        update_user_streak(db, request.user_id)
-        
-        # 2. Update daily challenge progress
-        update_daily_challenge_progress(db, request.user_id, "complete_n_exercises", increment=1)
-        
-        # 3. If perfect answer, update perfect_accuracy challenge
-        if is_correct:
-            update_daily_challenge_progress(db, request.user_id, "perfect_accuracy", increment=1)
-        
-        # 4. Check and award any achievements earned
-        check_and_award_achievements(db, request.user_id)
-        
-        # 5. If answer is wrong, create SRS card for spaced repetition
-        if not is_correct:
-            create_srs_card_for_mistake(db, request.user_id, exercise_id)
-    
-    except Exception as e:
-        # Gamification is optional - don't break the main flow if it fails
-        print(f"[WARNING] Gamification error: {e}")
-    # ==============================================
+
+    # Defer streak / achievements / SRS so the learner sees feedback immediately
+    background_tasks.add_task(
+        _post_submit_side_effects,
+        str(request.user_id),
+        exercise_id,
+        is_correct,
+    )
     
     # Prepare response message
     if is_correct:

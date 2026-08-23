@@ -114,6 +114,7 @@ function App() {
     const [progress, setProgress] = useState<ProgressOut[]>([])
 
     const [message, setMessage] = useState<string>('')
+    const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false)
     const [showAuth, setShowAuth] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
 
@@ -611,7 +612,7 @@ function App() {
     }, [currentExerciseIndex, selectedLevel?.id])
 
     const handleSubmitAnswer = async () => {
-        if (!selectedLevel || !exercises[currentExerciseIndex]) return
+        if (!selectedLevel || !exercises[currentExerciseIndex] || isSubmittingAnswer) return
 
         const answer = answers[exercises[currentExerciseIndex].id] || ''
         if (!answer.trim()) {
@@ -625,6 +626,8 @@ function App() {
         const currentSelectedClass = selectedClass
 
         try {
+            setIsSubmittingAnswer(true)
+            setMessage('Duke kontrolluar... ⏳')
             // Trim the answer to remove any leading/trailing whitespace
             const trimmedAnswer = answer.trim()
             console.log('[DEBUG] Submitting answer:', {
@@ -723,23 +726,23 @@ function App() {
                             fetchClasses()
                         }
                     }
-                }, 1500) // Wait 1.5 seconds before moving to next question
+                }, 900)
             } else {
                 console.log('[DEBUG] Incorrect answer')
                 setMessage(`Përgjigja e pasaktë. Provo përsëri! 💪`)
                 const correctAnswer = result.correct_answer || inferExerciseAnswer(currentExercises[currentIndex])
                 if (correctAnswer) {
-                    try {
-                        const feedback = await generatePedagogicalFeedback({
-                            student_answer: trimmedAnswer,
-                            correct_answer: correctAnswer,
-                            grade: selectedClass?.order_index || 3,
+                    // Non-blocking: feedback card can load after the instant incorrect message
+                    void generatePedagogicalFeedback({
+                        student_answer: trimmedAnswer,
+                        correct_answer: correctAnswer,
+                        grade: selectedClass?.order_index || 3,
+                    })
+                        .then(setChildFeedback)
+                        .catch((feedbackError) => {
+                            console.error('Child feedback error:', feedbackError)
+                            setChildFeedback(null)
                         })
-                        setChildFeedback(feedback)
-                    } catch (feedbackError) {
-                        console.error('Child feedback error:', feedbackError)
-                        setChildFeedback(null)
-                    }
                 } else {
                     setChildFeedback({
                         child_message: {
@@ -764,6 +767,8 @@ function App() {
         } catch (error) {
             console.error('[ERROR] Error submitting answer:', error)
             setMessage('Gabim në dërgimin e përgjigjes. Provo përsëri! ❌')
+        } finally {
+            setIsSubmittingAnswer(false)
         }
     }
 
@@ -1498,6 +1503,7 @@ function App() {
                     answers={answers}
                     setAnswers={setAnswers}
                     handleSubmitAnswer={handleSubmitAnswer}
+                    isSubmittingAnswer={isSubmittingAnswer}
                     playAudio={playAudio}
                     startRecording={startRecording}
                     isRecording={isRecording}
@@ -2269,6 +2275,7 @@ function MainContent({
     answers,
     setAnswers,
     handleSubmitAnswer,
+    isSubmittingAnswer = false,
     playAudio,
     startRecording,
     isRecording,
@@ -2342,6 +2349,7 @@ function MainContent({
     answers: Record<number, string>
     setAnswers: React.Dispatch<React.SetStateAction<Record<number, string>>>
     handleSubmitAnswer: () => Promise<void>
+    isSubmittingAnswer?: boolean
     playAudio: (exerciseId: number) => Promise<void>
     startRecording: () => Promise<void>
     isRecording: boolean
@@ -3328,8 +3336,9 @@ function MainContent({
                                     <button
                                         className="submit-btn-modern"
                                         onClick={handleSubmitAnswer}
+                                        disabled={isSubmittingAnswer}
                                     >
-                                        <span>Dërgo Përgjigjen</span>
+                                        <span>{isSubmittingAnswer ? 'Duke kontrolluar...' : 'Dërgo Përgjigjen'}</span>
                                         <span className="submit-icon">✓</span>
                                     </button>
                                     
