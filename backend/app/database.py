@@ -1,5 +1,8 @@
 import logging
 import os
+from typing import Optional, Tuple
+from urllib.parse import urlparse
+
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -48,14 +51,19 @@ def database_dialect() -> str:
 	return "other"
 
 
-def check_database() -> bool:
+def database_host() -> str:
+	parsed = urlparse(DATABASE_URL)
+	return parsed.hostname or "local"
+
+
+def check_database() -> Tuple[bool, Optional[str]]:
 	try:
 		with engine.connect() as connection:
 			connection.execute(text("SELECT 1"))
-		return True
+		return True, None
 	except Exception as exc:
 		logger.warning("Database readiness check failed: %s", exc)
-		return False
+		return False, str(exc)[:240]
 
 
 def init_database() -> None:
@@ -64,8 +72,9 @@ def init_database() -> None:
 	Must stay off the import path so Gunicorn can bind and serve /health
 	even when Render Postgres is asleep or unreachable.
 	"""
-	if not check_database():
-		raise RuntimeError("Database is not reachable")
+	ok, error = check_database()
+	if not ok:
+		raise RuntimeError(error or "Database is not reachable")
 
 	from . import models  # noqa: F401  — register metadata
 	from .email_migrations import migrate_email_notification_schema
@@ -80,8 +89,9 @@ def init_database() -> None:
 	except Exception:
 		logger.exception("Email schema migration failed")
 
-	if not check_database():
-		raise RuntimeError("Database became unreachable after schema setup")
+	ok, error = check_database()
+	if not ok:
+		raise RuntimeError(error or "Database became unreachable after schema setup")
 
 
 def get_db():

@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import database_dialect, init_database
+from .database import database_dialect, database_host, init_database
 from .routers import exercises, progress, seed, auth, ai, audio, course_progression, database_viewer, leaderboard, admin, ocr, gamification, chatbot, chatbot_advanced, ai_advanced_practice, corpus_admin, research_ai
 
 logger = logging.getLogger(__name__)
@@ -79,6 +79,7 @@ def create_app() -> FastAPI:
 			"status": "healthy",
 			"timestamp": datetime.now(timezone.utc).isoformat(),
 			"database": database_dialect(),
+			"database_host": database_host(),
 			"database_ready": _db_ready,
 			"database_error": _db_error,
 		}
