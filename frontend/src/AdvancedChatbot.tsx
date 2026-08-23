@@ -539,7 +539,7 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 				{messages.length === 0 ? (
 					<div className="chatbot-welcome">
 						<div className="welcome-avatar">🤖</div>
-						<h4>Mirësevini te bashkëbiseduesi AI i avancuar!</h4>
+						<h4>Mirësevini te bashkëbiseduesi AI</h4>
 						<p>Si mund t'ju ndihmoj sot?</p>
 						{context && (
 							<div className="context-info">
