@@ -17,7 +17,6 @@ import {
 	deleteClass,
 	deleteLevel,
 	deleteExercise,
-	getCourseLevels,
 	getCorpusStats,
 	getCorpusDocuments,
 	createCorpusDocument,
@@ -176,35 +175,6 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			} else if (activeTab === 'classes') {
 				const classesData = await getAllClasses(userId)
 				setClasses(classesData)
-				
-				// Load levels for all courses in all classes to enable global numbering
-				// This is done in the background to not block the UI
-				Promise.all(
-					classesData.map(async (classData: ClassData) => {
-						try {
-							const coursesWithLevels = await Promise.all(
-								(classData.courses || []).map(async (course) => {
-									try {
-										// Fetch levels for this course
-										const levels = await getCourseLevels(course.id)
-										return { ...course, levels }
-									} catch (error) {
-										console.error(`Error fetching levels for course ${course.id}:`, error)
-										return { ...course, levels: [] }
-									}
-								})
-							)
-							return { ...classData, courses: coursesWithLevels }
-						} catch (error) {
-							console.error(`Error loading levels for class ${classData.id}:`, error)
-							return classData
-						}
-					})
-				).then(classesWithLevels => {
-					setClasses(classesWithLevels)
-				}).catch(error => {
-					console.error('Error loading levels for classes:', error)
-				})
 			} else if (activeTab === 'levels') {
 				const levelsData = await getAllLevels(userId, selectedClass || undefined)
 				setLevels(levelsData)

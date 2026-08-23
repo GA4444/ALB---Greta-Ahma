@@ -38,15 +38,6 @@ def calculate_course_progress(db: Session, user_id: int, course_id: int) -> dict
         total_exercises > 0
     )
     
-    # Debug logging
-    print(f"[DEBUG] Course {course_id} progress for user {user_id}:")
-    print(f"  Total exercises: {total_exercises}")
-    print(f"  Completed exercises: {completed_exercises}")
-    print(f"  Correct answers: {correct_answers}")
-    print(f"  Total attempts: {len(attempts)}")
-    print(f"  Accuracy: {accuracy_percentage:.1f}%")
-    print(f"  Is completed: {is_completed}")
-    
     return {
         'total_exercises': total_exercises,
         'completed_exercises': completed_exercises,

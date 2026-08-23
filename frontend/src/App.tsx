@@ -310,7 +310,7 @@ function App() {
                     if (achievements) setUserAchievements(achievements)
                     if (challenge) setDailyChallenge(challenge)
                 })
-            }, 500) // 500ms delay
+            }, 2500) // Keep network free for class/exercise navigation first
 
             // Priority 3: AI Coach and SRS loaded last (heavier operations)
             const tertiaryTimer = setTimeout(() => {
@@ -326,7 +326,7 @@ function App() {
 
                 // SRS Stats
                 getSRSStats(userId).then(setSrsStats).catch(e => console.error('SRS error:', e))
-            }, 1000) // 1s delay
+            }, 4000) // After navigation/API traffic settles
 
             // Cleanup timers on unmount
             return () => {
@@ -392,57 +392,20 @@ function App() {
 
     // Simple cache to avoid re-fetching classes unnecessarily
     const [classesCache, setClassesCache] = useState<{ data: ClassData[], timestamp: number } | null>(null)
-    const CACHE_DURATION = 30000 // 30 seconds
+    const CACHE_DURATION = 120000 // 2 minutes
 
     const fetchClasses = async (forceRefresh = false) => {
         // Return cached data if available and not expired
         if (!forceRefresh && classesCache && (Date.now() - classesCache.timestamp < CACHE_DURATION)) {
-            console.log('[Cache] Using cached classes data')
             setClasses(classesCache.data)
             setIsLoading(false)
             return
         }
 
         try {
-            console.log('[Fetch] Fetching classes from API')
             const classesData = await getClasses(userId || undefined)
             setClasses(classesData)
-            
-            // Update cache immediately with basic class data
             setClassesCache({ data: classesData, timestamp: Date.now() })
-            
-            // Load levels for all classes in background (lazy)
-            // This is done with lower priority to not block the UI
-            setTimeout(() => {
-                Promise.all(
-                    classesData.map(async (classData: ClassData) => {
-                        try {
-                            const courses = await getClassCourses(classData.id, userId || '1')
-                            const coursesWithLevels = await Promise.all(
-                                courses.map(async (course: CourseOut) => {
-                                    try {
-                                        const levels = await getCourseLevels(course.id)
-                                        return { ...course, levels }
-                                    } catch (error) {
-                                        console.error(`Error fetching levels for course ${course.id}:`, error)
-                                        return { ...course, levels: [] }
-                                    }
-                                })
-                            )
-                            return { ...classData, courses: coursesWithLevels }
-                        } catch (error) {
-                            console.error(`Error loading levels for class ${classData.id}:`, error)
-                            return classData
-                        }
-                    })
-                ).then(classesWithLevels => {
-                    setClasses(classesWithLevels)
-                    setClassesCache({ data: classesWithLevels, timestamp: Date.now() })
-                }).catch(error => {
-                    console.error('Error loading levels for classes:', error)
-                })
-            }, 100) // Small delay to prioritize main UI
-            
             setIsLoading(false)
         } catch (error) {
             console.error('Error fetching classes:', error)
@@ -516,27 +479,9 @@ function App() {
         setCourseLevels([])
         
         try {
-            // Fetch courses for this class
-            const coursesData = await getClassCourses(classData.id, userId!)
-            setClassCourses(coursesData)
-            
-            // Load levels for all courses in this class to enable global numbering
-            const coursesWithLevels = await Promise.all(
-                coursesData.map(async (course: CourseOut) => {
-                    try {
-                        const levels = await getCourseLevels(course.id)
-                        return { ...course, levels }
-                    } catch (error) {
-                        console.error(`Error fetching levels for course ${course.id}:`, error)
-                        return { ...course, levels: [] }
-                    }
-                })
-            )
-            
-            // Update classCourses with levels
+            // One request returns courses and their levels (no N+1 round-trips).
+            const coursesWithLevels = await getClassCourses(classData.id, userId!, true)
             setClassCourses(coursesWithLevels)
-            
-            // Also update the classes array to include levels for this class
             setClasses(prevClasses => prevClasses.map(cls => {
                 if (cls.id === classData.id) {
                     return { ...cls, courses: coursesWithLevels }
@@ -570,25 +515,27 @@ function App() {
         setExercises([])
         setCurrentExerciseIndex(0)
         
-        try {
-            // Fetch levels for this course
-            const levelsData = await getCourseLevels(course.id)
-            setCourseLevels(levelsData)
-            
-            // If there are levels, automatically select the first one and fetch its exercises
-            if (levelsData && levelsData.length > 0) {
-                const firstLevel = levelsData[0]
-                setSelectedLevel(firstLevel)
-                
-                // Fetch exercises for the first level
-                const exercisesData = await getLevelExercises(firstLevel.id)
-                setExercises(exercisesData)
-                setCurrentExerciseIndex(0)
-            }
-        } catch (error) {
-            console.error('Error fetching course levels:', error)
-            setCourseLevels([])
-        }
+		try {
+			// Prefer levels already loaded with the class courses payload.
+			const levelsData = course.levels?.length
+				? course.levels
+				: await getCourseLevels(course.id)
+			setCourseLevels(levelsData)
+			
+			// If there are levels, automatically select the first one and fetch its exercises
+			if (levelsData && levelsData.length > 0) {
+				const firstLevel = levelsData[0]
+				setSelectedLevel(firstLevel)
+				
+				// Fetch exercises for the first level
+				const exercisesData = await getLevelExercises(firstLevel.id)
+				setExercises(exercisesData)
+				setCurrentExerciseIndex(0)
+			}
+		} catch (error) {
+			console.error('Error fetching course levels:', error)
+			setCourseLevels([])
+		}
     }
 
     const handleLevelClick = async (level: LevelOut | null) => {

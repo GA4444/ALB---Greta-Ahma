@@ -340,8 +340,9 @@ export async function getClasses(userId?: string) {
 	return data
 }
 
-export async function getClassCourses(classId: number, userId: string) {
-	const { data } = await client.get(`/api/classes/${classId}/courses?user_id=${userId}`)
+export async function getClassCourses(classId: number, userId: string, includeLevels = false) {
+	const query = includeLevels ? `&include_levels=true` : ''
+	const { data } = await client.get(`/api/classes/${classId}/courses?user_id=${userId}${query}`)
 	return data
 }
 

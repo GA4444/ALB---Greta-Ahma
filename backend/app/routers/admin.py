@@ -399,7 +399,7 @@ def delete_user(user_id: int, target_user_id: int, db: Session = Depends(get_db)
 
 @router.get("/classes", response_model=List[schemas.ClassOut])
 def get_all_classes(user_id: int, db: Session = Depends(get_db)):
-	"""Get all classes (admin only)"""
+	"""Get all classes (admin only), including courses and their levels in one round-trip."""
 	verify_admin(user_id, db)
 	classes = (
 		db.query(models.Course)
@@ -410,20 +410,48 @@ def get_all_classes(user_id: int, db: Session = Depends(get_db)):
 		.order_by(models.Course.order_index)
 		.all()
 	)
-	result = []
-	for cls in classes:
-		courses = db.query(models.Course).filter(models.Course.parent_class_id == cls.id).order_by(models.Course.order_index).all()
-		result.append(schemas.ClassOut(
+	class_ids = [cls.id for cls in classes]
+	courses = (
+		db.query(models.Course)
+		.filter(models.Course.parent_class_id.in_(class_ids))
+		.order_by(models.Course.order_index)
+		.all()
+		if class_ids else []
+	)
+	course_ids = [course.id for course in courses]
+	levels = (
+		db.query(models.Level)
+		.filter(models.Level.course_id.in_(course_ids))
+		.order_by(models.Level.order_index)
+		.all()
+		if course_ids else []
+	)
+	levels_by_course = {}
+	for level in levels:
+		levels_by_course.setdefault(level.course_id, []).append(level)
+
+	courses_by_class = {}
+	for course in courses:
+		payload = schemas.CourseOut.model_validate(course).model_dump()
+		payload["levels"] = [
+			schemas.LevelOut.model_validate(level).model_dump()
+			for level in levels_by_course.get(course.id, [])
+		]
+		courses_by_class.setdefault(course.parent_class_id, []).append(schemas.CourseOut(**payload))
+
+	return [
+		schemas.ClassOut(
 			id=cls.id,
 			name=cls.name,
 			description=cls.description,
 			order_index=cls.order_index,
 			enabled=cls.enabled,
-			courses=[schemas.CourseOut.model_validate(c) for c in courses],
+			courses=courses_by_class.get(cls.id, []),
 			unlocked=True,
-			completed=False
-		))
-	return result
+			completed=False,
+		)
+		for cls in classes
+	]
 
 
 @router.post("/classes", response_model=schemas.CourseOut)

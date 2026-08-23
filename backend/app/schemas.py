@@ -24,6 +24,7 @@ class CourseOut(BaseModel):
 	enabled: bool
 	parent_class_id: Optional[int]
 	sub_courses: Optional[List['CourseOut']] = []
+	levels: Optional[List['LevelOut']] = None
 
 	class Config:
 		from_attributes = True
@@ -54,6 +55,10 @@ class LevelOut(BaseModel):
 
 	class Config:
 		from_attributes = True
+
+
+CourseOut.model_rebuild()
+ClassOut.model_rebuild()
 
 
 class ExerciseOut(BaseModel):

@@ -384,53 +384,81 @@ async def get_classes(user_id: str = None, db: Session = Depends(get_db)):
     return class_data
 
 @router.get("/classes/{class_id}/courses")
-async def get_class_courses(class_id: int, user_id: str = "1", db: Session = Depends(get_db)):
-    # Get courses for the specified class
-    courses = db.query(Course).filter(Course.parent_class_id == class_id).order_by(Course.order_index).all()
-    
-    # Initialize course progress for user if needed
+async def get_class_courses(
+    class_id: int,
+    user_id: str = "1",
+    include_levels: bool = False,
+    db: Session = Depends(get_db),
+):
+    """Return courses for a class in one response.
+
+    Progress is read from stored CourseProgress rows (updated on submit).
+    Set include_levels=true to attach levels for every course in the same request
+    instead of N follow-up /courses/{id}/levels calls.
+    """
+    courses = (
+        db.query(Course)
+        .filter(Course.parent_class_id == class_id)
+        .order_by(Course.order_index)
+        .all()
+    )
+    if not courses:
+        return []
+
     user_id_int = int(user_id)
+    course_ids = [course.id for course in courses]
+    progress_rows = (
+        db.query(CourseProgress)
+        .filter(
+            CourseProgress.user_id == user_id_int,
+            CourseProgress.course_id.in_(course_ids),
+        )
+        .all()
+    )
+    progress_by_course = {row.course_id: row for row in progress_rows}
+
+    created = False
     for course in courses:
-        existing_progress = db.query(CourseProgress).filter(
-            and_(
-                CourseProgress.user_id == user_id_int,
-                CourseProgress.course_id == course.id
-            )
-        ).first()
-        
-        if not existing_progress:
-            # First course is unlocked by default
-            is_unlocked = course.order_index == 1
+        if course.id not in progress_by_course:
             progress = CourseProgress(
                 user_id=user_id_int,
                 course_id=course.id,
-                is_unlocked=is_unlocked
+                is_unlocked=(course.order_index == 1),
             )
             db.add(progress)
-    
-    db.commit()
-    
-    # Get course progress data
+            progress_by_course[course.id] = progress
+            created = True
+    if created:
+        db.commit()
+
+    levels_by_course = {}
+    if include_levels:
+        levels = (
+            db.query(Level)
+            .filter(Level.course_id.in_(course_ids))
+            .order_by(Level.course_id, Level.order_index)
+            .all()
+        )
+        for level in levels:
+            levels_by_course.setdefault(level.course_id, []).append({
+                "id": level.id,
+                "course_id": level.course_id,
+                "name": level.name,
+                "description": level.description,
+                "order_index": level.order_index,
+                "required_score": level.required_score,
+                "enabled": level.enabled,
+            })
+
     course_data = []
     for course in courses:
-        course_progress = db.query(CourseProgress).filter(
-            and_(
-                CourseProgress.user_id == user_id_int,
-                CourseProgress.course_id == course.id
-            )
-        ).first()
-        
-        if course_progress:
-            # Update progress if needed
-            from .course_progression import update_course_progress
-            course_progress = update_course_progress(db, user_id_int, course.id)
-        
-        course_data.append({
+        course_progress = progress_by_course.get(course.id)
+        item = {
             "id": course.id,
             "name": course.name,
             "description": course.description,
             "order_index": course.order_index,
-            "category": course.category,
+            "category": course.category.value if hasattr(course.category, "value") else course.category,
             "required_score": course.required_score,
             "enabled": course_progress.is_unlocked if course_progress else False,
             "parent_class_id": course.parent_class_id,
@@ -439,10 +467,13 @@ async def get_class_courses(class_id: int, user_id: str = "1", db: Session = Dep
                 "is_completed": course_progress.is_completed if course_progress else False,
                 "total_points": course_progress.total_points if course_progress else 0,
                 "completed_exercises": course_progress.completed_exercises if course_progress else 0,
-                "total_exercises": course_progress.total_exercises if course_progress else 0
-            }
-        })
-    
+                "total_exercises": course_progress.total_exercises if course_progress else 0,
+            },
+        }
+        if include_levels:
+            item["levels"] = levels_by_course.get(course.id, [])
+        course_data.append(item)
+
     return course_data
 
 
