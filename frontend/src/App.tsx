@@ -42,48 +42,51 @@ const inferExerciseAnswer = (exercise?: ExerciseOut | null): string | null => {
     }
 }
 
+const SESSION_EPOCH = 'neon-2026-08-23'
+
+function readFreshSession(): { userId: string | null; isAdmin: boolean } {
+    try {
+        if (localStorage.getItem('session_epoch') !== SESSION_EPOCH) {
+            localStorage.removeItem('user_id')
+            localStorage.removeItem('is_admin')
+            localStorage.removeItem('username')
+            localStorage.setItem('session_epoch', SESSION_EPOCH)
+            return { userId: null, isAdmin: false }
+        }
+        const stored = localStorage.getItem('user_id')
+        const userId = stored && stored !== 'null' && stored !== 'undefined' && stored.trim() !== ''
+            ? stored
+            : null
+        return {
+            userId,
+            isAdmin: userId !== null && localStorage.getItem('is_admin') === 'true',
+        }
+    } catch {
+        return { userId: null, isAdmin: false }
+    }
+}
+
+function persistSession(userId: string, username: string, isAdmin: boolean) {
+    localStorage.setItem('session_epoch', SESSION_EPOCH)
+    localStorage.setItem('user_id', userId)
+    localStorage.setItem('username', username)
+    localStorage.setItem('is_admin', String(isAdmin))
+}
+
 function App() {
-    // Authentication state - clear invalid values
-    const [userId, setUserId] = useState<string | null>(() => {
-        try {
-            const stored = localStorage.getItem('user_id')
-            if (stored && stored !== 'null' && stored !== 'undefined' && stored.trim() !== '') {
-                return stored
-            }
-            return null
-        } catch (error) {
-            console.error('Error reading userId from localStorage:', error)
-            return null
-        }
-    })
-    const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-        try {
-            return localStorage.getItem('is_admin') === 'true'
-        } catch (error) {
-            return false
-        }
-    })
+    const initialSession = readFreshSession()
+    const [userId, setUserId] = useState<string | null>(initialSession.userId)
+    const [isAdmin, setIsAdmin] = useState<boolean>(initialSession.isAdmin)
     const [auth, setAuth] = useState({ username: '', password: '' })
     
     const clearStoredSession = () => {
         localStorage.removeItem('user_id')
         localStorage.removeItem('is_admin')
         localStorage.removeItem('username')
+        localStorage.setItem('session_epoch', SESSION_EPOCH)
         setUserId(null)
         setIsAdmin(false)
     }
-
-    // Clear invalid or stale sessions saved before the Neon database migration.
-    useEffect(() => {
-        try {
-            const stored = localStorage.getItem('user_id')
-            if (stored && (stored === 'null' || stored === 'undefined' || stored.trim() === '')) {
-                clearStoredSession()
-            }
-        } catch (error) {
-            console.error('Error clearing localStorage:', error)
-        }
-    }, [])
 
     // Data state
     const [classes, setClasses] = useState<ClassData[]>([])
@@ -120,7 +123,6 @@ function App() {
         const adminUserId = parseInt(userId, 10)
         if (Number.isNaN(adminUserId)) {
             clearStoredSession()
-            setMessage('Sesioni i vjetër u pastrua. Hyr përsëri si administrator. 🔐')
             return
         }
 
@@ -131,7 +133,6 @@ function App() {
                 const status = error?.response?.status
                 if (status === 403 || status === 404) {
                     clearStoredSession()
-                    setMessage('Sesioni i vjetër u pastrua. Hyr përsëri si administrator. 🔐')
                 }
             })
 
@@ -1299,9 +1300,7 @@ function App() {
                                             setUserId(String(res.user_id))
                                             setIsAdmin(res.is_admin || false)
                                             setMessage('Mirësevini! 👋')
-                                            localStorage.setItem('username', res.username)
-                                            localStorage.setItem('user_id', String(res.user_id))
-                                            localStorage.setItem('is_admin', String(res.is_admin || false))
+                                            persistSession(String(res.user_id), res.username, Boolean(res.is_admin))
                                         } catch (e: any) {
                                             const status = e?.response?.status
                                             const detail = e?.response?.data?.detail || e?.message

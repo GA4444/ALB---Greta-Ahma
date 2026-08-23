@@ -110,6 +110,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 	const [selectedClass, setSelectedClass] = useState<number | null>(null)
 	const [selectedLevel, setSelectedLevel] = useState<number | null>(null)
 	const [loading, setLoading] = useState(false)
+	const [loadError, setLoadError] = useState<string | null>(null)
 	const [editingUser, setEditingUser] = useState<UserOut | null>(null)
 	const [editingClass, setEditingClass] = useState<ClassData | null>(null)
 	const [editingLevel, setEditingLevel] = useState<LevelOut | null>(null)
@@ -164,6 +165,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 
 	const loadData = async () => {
 		setLoading(true)
+		setLoadError(null)
 		try {
 			if (activeTab === 'stats') {
 				const statsData = await getAdminStats(userId)
@@ -222,46 +224,38 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 				setCorpusFuseCodes(fuseRes.codes)
 				setClasses(classesRes)
 			} else if (activeTab === 'research') {
-				const [overviewRes, datasetRes, irtRes, protocolRes, statusRes, commandsRes] = await Promise.all([
+				const [overviewRes, datasetRes, irtRes, protocolRes, statusRes, commandsRes, ktRes, reviewRes] = await Promise.allSettled([
 					getResearchAIOverview(),
 					getInstructionDataset(12),
 					getIRTSummary(1),
 					getFinalExperimentProtocol(),
 					getModelTrainingStatus(),
 					getTrainingCommands(),
-				])
-				setResearchOverview(overviewRes)
-				setInstructionDataset(datasetRes)
-				setIrtSummary(irtRes)
-				setFinalProtocol(protocolRes)
-				setModelTrainingStatus(statusRes)
-				setTrainingCommands(commandsRes)
-				const [ktRes, reviewRes] = await Promise.all([
 					getKnowledgeTracing(String(userId)),
 					getTeacherReviewSummary(),
 				])
-				setKtSummary(ktRes)
-				setTeacherReviewSummary(reviewRes)
+				if (overviewRes.status === 'fulfilled') setResearchOverview(overviewRes.value)
+				if (datasetRes.status === 'fulfilled') setInstructionDataset(datasetRes.value)
+				if (irtRes.status === 'fulfilled') setIrtSummary(irtRes.value)
+				if (protocolRes.status === 'fulfilled') setFinalProtocol(protocolRes.value)
+				if (statusRes.status === 'fulfilled') setModelTrainingStatus(statusRes.value)
+				if (commandsRes.status === 'fulfilled') setTrainingCommands(commandsRes.value)
+				if (ktRes.status === 'fulfilled') setKtSummary(ktRes.value)
+				if (reviewRes.status === 'fulfilled') setTeacherReviewSummary(reviewRes.value)
 			}
 		} catch (error: any) {
 			console.error('Error loading data:', error)
 			const status = error?.response?.status
 			const detail = error?.response?.data?.detail
-			if (status === 403) {
-				alert('Sesioni i administratorit ka skaduar. Dil dhe hyr përsëri.')
+			if (status === 403 || status === 401) {
 				onLogout()
 				return
 			}
-			if (status === 401) {
-				alert('Sesioni ka skaduar. Hyr përsëri.')
-				onLogout()
-				return
-			}
-			if (!error?.response) {
-				alert('Serveri po zgjohet ose nuk përgjigjet. Prit 30–60 sekonda dhe provo përsëri.')
-				return
-			}
-			alert(typeof detail === 'string' ? detail : 'Gabim në ngarkimin e të dhënave')
+			setLoadError(
+				!error?.response
+					? 'Serveri po zgjohet. Prit 30 sekonda dhe rifresko faqen.'
+					: (typeof detail === 'string' ? detail : 'Gabim në ngarkimin e të dhënave')
+			)
 		} finally {
 			setLoading(false)
 		}
@@ -876,6 +870,14 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			</div>
 
 			<div className="admin-content">
+				{loadError && (
+					<div className="admin-loading" role="alert">
+						{loadError}
+						<button type="button" className="create-btn" style={{ marginLeft: 12 }} onClick={() => loadData()}>
+							Provo përsëri
+						</button>
+					</div>
+				)}
 				{loading ? (
 					<div className="admin-loading">Duke ngarkuar...</div>
 				) : (
