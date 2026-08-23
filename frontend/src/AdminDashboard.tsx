@@ -243,9 +243,25 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 				setKtSummary(ktRes)
 				setTeacherReviewSummary(reviewRes)
 			}
-		} catch (error) {
+		} catch (error: any) {
 			console.error('Error loading data:', error)
-			alert('Gabim në ngarkimin e të dhënave')
+			const status = error?.response?.status
+			const detail = error?.response?.data?.detail
+			if (status === 403) {
+				alert('Sesioni i administratorit ka skaduar. Dil dhe hyr përsëri.')
+				onLogout()
+				return
+			}
+			if (status === 401) {
+				alert('Sesioni ka skaduar. Hyr përsëri.')
+				onLogout()
+				return
+			}
+			if (!error?.response) {
+				alert('Serveri po zgjohet ose nuk përgjigjet. Prit 30–60 sekonda dhe provo përsëri.')
+				return
+			}
+			alert(typeof detail === 'string' ? detail : 'Gabim në ngarkimin e të dhënave')
 		} finally {
 			setLoading(false)
 		}

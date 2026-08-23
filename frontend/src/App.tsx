@@ -2,7 +2,7 @@
 import { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import type { ChangeEvent } from 'react'
 import type { CourseOut, LevelOut, ExerciseOut, ProgressOut, ClassData, AIPracticeExercise, AICoachResponse, UserAchievementsResponse, StreakData, DailyChallenge, SRSStatsResponse } from './api'
-import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, login, register, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument, generatePedagogicalFeedback, getAdaptiveNextItem } from './api'
+import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, login, register, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, getAdminStats, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument, generatePedagogicalFeedback, getAdaptiveNextItem } from './api'
 import type { CorpusDocument } from './api'
 import { AppFooter, AppHeader } from './components/AppChrome'
 import LazyErrorBoundary from './components/LazyErrorBoundary'
@@ -65,16 +65,20 @@ function App() {
     })
     const [auth, setAuth] = useState({ username: '', password: '' })
     
-    // Clear invalid userId from localStorage on mount
+    const clearStoredSession = () => {
+        localStorage.removeItem('user_id')
+        localStorage.removeItem('is_admin')
+        localStorage.removeItem('username')
+        setUserId(null)
+        setIsAdmin(false)
+    }
+
+    // Clear invalid or stale sessions saved before the Neon database migration.
     useEffect(() => {
         try {
             const stored = localStorage.getItem('user_id')
             if (stored && (stored === 'null' || stored === 'undefined' || stored.trim() === '')) {
-                localStorage.removeItem('user_id')
-                localStorage.removeItem('is_admin')
-                localStorage.removeItem('username')
-                setUserId(null)
-                setIsAdmin(false)
+                clearStoredSession()
             }
         } catch (error) {
             console.error('Error clearing localStorage:', error)
@@ -109,6 +113,32 @@ function App() {
     const [message, setMessage] = useState<string>('')
     const [showAuth, setShowAuth] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        if (!isAdmin || !userId) return
+
+        const adminUserId = parseInt(userId, 10)
+        if (Number.isNaN(adminUserId)) {
+            clearStoredSession()
+            setMessage('Sesioni i vjetër u pastrua. Hyr përsëri si administrator. 🔐')
+            return
+        }
+
+        let cancelled = false
+        getAdminStats(adminUserId)
+            .catch((error: any) => {
+                if (cancelled) return
+                const status = error?.response?.status
+                if (status === 403 || status === 404) {
+                    clearStoredSession()
+                    setMessage('Sesioni i vjetër u pastrua. Hyr përsëri si administrator. 🔐')
+                }
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [isAdmin, userId])
 
     // Auto-clear message after 3 seconds
     useEffect(() => {
