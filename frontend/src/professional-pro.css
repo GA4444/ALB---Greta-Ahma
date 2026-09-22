@@ -476,11 +476,43 @@ h1, h2, h3,
   color: #1d6b4a !important;
 }
 
+/* Toast / snackbar — compact like real websites */
+.app .message,
 .message {
-  font-size: 1.05rem !important;
-  font-weight: 650 !important;
-  border-radius: 16px !important;
-  padding: 14px 18px !important;
+  position: fixed !important;
+  top: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: 24px !important;
+  transform: translateX(-50%) !important;
+  width: auto !important;
+  max-width: min(360px, calc(100vw - 32px)) !important;
+  margin: 0 !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: rgba(15, 23, 42, 0.92) !important;
+  color: #fff !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  text-align: left !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18) !important;
+  z-index: 1200 !important;
+  animation: toast-in 220ms ease-out !important;
+  word-wrap: break-word;
+  pointer-events: none;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* ---------- Footer ---------- */
