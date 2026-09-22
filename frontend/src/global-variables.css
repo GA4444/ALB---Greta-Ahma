@@ -6,11 +6,13 @@
 :root {
   /* ========== PLATFORM COLORS ========== */
   
-  /* Primary - Blue */
-  --color-primary: #4A9FD4;
-  --color-primary-hover: #3d8ab8;
-  --color-primary-light: rgba(74, 159, 212, 0.08);
-  --color-primary-lighter: rgba(74, 159, 212, 0.04);
+  /* Primary - Deep teal ink (education, calm, professional) */
+  --color-primary: #1F6F8B;
+  --color-primary-hover: #185A71;
+  --color-primary-light: rgba(31, 111, 139, 0.1);
+  --color-primary-lighter: rgba(31, 111, 139, 0.05);
+  --color-accent: #C0392B;
+  --color-ink: #13293D;
   
   /* Success - Green */
   --color-success: #5BBD6C;
@@ -73,6 +75,7 @@
   /* ========== TYPOGRAPHY ========== */
   
   /* Font Families */
+  --font-display: "Source Sans 3", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-primary: "Source Sans 3", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "Fira Code", "Monaco", "Consolas", monospace;
   

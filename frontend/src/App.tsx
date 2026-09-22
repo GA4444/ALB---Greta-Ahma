@@ -10,6 +10,8 @@ import { useModalAccessibility } from './hooks/useModalAccessibility'
 import './App.css'
 import './mobile-refinements.css'
 import './professional-polish.css'
+import './professional-pro.css'
+import './mobile-app.css'
 
 const AdminDashboard = lazy(() => import('./AdminDashboard'))
 const AdvancedAIPractice = lazy(() => import('./AdvancedAIPractice'))
@@ -723,7 +725,7 @@ function App() {
                     if (result.course_completed) {
                         console.log('[DEBUG] Course completed - going back to course selection')
                         // Course completed with >=80% accuracy → go back to course selection section
-                        setMessage('🎉 Kurs i përfunduar! Zgjidhni kursin që dëshironi! 🚀')
+                        setMessage('🎉 Bravo! Ky nivel mbaroi. Zgjidh nivelin tjetër! 🚀')
                         setSelectedLevel(null)
                         setSelectedCourse(null)
                         setExercises([])
@@ -750,7 +752,7 @@ function App() {
                     } else {
                         console.log('[DEBUG] All exercises completed in this level')
                         // Finished all exercises in current level - go back to course preview grid
-                        setMessage('Urime! Ju keni përfunduar të gjitha ushtrimet! Kthehu tek kurset për të vazhduar! 🏆🎉')
+                        setMessage('Urime! I mbarove të gjitha! Kthehu te nivelet. 🏆')
                         setSelectedLevel(null)
                         setSelectedCourse(null)
                         setExercises([])
@@ -2484,9 +2486,9 @@ function MainContent({
         return `Në ${classLabel}, ${levelLabel}, fokusi yt tani është ${focus}. Lexo pyetjen ngadalë dhe kontrollo përgjigjen para se ta dërgosh.`
     }
     const getAnswerPlaceholder = () => {
-        if (currentExercise?.category === 'listen_write') return 'Shtyp “Dëgjo”, pastaj shkruaj atë që dëgjove...'
-        if (currentExercise?.category === 'synonyms_antonyms') return 'Zgjidh një opsion ose shkruaj përgjigjen...'
-        return 'Shkruani përgjigjen tuaj...'
+        if (currentExercise?.category === 'listen_write') return 'Dëgjo, pastaj shkruaj këtu...'
+        if (currentExercise?.category === 'synonyms_antonyms') return 'Zgjidh ose shkruaj përgjigjen...'
+        return 'Shkruaj përgjigjen këtu...'
     }
     
     return (
@@ -2542,7 +2544,7 @@ function MainContent({
                 {userId && aiRecommendations && (
                     <div className="sidebar-section">
                         <div className="sidebar-section-header compact">
-                            <h3>📊 Statistika AI</h3>
+                            <h3>📊 Progresi yt</h3>
                             <button className="toggle-btn-compact" onClick={onToggleAIInsights}>
                                 {showAIInsights ? '−' : '+'}
                             </button>
@@ -2854,11 +2856,11 @@ function MainContent({
                         {/* Hero Section */}
                         <div className="hero-section-modern">
                             <div className="hero-content-modern">
-                                <div className="hero-badge-modern">Platforma e Mësimit</div>
+                                <div className="hero-badge-modern">Për fëmijë</div>
                                 <div className="welcome-emoji-modern">🇦🇱</div>
-                                <h1 className="hero-title-modern">Mirësevini në AlbLingo!</h1>
+                                <h1 className="hero-title-modern">AlbLingo</h1>
                                 <p className="hero-description-modern">
-                                    Platforma më e avancuar për mësimin e drejtshkrimit të gjuhës shqipe për fëmijë.
+                                    Mëso të shkruash shqip. Zgjidh klasën dhe fillo!
                                 </p>
                                 <div className="hero-stats-modern">
                                     <div className="hero-stat-modern">
@@ -2937,8 +2939,8 @@ function MainContent({
                             <div className="class-header-info">
                                 <div className="class-title-section">
                                     <div className="class-badge-large">{selectedClass.name}</div>
-                                    <h2 className="class-title">{selectedClass.name} - Nivelet</h2>
-                                    <p className="class-subtitle">Zgjidhni nivelin që dëshironi të filloni</p>
+                                    <h2 className="class-title">{selectedClass.name}</h2>
+                                    <p className="class-subtitle">Zgjidh një nivel dhe fillo</p>
                                 </div>
                                 <div className="class-overall-progress">
                                     <div className="overall-progress-label">
@@ -3092,7 +3094,7 @@ function MainContent({
                                 <div className="course-title-section">
                                     <div className="course-badge-modern">{selectedCourse.name}</div>
                                     <h2 className="course-title-modern">{selectedCourse.name}</h2>
-                                    <p className="course-subtitle-modern">Zgjidhni nivelin për të filluar ushtrimet</p>
+                                    <p className="course-subtitle-modern">Zgjidh dhe fillo ushtrimet</p>
                                 </div>
                             </div>
                         </div>
@@ -3151,7 +3153,7 @@ function MainContent({
                                                 <span>Kërkohet: {level.required_score}%</span>
                                             </div>
                                             <div className="level-action">
-                                                <span className="action-text">Kliko për të filluar →</span>
+                                                <span className="action-text">Fillo →</span>
                                             </div>
                                         </div>
                                     </div>
@@ -3292,7 +3294,7 @@ function MainContent({
                                             if (exerciseData.choices && Array.isArray(exerciseData.choices)) {
                                                 return (
                                                     <div className="word-choices-modern">
-                                                        <p className="choices-label-modern">Zgjidhni fjalën e duhur:</p>
+                                                        <p className="choices-label-modern">Zgjidh fjalën e saktë:</p>
                                                         <div className="choice-buttons-modern">
                                                             {exerciseData.choices.map((choice: string, index: number) => (
                                                                 <button
@@ -3375,7 +3377,7 @@ function MainContent({
                                         onClick={handleSubmitAnswer}
                                         disabled={isSubmittingAnswer}
                                     >
-                                        <span>{isSubmittingAnswer ? 'Duke kontrolluar...' : 'Dërgo Përgjigjen'}</span>
+                                        <span>{isSubmittingAnswer ? 'Po kontrolloj...' : 'Kontrollo'}</span>
                                         <span className="submit-icon">✓</span>
                                     </button>
                                     

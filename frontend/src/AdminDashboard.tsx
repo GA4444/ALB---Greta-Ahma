@@ -62,6 +62,7 @@ import {
 	type ResearchAIOverview,
 } from './api'
 import './AdminDashboard.css'
+import './AdminDashboard-pro.css'
 import type { ExportData } from './utils/dataExport'
 
 const AdminCharts = lazy(() => import('./admin/AdminCharts'))
@@ -849,7 +850,10 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 		<div className="admin-dashboard">
 			<Suspense fallback={chartFallback}>
 			<div className="admin-header">
-				<h1>🛡️ Paneli i Administratorit</h1>
+				<div className="admin-header-brand">
+					<span className="admin-header-eyebrow">AlbLingo</span>
+					<h1>Paneli i Administratorit</h1>
+				</div>
 				<button className="admin-logout-btn" onClick={onLogout}>Dil</button>
 			</div>
 

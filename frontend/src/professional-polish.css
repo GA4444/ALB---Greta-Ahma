@@ -331,7 +331,9 @@
 }
 
 .app .feature-icon-wrapper {
-  margin-bottom: 8px;
+  margin: 0 auto 8px !important;
+  display: grid;
+  place-items: center;
 }
 
 .app .feature-icon-modern {

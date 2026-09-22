@@ -36,87 +36,146 @@ export function AppHeader({
 		: 0
 
 	return (
-		<header className="header">
-			<div className="header-content">
-				<div className="header-main">
-					<div className="header-logo">
-						<span className="header-emoji">🇦🇱</span>
-						<h1>AlbLingo</h1>
-					</div>
-					<nav className="header-navigation" aria-label="Navigimi kryesor">
-						<button
-							className={`nav-btn ${!selectedClass ? 'active' : ''}`}
-							onClick={onBackToClasses}
-						>
-							🏠 Shtëpia
-						</button>
-						{selectedClass && (
-							<button className="nav-btn" onClick={onBackToClasses}>
-								← Kthehu te Klasat
-							</button>
-						)}
-						{selectedCourse && (
-							<button className="nav-btn" onClick={onBackToCourses}>
-								← Kthehu te Kurset
-							</button>
-						)}
-					</nav>
-				</div>
-
-				<div className="header-account">
-					<div className="header-progress-summary">
-						<div
-							className="user-progress"
-							role="progressbar"
-							aria-label="Progresi drejt nivelit tjetër"
-							aria-valuemin={0}
-							aria-valuemax={100}
-							aria-valuenow={Math.round(progress)}
-						>
-							<div className="user-progress-fill" style={{ width: `${progress}%` }} />
+		<>
+			<header className="header">
+				<div className="header-content">
+					<div className="header-main">
+						<div className="header-logo">
+							<span className="header-emoji" aria-hidden="true">🇦🇱</span>
+							<h1>AlbLingo</h1>
 						</div>
-
-						<div className="user-stats">
-							{curriculumLabel && (
-								<div className="stat-item curriculum-stat" title="Pozicioni yt në mësim">
-									<span className="stat-icon">📚</span>
-									<span className="stat-value">{curriculumLabel}</span>
-								</div>
-							)}
+						<nav className="header-navigation" aria-label="Navigimi kryesor">
 							<button
-								type="button"
-								className="stat-item clickable-stat"
-								onClick={onShowLevelInfo}
-								title="Niveli i përvojës (nga pikët)"
+								className={`nav-btn ${!selectedClass ? 'active' : ''}`}
+								onClick={onBackToClasses}
 							>
-								<span className="stat-icon">⭐</span>
-								<span className="stat-value">XP {userStats.level}</span>
+								🏠 Shtëpia
 							</button>
-							<div className="stat-item">
-								<span className="stat-icon">🏆</span>
-								<span className="stat-value">{userStats.totalPoints} pikë</span>
-							</div>
-							<div className="stat-item">
-								<span className="stat-icon">🔥</span>
-								<span className="stat-value">{userStats.streakDays} ditë</span>
-							</div>
-						</div>
+							{selectedClass && (
+								<button className="nav-btn" onClick={onBackToClasses}>
+									← Kthehu te Klasat
+								</button>
+							)}
+							{selectedCourse && (
+								<button className="nav-btn" onClick={onBackToCourses}>
+									← Kthehu te Kurset
+								</button>
+							)}
+						</nav>
 					</div>
 
-					<div className="header-actions">
-						<button className="profile-btn" onClick={onShowProfile}>👤 Profili</button>
-						<button
-							className="leaderboard-btn"
-							onClick={onShowLeaderboard}
-							title={LEADERBOARD_TITLE}
-						>
-							🏆 {LEADERBOARD_TITLE}
-						</button>
-						<button className="logout-btn" onClick={onLogout}>Dil</button>
+					<div className="header-account">
+						<div className="header-progress-summary">
+							<div
+								className="user-progress"
+								role="progressbar"
+								aria-label="Progresi yt"
+								aria-valuemin={0}
+								aria-valuemax={100}
+								aria-valuenow={Math.round(progress)}
+							>
+								<div className="user-progress-fill" style={{ width: `${progress}%` }} />
+							</div>
+
+							<div className="user-stats">
+								{curriculumLabel && (
+									<div className="stat-item curriculum-stat" title="Ku je tani">
+										<span className="stat-icon">📚</span>
+										<span className="stat-value">{curriculumLabel}</span>
+									</div>
+								)}
+								<button
+									type="button"
+									className="stat-item clickable-stat"
+									onClick={onShowLevelInfo}
+									title="Pikët e tua"
+								>
+									<span className="stat-icon">⭐</span>
+									<span className="stat-value">XP {userStats.level}</span>
+								</button>
+								<div className="stat-item">
+									<span className="stat-icon">🏆</span>
+									<span className="stat-value">{userStats.totalPoints} pikë</span>
+								</div>
+								<div className="stat-item">
+									<span className="stat-icon">🔥</span>
+									<span className="stat-value">{userStats.streakDays} ditë</span>
+								</div>
+							</div>
+						</div>
+
+						<div className="header-actions">
+							<button className="profile-btn" onClick={onShowProfile}>👤 Unë</button>
+							<button
+								className="leaderboard-btn"
+								onClick={onShowLeaderboard}
+								title={LEADERBOARD_TITLE}
+							>
+								🏆 {LEADERBOARD_TITLE}
+							</button>
+							<button className="logout-btn" onClick={onLogout}>Dil</button>
+						</div>
 					</div>
 				</div>
-			</div>
-		</header>
+
+				{/* Compact mobile top strip (Duolingo-like) */}
+				<div className="mobile-top-strip" aria-label="Progresi">
+					<button type="button" className="mobile-top-chip" onClick={onShowLevelInfo}>
+						<span>⭐</span>
+						<strong>{userStats.level}</strong>
+					</button>
+					<div className="mobile-top-chip">
+						<span>🏆</span>
+						<strong>{userStats.totalPoints}</strong>
+					</div>
+					<div className="mobile-top-chip">
+						<span>🔥</span>
+						<strong>{userStats.streakDays}</strong>
+					</div>
+					{curriculumLabel && (
+						<div className="mobile-top-chip mobile-top-chip-wide">
+							<span>📚</span>
+							<strong>{curriculumLabel}</strong>
+						</div>
+					)}
+				</div>
+			</header>
+
+			<nav className="mobile-bottom-nav" aria-label="Navigimi i telefonit">
+				<button
+					type="button"
+					className={`mobile-tab ${!selectedClass ? 'active' : ''}`}
+					onClick={onBackToClasses}
+				>
+					<span className="mobile-tab-icon">🏠</span>
+					<span className="mobile-tab-label">Shtëpia</span>
+				</button>
+				<button
+					type="button"
+					className="mobile-tab"
+					onClick={onShowLeaderboard}
+				>
+					<span className="mobile-tab-icon">🏆</span>
+					<span className="mobile-tab-label">Renditja</span>
+				</button>
+				<button
+					type="button"
+					className="mobile-tab"
+					onClick={onShowProfile}
+				>
+					<span className="mobile-tab-icon">👤</span>
+					<span className="mobile-tab-label">Unë</span>
+				</button>
+				<button
+					type="button"
+					className="mobile-tab"
+					onClick={onLogout}
+				>
+					<span className="mobile-tab-icon">🚪</span>
+					<span className="mobile-tab-label">Dil</span>
+				</button>
+			</nav>
+		</>
 	)
 }
 

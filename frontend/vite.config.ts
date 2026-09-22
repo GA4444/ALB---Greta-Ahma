@@ -17,10 +17,10 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        // Backend is running with your command on port 8001:
-        // python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
-        target: 'http://127.0.0.1:8001',
+        // Local backend if running; otherwise production for design preview.
+        target: process.env.VITE_API_PROXY || 'https://alblingo-backend.onrender.com',
         changeOrigin: true,
+        secure: true,
       },
     },
   },

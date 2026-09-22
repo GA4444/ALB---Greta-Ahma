@@ -1,0 +1,440 @@
+/*
+ * Admin dashboard visual layer — same design language as AlbLingo app.
+ * Teal/ink, Fraunces headings, cleaner surfaces. Desktop + mobile.
+ */
+
+.admin-dashboard {
+  --adm-ink: #13293d;
+  --adm-teal: #1f6f8b;
+  --adm-teal-deep: #164e63;
+  --adm-leaf: #2f9e6b;
+  --adm-coral: #e85d4c;
+  --adm-line: rgba(19, 41, 61, 0.1);
+  --adm-paper: #f4f8fb;
+  --adm-shadow: 0 14px 32px rgba(19, 41, 61, 0.08);
+  --adm-shadow-soft: 0 8px 20px rgba(19, 41, 61, 0.06);
+  font-family: var(--font-primary, "Outfit", "Segoe UI", sans-serif);
+  color: var(--adm-ink);
+  background:
+    radial-gradient(1000px 480px at 0% -10%, rgba(31, 111, 139, 0.12), transparent 55%),
+    radial-gradient(800px 420px at 100% 0%, rgba(47, 158, 107, 0.08), transparent 50%),
+    linear-gradient(180deg, #f5faff 0%, #eef5f8 100%) !important;
+  padding: 1.25rem clamp(0.75rem, 2vw, 1.75rem) 2rem !important;
+}
+
+.admin-dashboard h1,
+.admin-dashboard h2,
+.admin-dashboard h3,
+.admin-dashboard .section-title,
+.admin-dashboard .chart-title,
+.admin-dashboard .table-header h2,
+.admin-dashboard .export-title {
+  font-family: var(--font-display, "Fraunces", Georgia, serif);
+  letter-spacing: -0.02em;
+  color: var(--adm-ink);
+}
+
+/* Header */
+.admin-dashboard .admin-header {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid var(--adm-line) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--adm-shadow-soft) !important;
+  padding: 1.25rem 1.5rem !important;
+  gap: 1rem;
+}
+
+.admin-dashboard .admin-header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.admin-dashboard .admin-header-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--adm-teal);
+}
+
+.admin-dashboard .admin-header h1 {
+  font-size: clamp(1.35rem, 2.5vw, 1.85rem) !important;
+  font-weight: 700 !important;
+  color: var(--adm-ink) !important;
+}
+
+.admin-dashboard .admin-logout-btn {
+  background: #fff !important;
+  color: #9b2c20 !important;
+  border: 1.5px solid rgba(232, 93, 76, 0.35) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  min-height: 44px;
+  padding: 0.65rem 1.2rem !important;
+  font-weight: 700 !important;
+}
+
+.admin-dashboard .admin-logout-btn:hover {
+  background: #fff5f3 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(232, 93, 76, 0.15) !important;
+}
+
+/* Tabs */
+.admin-dashboard .admin-tabs {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid var(--adm-line) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--adm-shadow-soft) !important;
+  padding: 0.55rem !important;
+  gap: 0.45rem !important;
+  position: sticky;
+  top: 0.5rem;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+}
+
+.admin-dashboard .admin-tabs button {
+  border-radius: 12px !important;
+  font-weight: 650 !important;
+  font-size: 0.9rem !important;
+  color: #5b7080 !important;
+  min-height: 44px;
+  padding: 0.7rem 1rem !important;
+}
+
+.admin-dashboard .admin-tabs button:hover {
+  color: var(--adm-teal-deep) !important;
+  background: rgba(31, 111, 139, 0.08) !important;
+}
+
+.admin-dashboard .admin-tabs button.active {
+  background: linear-gradient(135deg, var(--adm-teal), var(--adm-teal-deep)) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 18px rgba(31, 111, 139, 0.28) !important;
+}
+
+/* Content shell */
+.admin-dashboard .admin-content {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid var(--adm-line) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--adm-shadow) !important;
+  padding: 1.35rem clamp(1rem, 2vw, 1.75rem) !important;
+}
+
+/* KPI / stat cards */
+.admin-dashboard .stat-card,
+.admin-dashboard .chart-card,
+.admin-dashboard .export-section,
+.admin-dashboard .time-range-selector,
+.admin-dashboard .research-ai-panel,
+.admin-dashboard .corpus-dashboard > section,
+.admin-dashboard .kpi-card {
+  background: #fff !important;
+  border: 1px solid var(--adm-line) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--adm-shadow-soft) !important;
+}
+
+.admin-dashboard .stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.admin-dashboard .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--adm-shadow) !important;
+}
+
+.admin-dashboard .stat-card::before {
+  background: linear-gradient(90deg, var(--adm-teal), var(--adm-leaf)) !important;
+}
+
+.admin-dashboard .stat-value {
+  font-family: var(--font-display, "Fraunces", Georgia, serif);
+  color: var(--adm-ink) !important;
+}
+
+.admin-dashboard .stat-label {
+  color: #5b7080 !important;
+  font-weight: 600 !important;
+}
+
+/* Buttons */
+.admin-dashboard .create-btn,
+.admin-dashboard .export-btn,
+.admin-dashboard .corpus-action-btn,
+.admin-dashboard button.create-btn {
+  background: linear-gradient(135deg, var(--adm-teal), var(--adm-teal-deep)) !important;
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  min-height: 42px;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 18px rgba(31, 111, 139, 0.22) !important;
+}
+
+.admin-dashboard .create-btn:hover,
+.admin-dashboard .export-btn:hover {
+  filter: brightness(1.05);
+}
+
+/* Tables */
+.admin-dashboard .admin-table-container {
+  border: 1px solid var(--adm-line);
+  border-radius: 14px;
+  overflow: auto;
+  background: #fff;
+}
+
+.admin-dashboard .admin-table thead {
+  background: #eaf4f8 !important;
+}
+
+.admin-dashboard .admin-table th {
+  color: var(--adm-teal-deep) !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--adm-line) !important;
+}
+
+.admin-dashboard .admin-table td {
+  border-bottom: 1px solid rgba(19, 41, 61, 0.06) !important;
+  color: var(--adm-ink);
+}
+
+.admin-dashboard .admin-table tbody tr:nth-child(even) {
+  background: #f8fbfd !important;
+}
+
+.admin-dashboard .admin-table tbody tr:hover {
+  background: #eef7fb !important;
+}
+
+.admin-dashboard .admin-table button {
+  border-radius: 10px !important;
+  min-height: 36px;
+  font-weight: 650 !important;
+}
+
+/* Corpus subtabs & filters */
+.admin-dashboard .corpus-subtabs {
+  gap: 0.45rem !important;
+  flex-wrap: wrap;
+}
+
+.admin-dashboard .corpus-subtabs button {
+  border-radius: 999px !important;
+  border: 1px solid var(--adm-line) !important;
+  background: #fff !important;
+  color: #5b7080 !important;
+  font-weight: 650 !important;
+  min-height: 40px;
+  padding: 0.5rem 0.95rem !important;
+}
+
+.admin-dashboard .corpus-subtabs button.active {
+  background: rgba(31, 111, 139, 0.12) !important;
+  color: var(--adm-teal-deep) !important;
+  border-color: rgba(31, 111, 139, 0.28) !important;
+}
+
+.admin-dashboard .corpus-filters input,
+.admin-dashboard .corpus-filters select,
+.admin-dashboard .table-header select,
+.admin-dashboard input,
+.admin-dashboard select,
+.admin-dashboard textarea {
+  border: 1.5px solid rgba(19, 41, 61, 0.12) !important;
+  border-radius: 12px !important;
+  min-height: 42px;
+  font-family: inherit;
+}
+
+.admin-dashboard .corpus-filters input:focus,
+.admin-dashboard .corpus-filters select:focus,
+.admin-dashboard input:focus,
+.admin-dashboard select:focus,
+.admin-dashboard textarea:focus {
+  border-color: var(--adm-teal) !important;
+  box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.12) !important;
+  outline: none;
+}
+
+.admin-dashboard .corpus-badge.validated {
+  background: #e8f8ef !important;
+  color: #166534 !important;
+}
+
+.admin-dashboard .corpus-badge.pending {
+  background: #fff7e8 !important;
+  color: #9a6400 !important;
+}
+
+/* Modals */
+.admin-dashboard .modal-overlay,
+.modal-overlay {
+  backdrop-filter: blur(4px);
+}
+
+.admin-dashboard .modal,
+.modal {
+  border-radius: 18px !important;
+  border: 1px solid var(--adm-line) !important;
+  box-shadow: var(--adm-shadow) !important;
+}
+
+/* Charts */
+.admin-dashboard .chart-title {
+  font-size: 1.05rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.admin-dashboard .charts-row {
+  gap: 1rem !important;
+}
+
+/* Research panel */
+.admin-dashboard .research-ai-panel {
+  padding: 1.1rem !important;
+}
+
+/* ========== Mobile admin ========== */
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 0.75rem 0.7rem 1.5rem !important;
+  }
+
+  .admin-dashboard .admin-header {
+    flex-direction: row !important;
+    align-items: center;
+    padding: 0.9rem 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  .admin-dashboard .admin-header h1 {
+    font-size: 1.15rem !important;
+    gap: 0.4rem !important;
+  }
+
+  .admin-dashboard .admin-logout-btn {
+    padding: 0.55rem 0.85rem !important;
+    font-size: 0.85rem !important;
+    white-space: nowrap;
+  }
+
+  .admin-dashboard .admin-tabs {
+    position: sticky;
+    top: 0.35rem;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.35rem !important;
+    padding: 0.45rem !important;
+  }
+
+  .admin-dashboard .admin-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-dashboard .admin-tabs button {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    min-width: max-content;
+    padding: 0.65rem 0.9rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .admin-dashboard .admin-content {
+    padding: 1rem 0.85rem !important;
+    border-radius: 16px !important;
+  }
+
+  .admin-dashboard .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+
+  .admin-dashboard .stat-card {
+    padding: 1rem !important;
+  }
+
+  .admin-dashboard .stat-value {
+    font-size: 1.55rem !important;
+  }
+
+  .admin-dashboard .stat-icon {
+    font-size: 1.6rem !important;
+  }
+
+  .admin-dashboard .charts-row,
+  .admin-dashboard .export-buttons {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-dashboard .admin-table-container {
+    margin: 0 -0.15rem;
+  }
+
+  .admin-dashboard .admin-table {
+    font-size: 0.82rem;
+  }
+
+  .admin-dashboard .admin-table th,
+  .admin-dashboard .admin-table td {
+    padding: 0.65rem 0.55rem !important;
+  }
+
+  .admin-dashboard .corpus-subtabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-dashboard .corpus-subtabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-dashboard .corpus-subtabs button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .admin-dashboard .corpus-filters {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.6rem !important;
+  }
+
+  .admin-dashboard .table-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem;
+  }
+
+  .admin-dashboard .table-header > div {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .admin-dashboard .create-btn,
+  .admin-dashboard .export-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .admin-dashboard .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
