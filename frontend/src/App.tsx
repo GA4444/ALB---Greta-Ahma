@@ -27,6 +27,26 @@ const getToastTone = (text: string): 'info' | 'success' | 'error' | 'warning' =>
     return 'info'
 }
 
+const getToastIcon = (tone: 'info' | 'success' | 'error' | 'warning') => {
+    if (tone === 'success') return '✓'
+    if (tone === 'error') return '!'
+    if (tone === 'warning') return '!'
+    return 'i'
+}
+
+const cleanToastText = (text: string) =>
+    text.replace(/^[\s]*(?:✅|❌|⚠️|🎉|✔️|✖️)+\s*/u, '').trim() || text
+
+function AppToast({ message }: { message: string }) {
+    const tone = getToastTone(message)
+    return (
+        <div className={`app-toast app-toast--${tone}`} role="status" aria-live="polite">
+            <span className="app-toast-icon" aria-hidden="true">{getToastIcon(tone)}</span>
+            <span className="app-toast-text">{cleanToastText(message)}</span>
+        </div>
+    )
+}
+
 /** Curriculum "Niveli N" lives on the Course; each course often has a single Level with order_index=1. */
 const getClassNumber = (selectedClass: ClassData | null | undefined, classes: ClassData[] = []): number => {
 	if (!selectedClass) return 1
@@ -1401,12 +1421,7 @@ function App() {
                                 </button>
                             </div>
                         )}
-                        {message && (
-                            <div className={`app-toast app-toast--${getToastTone(message)}`} role="status" aria-live="polite">
-                                <span className="app-toast-dot" aria-hidden="true" />
-                                <span className="app-toast-text">{message}</span>
-                            </div>
-                        )}
+                        {message && <AppToast message={message} />}
                     </div>
                 </div>
             </div>
@@ -2281,12 +2296,7 @@ function App() {
 
             {/* FOOTER SECTION */}
             <AppFooter />
-            {message && (
-                <div className={`app-toast app-toast--${getToastTone(message)}`} role="status" aria-live="polite">
-                    <span className="app-toast-dot" aria-hidden="true" />
-                    <span className="app-toast-text">{message}</span>
-                </div>
-            )}
+            {message && <AppToast message={message} />}
         </div>
     )
 }

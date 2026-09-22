@@ -476,93 +476,88 @@ h1, h2, h3,
   color: #1d6b4a !important;
 }
 
-/* Professional toast notifications (Stripe / Linear style) */
+/* Duolingo-style toast: bottom-centered, dark, bounce */
 .app-toast {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  left: auto;
-  bottom: auto;
+  left: 50%;
+  bottom: 28px;
+  top: auto;
+  right: auto;
   z-index: 1400;
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 14px;
   width: max-content;
-  max-width: min(380px, calc(100vw - 32px));
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  color: #0f172a;
+  min-width: 280px;
+  max-width: min(520px, calc(100vw - 40px));
+  padding: 16px 22px 16px 16px;
+  border-radius: 16px;
+  border: none;
+  background: #3c3c3c;
+  color: #ffffff;
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 10px 28px rgba(15, 23, 42, 0.1);
+    0 8px 24px rgba(0, 0, 0, 0.28),
+    0 2px 6px rgba(0, 0, 0, 0.18);
   font-family: var(--font-primary, "Source Sans 3", sans-serif);
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.4;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
   pointer-events: none;
-  animation: app-toast-in 220ms ease-out;
+  transform: translateX(-50%);
+  animation: app-toast-bounce 480ms cubic-bezier(0.34, 1.45, 0.64, 1) both;
 }
 
-.app-toast-dot {
-  width: 8px;
-  height: 8px;
-  margin-top: 5px;
+.app-toast-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   flex: 0 0 auto;
-  background: #64748b;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+  background: #1cb0f6;
 }
 
 .app-toast-text {
   flex: 1;
   min-width: 0;
+  text-align: left;
 }
 
-.app-toast--info {
-  border-color: #dbeafe;
-  background: #ffffff;
+.app-toast--info .app-toast-icon {
+  background: #1cb0f6;
 }
 
-.app-toast--info .app-toast-dot {
-  background: #3b82f6;
+.app-toast--success .app-toast-icon {
+  background: #58cc02;
 }
 
-.app-toast--success {
-  border-color: #bbf7d0;
-  background: #ffffff;
+.app-toast--warning .app-toast-icon {
+  background: #ffc800;
+  color: #3c3c3c;
 }
 
-.app-toast--success .app-toast-dot {
-  background: #16a34a;
+.app-toast--error .app-toast-icon {
+  background: #ff4b4b;
 }
 
-.app-toast--warning {
-  border-color: #fde68a;
-  background: #ffffff;
-}
-
-.app-toast--warning .app-toast-dot {
-  background: #d97706;
-}
-
-.app-toast--error {
-  border-color: #fecaca;
-  background: #ffffff;
-}
-
-.app-toast--error .app-toast-dot {
-  background: #dc2626;
-}
-
-@keyframes app-toast-in {
-  from {
+@keyframes app-toast-bounce {
+  0% {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateX(-50%) translateY(28px) scale(0.92);
   }
-  to {
+  60% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(-6px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
   }
 }
 
@@ -572,14 +567,68 @@ h1, h2, h3,
   display: none !important;
 }
 
+/* Tablet */
+@media (min-width: 600px) and (max-width: 1024px) {
+  .app-toast {
+    bottom: 36px;
+    min-width: 340px;
+    max-width: min(560px, calc(100vw - 48px));
+    padding: 18px 26px 18px 18px;
+    font-size: 1.125rem;
+    border-radius: 18px;
+  }
+
+  .app-toast-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.15rem;
+  }
+}
+
+/* Laptop / desktop */
+@media (min-width: 1025px) {
+  .app-toast {
+    bottom: 40px;
+    min-width: 360px;
+    max-width: min(580px, calc(100vw - 64px));
+    padding: 18px 28px 18px 18px;
+    font-size: 1.125rem;
+    border-radius: 18px;
+  }
+
+  .app-toast-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+  }
+}
+
+/* Phone: sit above bottom nav */
 @media (max-width: 768px) {
   .app-toast {
-    top: auto;
-    bottom: calc(78px + env(safe-area-inset-bottom, 0px));
-    right: 12px;
-    left: 12px;
-    max-width: none;
+    left: 16px;
+    right: 16px;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
     width: auto;
+    min-width: 0;
+    max-width: none;
+    transform: none;
+    animation-name: app-toast-bounce-mobile;
+  }
+}
+
+@keyframes app-toast-bounce-mobile {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
