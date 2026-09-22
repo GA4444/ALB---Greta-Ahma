@@ -19,6 +19,14 @@ const ChatbotFloating = lazy(() => import('./ChatbotFloating'))
 
 const LEADERBOARD_TITLE = 'Vendi yt në renditje'
 
+const getToastTone = (text: string): 'info' | 'success' | 'error' | 'warning' => {
+    const m = text.toLowerCase()
+    if (/gabim|pasakt|fail|error|❌|kredencialet|nuk mbështet|nuk përputhen/.test(m)) return 'error'
+    if (/mirësevini|saktë|sukses|urime|bravo|✅|🎉|u krye|u përditësua/.test(m)) return 'success'
+    if (/⚠️|mbyllur|kujdes|warning|bosh/.test(m)) return 'warning'
+    return 'info'
+}
+
 /** Curriculum "Niveli N" lives on the Course; each course often has a single Level with order_index=1. */
 const getClassNumber = (selectedClass: ClassData | null | undefined, classes: ClassData[] = []): number => {
 	if (!selectedClass) return 1
@@ -1393,7 +1401,12 @@ function App() {
                                 </button>
                             </div>
                         )}
-                        {message && <div className="message">{message}</div>}
+                        {message && (
+                            <div className={`app-toast app-toast--${getToastTone(message)}`} role="status" aria-live="polite">
+                                <span className="app-toast-dot" aria-hidden="true" />
+                                <span className="app-toast-text">{message}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -2268,7 +2281,12 @@ function App() {
 
             {/* FOOTER SECTION */}
             <AppFooter />
-            {message && <div className="message">{message}</div>}
+            {message && (
+                <div className={`app-toast app-toast--${getToastTone(message)}`} role="status" aria-live="polite">
+                    <span className="app-toast-dot" aria-hidden="true" />
+                    <span className="app-toast-text">{message}</span>
+                </div>
+            )}
         </div>
     )
 }
