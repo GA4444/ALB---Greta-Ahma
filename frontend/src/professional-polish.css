@@ -972,19 +972,18 @@
 
 .app .chatbot-float-btn {
   bottom: max(20px, env(safe-area-inset-bottom, 0px));
-  z-index: var(--z-fixed, 1030);
-}
-
-.app .chatbot-floating-panel {
-  z-index: calc(var(--z-fixed, 1030) + 5);
+  z-index: 1210;
 }
 
 .app .chatbot-modal-overlay {
-  z-index: calc(var(--z-fixed, 1030) + 4);
+  z-index: 1200;
+}
+
+.app .chatbot-floating-panel {
+  z-index: 1201;
 }
 
 .app:has(.profile-overlay) .chatbot-float-btn,
-.app:has(.profile-overlay) .chatbot-floating-panel,
 .app:has(.profile-overlay) .chatbot-modal-overlay {
   visibility: hidden;
   pointer-events: none;

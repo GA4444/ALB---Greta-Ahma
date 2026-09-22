@@ -423,9 +423,16 @@ def _get_or_create_session(
             db.commit()
             return session
     
+    parsed_user_id = None
+    if user_id:
+        try:
+            parsed_user_id = int(str(user_id).strip())
+        except (TypeError, ValueError):
+            parsed_user_id = None
+
     # Create new session
     session = models.ChatSession(
-        user_id=int(user_id) if user_id else None,
+        user_id=parsed_user_id,
         session_token=str(uuid.uuid4()),
         started_at=datetime.utcnow(),
         last_activity=datetime.utcnow()
@@ -479,16 +486,21 @@ async def advanced_chatbot_ask(request: AdvancedChatRequest, db: Session = Depen
     # Get user info if logged in
     user_info = None
     if request.user_id:
-        user = db.query(models.User).filter(models.User.id == int(request.user_id)).first()
-        if user:
-            progress_count = db.query(models.Progress).filter(models.Progress.user_id == request.user_id).count()
-            user_info = {
-                "user_id": request.user_id,
-                "username": user.username,
-                "progress_count": progress_count,
-                "current_streak": user.current_streak,
-                "total_achievements": user.total_achievements
-            }
+        try:
+            uid = int(str(request.user_id).strip())
+        except (TypeError, ValueError):
+            uid = None
+        if uid is not None:
+            user = db.query(models.User).filter(models.User.id == uid).first()
+            if user:
+                progress_count = db.query(models.Progress).filter(models.Progress.user_id == uid).count()
+                user_info = {
+                    "user_id": str(uid),
+                    "username": user.username,
+                    "progress_count": progress_count,
+                    "current_streak": user.current_streak,
+                    "total_achievements": user.total_achievements
+                }
     
     # RAG: Search corpus
     rag_context = _build_rag_context(request.message, db) if (request.use_llm or USE_LLM) else ""

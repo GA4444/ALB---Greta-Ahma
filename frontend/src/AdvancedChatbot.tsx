@@ -161,10 +161,11 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 			// Auto-play audio if enabled
 			if (autoAudio) {
 				try {
-					const audioBlob = await textToSpeech({ text: response.response })
-					const audioUrl = URL.createObjectURL(audioBlob)
-					const audio = new Audio(audioUrl)
-					audio.play()
+					const audioResponse = await textToSpeech(response.response, 'anila')
+					if (audioResponse?.audio_url) {
+						const audio = new Audio(audioResponse.audio_url)
+						audio.play()
+					}
 				} catch (error) {
 					console.error('Auto-audio failed:', error)
 				}
@@ -182,8 +183,12 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 				timestamp: new Date().toISOString()
 			}
 			setMessages((prev) => [...prev, errorMessage])
+			// If the saved session is broken, reset it for the next attempt
+			localStorage.removeItem('chatbot_session_token')
+			setSessionToken(null)
 		} finally {
 			setIsLoading(false)
+			inputRef.current?.focus()
 		}
 	}
 

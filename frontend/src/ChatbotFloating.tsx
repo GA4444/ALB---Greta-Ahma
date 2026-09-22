@@ -18,44 +18,42 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 	const [hasUnread, setHasUnread] = useState(false)
 
 	const handleToggle = () => {
-		setIsOpen(!isOpen)
-		if (!isOpen) {
-			setHasUnread(false) // Mark as read when opened
-		}
+		setIsOpen((open) => {
+			if (!open) setHasUnread(false)
+			return !open
+		})
 	}
 
 	const handleClose = () => setIsOpen(false)
 
 	return (
 		<>
-			{/* Floating Button */}
 			<button
+				type="button"
 				className={`chatbot-float-btn ${isOpen ? 'active' : ''}`}
 				onClick={handleToggle}
-				aria-label="Bashkëbiseduesi AI"
+				aria-label={isOpen ? 'Mbyll bashkëbiseduesin' : 'Hap bashkëbiseduesin AI'}
 				aria-expanded={isOpen}
 				aria-controls="chatbot-floating-panel"
 			>
 				{isOpen ? '✕' : '💬'}
-				{!isOpen && hasUnread && <span className="unread-badge"></span>}
+				{!isOpen && hasUnread && <span className="unread-badge" />}
 				{!isOpen && <span className="chatbot-label">AI</span>}
 			</button>
 
-			{/* Chatbot Panel */}
 			{isOpen && (
-				<>
-					<button
-						type="button"
-						className="chatbot-modal-overlay"
-						aria-label="Mbyll bashkëbiseduesin"
-						onClick={handleClose}
-					/>
+				<div
+					className="chatbot-modal-overlay"
+					role="presentation"
+					onClick={handleClose}
+				>
 					<div
 						id="chatbot-floating-panel"
 						className="chatbot-floating-panel"
 						role="dialog"
 						aria-modal="true"
 						aria-label="Bashkëbiseduesi AI"
+						onClick={(event) => event.stopPropagation()}
 					>
 						<LazyErrorBoundary label="bashkëbiseduesit">
 							<Suspense fallback={<div className="chatbot-panel-loading">Duke hapur bashkëbiseduesin…</div>}>
@@ -67,7 +65,7 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 							</Suspense>
 						</LazyErrorBoundary>
 					</div>
-				</>
+				</div>
 			)}
 		</>
 	)
