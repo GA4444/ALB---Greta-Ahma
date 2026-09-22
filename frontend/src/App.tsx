@@ -1266,7 +1266,7 @@ function App() {
                         <div className="auth-header">
                             <div className="auth-logo">🇦🇱</div>
                             <h2>Mirësevini në AlbLingo!</h2>
-                            <p>Fillo udhëtimin tënd për të mësuar drejtshkrimin e gjuhës shqipe</p>
+                            <p>Mëso të shkruash shqip. Zgjidh klasën dhe fillo!</p>
                         </div>
 
                         <div className="auth-tabs">
