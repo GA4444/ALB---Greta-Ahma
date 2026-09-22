@@ -1192,12 +1192,13 @@
 .app .ocr-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 1300;
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(15, 23, 42, 0.58);
-  backdrop-filter: blur(6px);
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   animation: ocr-overlay-in 160ms ease-out;
 }
 
@@ -1208,30 +1209,41 @@
   max-height: calc(100vh - 48px);
   margin: 0;
   padding: 24px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid #dbe4ec;
   border-radius: 16px;
   background: #fff;
+  box-sizing: border-box;
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
 }
 
 .app .sidebar-compact .ocr-workspace-modal .ocr-modal-close {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 2;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  border: 1px solid #dbe4ec;
-  border-radius: 10px;
-  background: #fff;
-  color: #475569;
-  font-size: 1.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 1.65rem;
+  font-weight: 600;
   line-height: 1;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.app .sidebar-compact .ocr-workspace-modal .ocr-modal-close:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #b91c1c;
 }
 
 .app .sidebar-compact .ocr-workspace-modal .ocr-header {
@@ -1319,30 +1331,85 @@
 
 @media (max-width: 768px) {
   .app .ocr-modal-overlay {
-    padding: 0;
+    align-items: center;
+    justify-items: center;
+    padding: max(12px, env(safe-area-inset-top, 0px))
+      max(12px, env(safe-area-inset-right, 0px))
+      max(12px, env(safe-area-inset-bottom, 0px))
+      max(12px, env(safe-area-inset-left, 0px));
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    overflow: auto;
+    overscroll-behavior: contain;
   }
 
   .app .sidebar-compact .ocr-workspace-modal {
-    width: 100vw;
-    max-width: 100vw;
-    height: 100dvh;
-    max-height: 100dvh;
-    padding: 18px 14px 28px;
-    border: 0;
-    border-radius: 0;
+    width: min(100%, calc(100vw - 24px));
+    max-width: min(520px, calc(100vw - 24px));
+    height: auto;
+    max-height: min(88dvh, calc(100dvh - 24px));
+    margin: auto;
+    padding: 16px 14px 18px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid #dbe4ec;
+    border-radius: 16px;
+    box-sizing: border-box;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.28);
+  }
+
+  .app .sidebar-compact .ocr-workspace-modal .ocr-modal-close {
+    top: 10px;
+    right: 10px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 1.75rem;
   }
 
   .app .sidebar-compact .ocr-workspace-modal .ocr-header,
   .app .sidebar-compact .ocr-workspace-modal .ocr-form {
     grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .app .sidebar-compact .ocr-workspace-modal .ocr-header {
     align-items: stretch;
-    margin-right: 42px;
+    margin: 0 46px 14px 0;
+    padding-right: 0;
+  }
+
+  .app .sidebar-compact .ocr-workspace-modal .ocr-header h3 {
+    font-size: 1.05rem;
+    padding-right: 8px;
+    word-break: break-word;
+  }
+
+  .app .sidebar-compact .ocr-workspace-modal .ocr-subtitle {
+    font-size: 0.8rem;
+    max-width: 100%;
   }
 
   .app .sidebar-compact .ocr-workspace-modal .ocr-button {
     width: 100%;
+  }
+
+  .app .sidebar-compact .ocr-workspace-modal .ocr-field,
+  .app .sidebar-compact .ocr-workspace-modal .ocr-result-container,
+  .app .sidebar-compact .ocr-workspace-modal .ocr-section,
+  .app .sidebar-compact .ocr-workspace-modal input,
+  .app .sidebar-compact .ocr-workspace-modal textarea {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .app .sidebar-compact .ocr-workspace-modal .ocr-tokens-list {
+    flex-wrap: wrap;
+    max-width: 100%;
   }
 }

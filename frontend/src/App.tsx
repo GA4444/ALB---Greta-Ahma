@@ -2692,11 +2692,13 @@ function MainContent({
                                     onClick={(event) => event.stopPropagation()}
                                 >
                                     <button
+                                        type="button"
                                         className="ocr-modal-close"
                                         onClick={() => setIsOCRWorkspaceOpen(false)}
-                                        aria-label="Mbyll kontrollin e diktimit"
+                                        aria-label="Mbyll"
+                                        title="Mbyll"
                                     >
-                                        ×
+                                        ✕
                                     </button>
                     <div className="ocr-header">
                         <div>
