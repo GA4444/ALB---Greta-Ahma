@@ -979,10 +979,21 @@
   z-index: calc(var(--z-fixed, 1030) + 5);
 }
 
+.app .chatbot-modal-overlay {
+  z-index: calc(var(--z-fixed, 1030) + 4);
+}
+
 .app:has(.profile-overlay) .chatbot-float-btn,
-.app:has(.profile-overlay) .chatbot-floating-panel {
+.app:has(.profile-overlay) .chatbot-floating-panel,
+.app:has(.profile-overlay) .chatbot-modal-overlay {
   visibility: hidden;
   pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .app .chatbot-float-btn {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (min-width: 1101px) {

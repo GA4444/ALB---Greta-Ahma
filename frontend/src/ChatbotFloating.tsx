@@ -24,6 +24,8 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 		}
 	}
 
+	const handleClose = () => setIsOpen(false)
+
 	return (
 		<>
 			{/* Floating Button */}
@@ -41,22 +43,31 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 
 			{/* Chatbot Panel */}
 			{isOpen && (
-				<div
-					id="chatbot-floating-panel"
-					className="chatbot-floating-panel"
-					role="dialog"
-					aria-label="Bashkëbiseduesi AI"
-				>
-					<LazyErrorBoundary label="bashkëbiseduesit">
-						<Suspense fallback={<div className="chatbot-panel-loading">Duke hapur bashkëbiseduesin…</div>}>
-							<AdvancedChatbot
-								userId={userId}
-								context={context}
-								onClose={() => setIsOpen(false)}
-							/>
-						</Suspense>
-					</LazyErrorBoundary>
-				</div>
+				<>
+					<button
+						type="button"
+						className="chatbot-modal-overlay"
+						aria-label="Mbyll bashkëbiseduesin"
+						onClick={handleClose}
+					/>
+					<div
+						id="chatbot-floating-panel"
+						className="chatbot-floating-panel"
+						role="dialog"
+						aria-modal="true"
+						aria-label="Bashkëbiseduesi AI"
+					>
+						<LazyErrorBoundary label="bashkëbiseduesit">
+							<Suspense fallback={<div className="chatbot-panel-loading">Duke hapur bashkëbiseduesin…</div>}>
+								<AdvancedChatbot
+									userId={userId}
+									context={context}
+									onClose={handleClose}
+								/>
+							</Suspense>
+						</LazyErrorBoundary>
+					</div>
+				</>
 			)}
 		</>
 	)
