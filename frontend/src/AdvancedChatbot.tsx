@@ -662,10 +662,12 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 
 			<div className="chatbot-input-area">
 				<button
-					className={`voice-btn ${isRecording ? 'recording' : ''}`}
+					type="button"
+					className={`chatbot-voice-btn ${isRecording ? 'recording' : ''}`}
 					onClick={isRecording ? stopRecording : startRecording}
 					disabled={isLoading}
 					title={isRecording ? 'Ndalo regjistrimin' : 'Filloni të flisni'}
+					aria-label={isRecording ? 'Ndalo regjistrimin' : 'Fol me zë'}
 				>
 					{isRecording ? '🎙️' : '🎤'}
 				</button>
@@ -678,11 +680,15 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 					onKeyPress={handleKeyPress}
 					disabled={isLoading || isRecording}
 					rows={1}
+					enterKeyHint="send"
+					autoComplete="off"
 				/>
 				<button
-					className="send-btn"
+					type="button"
+					className="chatbot-send-btn"
 					onClick={() => sendMessage()}
 					disabled={isLoading || !inputValue.trim() || isRecording}
+					aria-label="Dërgo"
 				>
 					{isLoading ? '⏳' : '➤'}
 				</button>
