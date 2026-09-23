@@ -798,22 +798,30 @@
   }
 
   .app .feature-card-modern {
-    display: grid;
-    grid-template-columns: 42px 1fr;
-    column-gap: 10px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: 13px 14px;
-    text-align: left;
-  }
-
-  .app .feature-icon-wrapper {
-    grid-row: 1 / span 2;
-    margin: 0;
+    justify-content: center;
+    padding: 12px 14px;
     text-align: center;
   }
 
-  .app .feature-title-modern {
-    margin: 0 0 2px;
+  .app .feature-icon-wrapper {
+    margin: 0 auto 4px;
+    text-align: center;
+  }
+
+  .app .feature-title-modern,
+  .app .feature-description-modern {
+    margin: 0;
+    text-align: center;
+    width: 100%;
+  }
+
+  .app .section-header-modern,
+  .app .section-title-modern,
+  .app .section-subtitle-modern {
+    text-align: center;
   }
 
   .app .exercise-container-modern {
