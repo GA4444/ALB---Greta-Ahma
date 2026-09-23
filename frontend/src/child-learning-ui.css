@@ -5142,6 +5142,22 @@
 	box-shadow: 0 8px 20px rgba(31, 111, 139, 0.16) !important;
 }
 
+.app .level-info-card .level-summary *,
+.app .level-info-card .level-summary .stat-value-large,
+.app .level-info-card .level-summary .stat-label-small,
+.app .level-info-card .level-summary .level-number,
+.app .level-info-card .level-summary .level-label {
+	color: #fff !important;
+	-webkit-text-fill-color: #fff !important;
+}
+
+.app .level-info-card .level-summary .stat-icon-large,
+.app .level-info-card .level-summary .stat-icon-large svg {
+	color: #fff !important;
+	fill: currentColor !important;
+	opacity: 1 !important;
+}
+
 .app .level-info-card .level-badge-large {
 	min-width: 96px !important;
 	padding: 12px 14px !important;
@@ -5199,13 +5215,17 @@
 	text-overflow: ellipsis !important;
 	white-space: nowrap !important;
 	max-width: 100% !important;
+	color: #fff !important;
+	-webkit-text-fill-color: #fff !important;
 }
 
 .app .level-info-card .stat-label-small {
 	font-size: 0.68rem !important;
 	font-weight: 600 !important;
-	opacity: 0.92 !important;
+	opacity: 0.95 !important;
 	line-height: 1.2 !important;
+	color: #fff !important;
+	-webkit-text-fill-color: #fff !important;
 }
 
 .app .level-info-card .level-progress-section,
