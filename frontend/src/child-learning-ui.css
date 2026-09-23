@@ -903,54 +903,74 @@
 	}
 }
 
-/* Exercise workspace: cleaner hierarchy (text/functionality unchanged) */
+/* Exercise workspace: professional hierarchy (text/functionality unchanged) */
 .app .exercise-workspace {
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	max-width: 920px;
+	gap: 20px;
+	max-width: 880px;
 	margin: 0 auto;
-	padding: 0;
+	padding: 0 0 8px;
+	width: 100%;
 }
 
 .app .exercise-workspace-header {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: 12px;
+	gap: 10px;
 	width: 100%;
 	max-width: none;
 	margin: 0;
+}
+
+.app .exercise-workspace .back-button-modern {
+	align-self: flex-start;
+	min-height: 36px;
+	padding: 6px 12px;
+	border-radius: 10px;
+	border: 1px solid rgba(31, 111, 139, 0.16);
+	background: #fff;
+	color: #1f6f8b;
+	font-size: 0.86rem;
+	font-weight: 700;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .back-button-modern:hover {
+	background: rgba(31, 111, 139, 0.06);
+	transform: none;
 }
 
 .app .exercise-workspace-title,
 .app .exercise-workspace .exercise-title-section {
 	text-align: left;
 	margin: 0;
-	padding: 14px 16px;
+	padding: 16px 18px;
 	border: 1px solid rgba(31, 111, 139, 0.12);
 	border-radius: 16px;
-	background: #fff;
-	box-shadow: 0 4px 14px rgba(19, 41, 61, 0.04);
+	background: linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%);
+	box-shadow: 0 2px 10px rgba(19, 41, 61, 0.04);
 }
 
 .app .exercise-workspace .exercise-badge-modern {
 	display: inline-flex;
 	align-items: center;
 	margin: 0 0 8px;
-	padding: 4px 10px;
+	padding: 3px 10px;
 	border-radius: 999px;
 	background: rgba(31, 111, 139, 0.1);
 	color: #1f6f8b;
-	font-size: 0.72rem;
+	font-size: 0.7rem;
 	font-weight: 700;
-	letter-spacing: 0.02em;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
 	box-shadow: none;
 }
 
 .app .exercise-workspace .exercise-title-modern {
-	margin: 0 0 4px;
-	font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+	margin: 0 0 6px;
+	font-size: clamp(1.28rem, 2.2vw, 1.65rem);
 	font-weight: 800;
 	line-height: 1.2;
 	color: var(--learn-ink, #13293D);
@@ -960,70 +980,90 @@
 
 .app .exercise-workspace .exercise-subtitle-modern {
 	margin: 0;
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	font-weight: 600;
 	color: #5a7384;
-	line-height: 1.4;
+	line-height: 1.45;
+	max-width: 52ch;
+}
+
+.app .exercise-workspace-main {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	min-width: 0;
 }
 
 .app .exercise-workspace .exercise-container-modern {
 	max-width: none;
 	margin: 0;
-	padding: 16px;
-	gap: 14px;
+	padding: 0;
+	gap: 0;
 	border: 1px solid rgba(31, 111, 139, 0.12);
 	border-radius: 16px;
-	box-shadow: 0 4px 14px rgba(19, 41, 61, 0.04);
+	box-shadow: 0 4px 16px rgba(19, 41, 61, 0.05);
 	background: #fff;
+	overflow: hidden;
 }
 
 .app .exercise-workspace .exercise-progress-modern {
 	margin: 0;
-	padding: 12px 14px;
-	border-radius: 12px;
-	border: 1px solid rgba(31, 111, 139, 0.1);
+	padding: 14px 16px 12px;
+	border-radius: 0;
+	border: 0;
+	border-bottom: 1px solid rgba(31, 111, 139, 0.08);
 	background: #f7fbfe;
 }
 
 .app .exercise-workspace .exercise-progress-header-modern {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	margin-bottom: 8px;
 }
 
 .app .exercise-workspace .progress-label-exercise {
-	font-size: 0.82rem;
+	font-size: 0.78rem;
 	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
 	color: #5a7384;
 }
 
 .app .exercise-workspace .progress-counter-exercise {
-	font-size: 0.95rem;
+	font-size: 0.92rem;
 	font-weight: 800;
 	color: #1f6f8b;
+	font-variant-numeric: tabular-nums;
 }
 
 .app .exercise-workspace .exercise-progress-bar-modern {
-	height: 8px;
+	height: 7px;
+	border-radius: 999px;
 	box-shadow: none;
-	background: #e7f1f6;
+	background: #e3eef4;
+	overflow: hidden;
 }
 
 .app .exercise-workspace .exercise-progress-fill-modern {
 	background: linear-gradient(90deg, #1f6f8b, #3d9bb5);
+	border-radius: 999px;
 	box-shadow: none;
 }
 
 .app .exercise-workspace .exercise-card-modern {
-	border: 1px solid rgba(31, 111, 139, 0.12);
-	border-radius: 14px;
+	border: 0;
+	border-radius: 0;
 	box-shadow: none;
 	overflow: visible;
+	background: #fff;
 }
 
 .app .exercise-workspace .exercise-card-header-modern {
 	justify-content: flex-end;
-	padding: 10px 14px;
-	background: #f8fafc;
-	border-bottom: 1px solid rgba(31, 111, 139, 0.08);
+	padding: 10px 16px 0;
+	background: transparent;
+	border-bottom: 0;
 }
 
 .app .exercise-workspace .exercise-points-badge-modern {
@@ -1031,20 +1071,22 @@
 	border-radius: 999px;
 	background: rgba(31, 111, 139, 0.1);
 	color: #1f6f8b;
-	font-size: 0.75rem;
+	font-size: 0.74rem;
 	font-weight: 700;
 	box-shadow: none;
 }
 
 .app .exercise-workspace .exercise-content-modern {
-	padding: 16px 16px 12px;
+	display: flex;
+	flex-direction: column;
+	padding: 8px 16px 16px;
 	gap: 14px;
 	background: #fff;
 }
 
 .app .exercise-workspace .exercise-prompt-modern {
 	margin: 0;
-	padding: 12px 14px;
+	padding: 14px 16px;
 	border-radius: 12px;
 	border: 1px solid rgba(31, 111, 139, 0.1);
 	border-left: 3px solid #1f6f8b;
@@ -1052,13 +1094,16 @@
 }
 
 .app .exercise-workspace .exercise-question {
-	font-size: 1.05rem;
+	margin: 0;
+	font-size: 1.08rem;
 	font-weight: 700;
 	line-height: 1.45;
 	color: #13293d;
 }
 
 .app .exercise-workspace .dictation-helper-modern {
+	display: flex;
+	flex-direction: column;
 	margin: 0;
 	padding: 12px 14px;
 	gap: 12px;
@@ -1068,9 +1113,9 @@
 }
 
 .app .exercise-workspace .dictation-helper-text {
-	font-size: 0.9rem;
+	font-size: 0.88rem;
 	color: #334155;
-	line-height: 1.45;
+	line-height: 1.5;
 }
 
 .app .exercise-workspace .voice-controls-modern {
@@ -1105,7 +1150,7 @@
 .app .exercise-workspace .voice-btn-modern.secondary {
 	background: #fff;
 	color: #1f6f8b;
-	border-color: rgba(31, 111, 139, 0.28);
+	border: 1px solid rgba(31, 111, 139, 0.28);
 }
 
 .app .exercise-workspace .voice-btn-modern.secondary:hover {
@@ -1136,15 +1181,18 @@
 }
 
 .app .exercise-workspace .answer-input-field {
-	padding: 12px 14px;
-	border: 1px solid rgba(31, 111, 139, 0.18);
+	width: 100%;
+	padding: 13px 14px;
+	border: 1px solid rgba(31, 111, 139, 0.2);
 	border-radius: 12px;
 	box-shadow: none;
-	font-size: 0.95rem;
+	font-size: 0.98rem;
+	background: #fff;
 }
 
 .app .exercise-workspace .answer-input-field:focus {
 	border-color: #1f6f8b;
+	outline: none;
 	box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.12);
 }
 
@@ -1152,7 +1200,7 @@
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 10px;
-	padding: 12px 14px 14px;
+	padding: 14px 16px 16px;
 	border-top: 1px solid rgba(31, 111, 139, 0.08);
 	background: #f8fafc;
 }
@@ -1163,6 +1211,7 @@
 	border-radius: 11px;
 	background: #1f6f8b;
 	box-shadow: none;
+	font-weight: 800;
 }
 
 .app .exercise-workspace .submit-btn-modern:hover {
@@ -1186,7 +1235,14 @@
 	border: 1px solid rgba(31, 111, 139, 0.18);
 	background: #fff;
 	font-size: 0.85rem;
+	font-weight: 700;
+	color: #1f6f8b;
 	box-shadow: none;
+}
+
+.app .exercise-workspace .nav-btn-modern:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
 }
 
 .app .exercise-workspace .nav-btn-modern:hover:not(:disabled) {
@@ -1207,13 +1263,23 @@
 	box-shadow: none;
 }
 
+.app .exercise-workspace .hint-btn-modern:hover {
+	background: rgba(31, 111, 139, 0.05);
+}
+
+/* Secondary AI block — quieter, clearly separate */
+.app .exercise-workspace-secondary {
+	min-width: 0;
+}
+
 .app .exercise-workspace .advanced-ai-practice,
 .app .exercise-workspace .ai-practice-panel {
 	margin: 0;
-	padding: 16px;
-	border: 1px solid rgba(31, 111, 139, 0.12);
+	padding: 16px 18px;
+	border: 1px solid rgba(31, 111, 139, 0.1);
 	border-radius: 16px;
-	box-shadow: 0 4px 14px rgba(19, 41, 61, 0.04);
+	background: #fff;
+	box-shadow: 0 2px 10px rgba(19, 41, 61, 0.04);
 }
 
 .app .exercise-workspace .ai-practice-header {
@@ -1231,16 +1297,18 @@
 
 .app .exercise-workspace .ai-practice-header h3 {
 	margin: 0;
-	font-size: 1.05rem;
+	font-size: 1.02rem;
 	font-weight: 800;
 	color: #13293d;
 }
 
 .app .exercise-workspace .ai-practice-header .subtitle {
 	margin: 4px 0 0;
-	font-size: 0.85rem;
+	font-size: 0.84rem;
 	color: #5a7384;
 	font-weight: 600;
+	line-height: 1.4;
+	max-width: 42ch;
 }
 
 .app .exercise-workspace .generate-btn-primary {
@@ -1249,7 +1317,9 @@
 	border-radius: 10px;
 	background: #1f6f8b;
 	font-size: 0.88rem;
+	font-weight: 700;
 	box-shadow: none;
+	white-space: nowrap;
 }
 
 .app .exercise-workspace .generate-btn-primary:hover:not(:disabled) {
@@ -1260,7 +1330,7 @@
 
 .app .exercise-workspace .empty-state {
 	text-align: left;
-	padding: 4px 0 0;
+	padding: 2px 0 0;
 	background: transparent;
 	border: 0;
 	border-radius: 0;
@@ -1268,37 +1338,86 @@
 
 .app .exercise-workspace .empty-state h4 {
 	margin: 0 0 8px;
-	font-size: 1rem;
+	font-size: 0.98rem;
 	font-weight: 800;
 	color: #13293d;
 }
 
 .app .exercise-workspace .empty-state p {
 	margin: 0 0 12px;
-	font-size: 0.9rem;
+	font-size: 0.88rem;
 	line-height: 1.5;
 	color: #5a7384;
+	max-width: 58ch;
 }
 
 .app .exercise-workspace .benefits-list {
 	display: grid;
+	grid-template-columns: 1fr;
 	gap: 6px;
 	width: 100%;
 	margin: 0;
 	padding: 0;
+	list-style: none;
 }
 
 .app .exercise-workspace .benefits-list li {
-	padding: 8px 10px;
+	padding: 9px 12px;
 	border-radius: 10px;
 	background: #f7fbfe;
 	border: 1px solid rgba(31, 111, 139, 0.08);
-	font-size: 0.86rem;
+	font-size: 0.85rem;
 	font-weight: 600;
 	color: #334155;
+	line-height: 1.4;
 }
 
-@media (max-width: 720px) {
+@media (min-width: 720px) {
+	.app .exercise-workspace-header {
+		gap: 12px;
+	}
+
+	.app .exercise-workspace .exercise-actions-modern {
+		grid-template-columns: minmax(140px, 1.1fr) minmax(220px, 1.6fr);
+		align-items: stretch;
+	}
+
+	.app .exercise-workspace .submit-btn-modern {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.app .exercise-workspace .navigation-buttons-modern {
+		grid-column: 2;
+		grid-row: 1;
+	}
+
+	.app .exercise-workspace .hint-btn-modern {
+		grid-column: 1 / -1;
+		grid-row: 2;
+		width: auto;
+		justify-self: start;
+		min-width: 200px;
+	}
+
+	.app .exercise-workspace .benefits-list {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.app .exercise-workspace .dictation-helper-modern {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.app .exercise-workspace .dictation-helper-text {
+		flex: 1;
+		min-width: 0;
+		padding-right: 12px;
+	}
+}
+
+@media (max-width: 719px) {
 	.app .exercise-workspace .ai-practice-header {
 		flex-direction: column;
 		align-items: stretch;

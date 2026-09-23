@@ -3237,6 +3237,7 @@ function MainContent({
                             </div>
                         ) : exercises.length > 0 ? (
                         <>
+                        <div className="exercise-workspace-main">
                         <div className="exercise-container-modern">
                             <div className="exercise-progress-modern">
                                 <div className="exercise-progress-header-modern">
@@ -3468,9 +3469,11 @@ function MainContent({
                                 </div>
                             </div>
                         </div>
+                        </div>
                         
                         {/* AI Practice Section - ULTRA ADVANCED VERSION */}
                         {userId && selectedLevel && (
+                            <div className="exercise-workspace-secondary">
                             <LazyErrorBoundary label="ushtrimeve me AI">
                                 <Suspense fallback={
                                     <div className="section-loading page-loading page-loading--inline" role="status" aria-live="polite" aria-busy="true">
@@ -3495,6 +3498,7 @@ function MainContent({
                                     />
                                 </Suspense>
                             </LazyErrorBoundary>
+                            </div>
                         )}
                         </>
                         ) : null}
