@@ -9635,6 +9635,11 @@ body {
     }
     
     .features-grid-modern {
+        gap: var(--space-3);
+    }
+
+    .features-grid-modern > .features-row-3,
+    .features-grid-modern > .features-row-2 {
         grid-template-columns: 1fr;
         gap: var(--space-3);
     }
