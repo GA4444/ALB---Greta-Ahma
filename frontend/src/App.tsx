@@ -1297,7 +1297,7 @@ function App() {
                             <div className="auth-form">
                                 <input
                                     className="auth-input"
-                                    placeholder="Username *"
+                                    placeholder="Username"
                                     autoComplete="username"
                                     value={auth.username}
                                     onChange={(e) => setAuth({ ...auth, username: e.target.value })}
