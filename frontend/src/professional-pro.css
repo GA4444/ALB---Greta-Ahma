@@ -92,51 +92,53 @@ h1, h2, h3,
 
 .app .header-progress-summary {
   background: #fff;
-  border: 1px solid var(--kid-line);
-  border-radius: 16px;
-  padding: 8px;
+  border: 1px solid rgba(31, 111, 139, 0.12);
+  border-radius: 12px;
+  padding: 8px 10px;
 }
 
-.app .stat-item {
-  min-height: 42px;
-  padding: 8px 12px !important;
-  border-radius: 12px !important;
-  background: #f3fafd !important;
+.app .header-account .stat-item {
+  min-height: 28px;
+  padding: 4px 8px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
-.app .stat-value {
-  font-size: 0.92rem !important;
+.app .header-account .stat-value {
+  font-size: 0.75rem !important;
   font-weight: 700 !important;
+  color: #1e3a4c !important;
 }
 
-.app .stat-item.curriculum-stat {
-  background: linear-gradient(135deg, #e5f6ee, #e8f5fb) !important;
-  border: 1px solid rgba(47, 158, 107, 0.25) !important;
+.app .header-account .stat-item.curriculum-stat {
+  background: transparent !important;
+  border: 0 !important;
 }
 
-.app .stat-item.curriculum-stat .stat-value {
-  color: #1d6b4a !important;
-  font-size: 0.95rem !important;
+.app .header-account .stat-item.curriculum-stat .stat-value {
+  color: #1e3a4c !important;
+  font-size: 0.75rem !important;
 }
 
-.app .profile-btn {
-  background: #e8f5fb !important;
-  border: 1px solid rgba(43, 139, 184, 0.28) !important;
-  color: var(--kid-sky-deep) !important;
-}
-
-.app .leaderboard-btn {
-  background: #fff8e8 !important;
-  border: 1px solid rgba(240, 162, 2, 0.35) !important;
-  color: #9a6400 !important;
+.app .header-account .profile-btn,
+.app .header-account .leaderboard-btn,
+.app .header-account .logout-btn {
+  background: transparent !important;
+  border: 0 !important;
+  color: #334155 !important;
   box-shadow: none !important;
 }
 
-.app .logout-btn {
-  background: #fff !important;
-  border: 1px solid var(--kid-line) !important;
-  color: #4d6270 !important;
-  box-shadow: none !important;
+.app .header-account .profile-btn:hover,
+.app .header-account .leaderboard-btn:hover {
+  background: rgba(31, 111, 139, 0.07) !important;
+  color: #1f6f8b !important;
+}
+
+.app .header-account .logout-btn {
+  color: #64748b !important;
 }
 
 /* ---------- Auth: simple & friendly ---------- */

@@ -1246,3 +1246,169 @@
 		justify-content: center;
 	}
 }
+
+/* Header account: final professional metrics strip (loads last) */
+.app .header-account {
+	display: flex;
+	align-items: stretch;
+	justify-content: flex-end;
+	gap: 12px;
+	min-width: 0;
+}
+
+.app .header-account .header-progress-summary {
+	display: flex !important;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 7px;
+	min-width: 0;
+	max-width: min(100%, 420px);
+	padding: 8px 10px !important;
+	border: 1px solid rgba(31, 111, 139, 0.12) !important;
+	border-radius: 12px !important;
+	background: #fff !important;
+	box-shadow: none !important;
+}
+
+.app .header-account .user-progress {
+	width: 100% !important;
+	min-width: 0 !important;
+	max-width: none !important;
+	height: 4px !important;
+	margin: 0 !important;
+	border-radius: 999px !important;
+	background: #e8eef2 !important;
+}
+
+.app .header-account .user-progress-fill {
+	background: linear-gradient(90deg, #1f6f8b, #3d9bb5) !important;
+	box-shadow: none !important;
+}
+
+.app .header-account .user-stats {
+	display: flex !important;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 0;
+	min-width: 0;
+}
+
+.app .header-account .stat-item,
+.app .header-account .stat-item.clickable-stat,
+.app .header-account .stat-item.curriculum-stat {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 5px;
+	min-height: 28px !important;
+	margin: 0;
+	padding: 4px 8px !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	background: transparent !important;
+	box-shadow: none !important;
+}
+
+.app .header-account .stat-item + .stat-item {
+	border-left: 1px solid rgba(31, 111, 139, 0.12) !important;
+	padding-left: 9px !important;
+}
+
+.app .header-account .stat-item.clickable-stat:hover {
+	background: rgba(31, 111, 139, 0.06) !important;
+	border-radius: 8px !important;
+}
+
+.app .header-account .stat-value {
+	font-size: 0.75rem !important;
+	font-weight: 700 !important;
+	color: #1e3a4c !important;
+	line-height: 1.2;
+}
+
+.app .header-account .stat-item.curriculum-stat .stat-value {
+	max-width: 6.75rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.app .header-account .stat-icon {
+	width: 14px !important;
+	height: 14px !important;
+	color: #5a7384 !important;
+}
+
+.app .header-account .stat-icon svg {
+	width: 14px !important;
+	height: 14px !important;
+}
+
+.app .header-account .header-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 3px;
+	border: 1px solid rgba(31, 111, 139, 0.12);
+	border-radius: 12px;
+	background: #fff;
+	box-shadow: none;
+}
+
+.app .header-account .profile-btn,
+.app .header-account .leaderboard-btn,
+.app .header-account .logout-btn {
+	min-height: 34px !important;
+	margin: 0;
+	padding: 6px 11px !important;
+	border: 0 !important;
+	border-radius: 9px !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	font-size: 0.78rem !important;
+	font-weight: 700;
+	color: #334155 !important;
+}
+
+.app .header-account .leaderboard-btn {
+	max-width: 10.5rem;
+	white-space: normal;
+	text-align: center;
+	line-height: 1.2;
+}
+
+.app .header-account .profile-btn:hover,
+.app .header-account .leaderboard-btn:hover {
+	background: rgba(31, 111, 139, 0.07) !important;
+	color: #1f6f8b !important;
+	transform: none !important;
+	box-shadow: none !important;
+}
+
+.app .header-account .logout-btn {
+	color: #64748b !important;
+}
+
+.app .header-account .logout-btn:hover {
+	background: rgba(100, 116, 139, 0.1) !important;
+	color: #475569 !important;
+	transform: none !important;
+	box-shadow: none !important;
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+	.app .header-account {
+		width: 100%;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 10px;
+	}
+
+	.app .header-account .header-progress-summary {
+		flex: 1 1 280px;
+		max-width: none;
+	}
+
+	.app .header-account .header-actions {
+		margin-left: auto;
+	}
+}

@@ -88,7 +88,7 @@ export function AppHeader({
 							<div className="user-stats">
 								{curriculumLabel && (
 									<div className="stat-item curriculum-stat" title="Ku je tani">
-										<span className="stat-icon" aria-hidden="true"><IconBook size={16} /></span>
+										<span className="stat-icon" aria-hidden="true"><IconBook size={14} /></span>
 										<span className="stat-value">{curriculumLabel}</span>
 									</div>
 								)}
@@ -98,21 +98,21 @@ export function AppHeader({
 									onClick={onShowLevelInfo}
 									title="Pikët e tua"
 								>
-									<span className="stat-icon" aria-hidden="true"><IconStar size={16} /></span>
+									<span className="stat-icon" aria-hidden="true"><IconStar size={14} /></span>
 									<span className="stat-value">XP {userStats.level}</span>
 								</button>
 								<div className="stat-item">
-									<span className="stat-icon" aria-hidden="true"><IconTrophy size={16} /></span>
+									<span className="stat-icon" aria-hidden="true"><IconTrophy size={14} /></span>
 									<span className="stat-value">{userStats.totalPoints} pikë</span>
 								</div>
 								<div className="stat-item">
-									<span className="stat-icon" aria-hidden="true"><IconFlame size={16} /></span>
+									<span className="stat-icon" aria-hidden="true"><IconFlame size={14} /></span>
 									<span className="stat-value">{userStats.streakDays} ditë</span>
 								</div>
 							</div>
 						</div>
 
-						<div className="header-actions">
+						<div className="header-actions" role="group" aria-label="Llogaria">
 							<button type="button" className="profile-btn" onClick={onShowProfile}>Unë</button>
 							<button
 								type="button"
