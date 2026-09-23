@@ -582,6 +582,13 @@
   min-height: 100vh;
 }
 
+.route-loading.page-loading,
+.section-loading.page-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .lazy-error {
   display: grid;
   justify-items: center;

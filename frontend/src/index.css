@@ -66,20 +66,38 @@ html {
 
 .app-loading {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 14px;
   min-height: 100vh;
-  background: var(--color-background);
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 35%, rgba(31, 111, 139, 0.1), transparent 65%),
+    #f8fafc;
+  color: #13293d;
+  font-weight: 750;
+  font-size: 1.05rem;
+}
+
+.app-loading::before {
+  content: "";
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(31, 111, 139, 0.15);
+  border-top-color: #1f6f8b;
+  animation: app-loading-spin 0.75s linear infinite;
 }
 
 .app-loading::after {
-  content: "⏳";
-  font-size: 3rem;
-  animation: rotate 2s linear infinite;
+  content: "Duke ngarkuar";
+  font-size: 1.05rem;
+  font-weight: 750;
+  color: #13293d;
+  letter-spacing: -0.01em;
 }
 
-@keyframes rotate {
-  from { transform: rotate(0deg); }
+@keyframes app-loading-spin {
   to { transform: rotate(360deg); }
 }
 

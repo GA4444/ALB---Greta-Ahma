@@ -1416,7 +1416,14 @@ function App() {
             if (!isNaN(adminUserId)) {
                 return (
                     <LazyErrorBoundary label="panelit të administratorit">
-                        <Suspense fallback={<div className="route-loading">Duke ngarkuar panelin e administratorit…</div>}>
+                        <Suspense fallback={
+                            <div className="route-loading page-loading" role="status" aria-live="polite" aria-busy="true">
+                                <div className="page-loading-mark" aria-hidden="true"><BrandLogo size={44} decorative /></div>
+                                <div className="page-loading-spinner" aria-hidden="true"></div>
+                                <p className="page-loading-title">Duke ngarkuar</p>
+                                <p className="page-loading-subtitle">Paneli i administratorit</p>
+                            </div>
+                        }>
                             <AdminDashboard
                                 userId={adminUserId}
                                 onLogout={() => {
@@ -2023,10 +2030,11 @@ function App() {
                                                         <strong>{entry.username}</strong>
                                                         {isCurrentUser && <span className="you-badge">Ti</span>}
                                                     </div>
+                                                    <div className="lb-col points-col" data-label="Pikë">
+                                                        <span className="lb-stat-value">{entry.total_points.toLocaleString()}</span>
+                                                        <span className="lb-stat-unit">pikë</span>
+                                                    </div>
                                                     <div className="lb-meta">
-                                                        <div className="lb-col points-col" data-label="Pikë">
-                                                            <span className="lb-stat-value">{entry.total_points.toLocaleString()}</span>
-                                                        </div>
                                                         <div className="lb-col level-col" data-label="Niveli">
                                                             <span className="lb-stat-value">⭐ {entry.level}</span>
                                                         </div>
@@ -2035,6 +2043,7 @@ function App() {
                                                         </div>
                                                         <div className="lb-col courses-col" data-label="Kurset">
                                                             <span className="lb-stat-value">{entry.completed_courses}</span>
+                                                            <span className="lb-stat-unit">kurse</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -2842,9 +2851,13 @@ function MainContent({
             {/* Main Content Area */}
             <div className="content-area">
                 {isLoading ? (
-                    <div className="loading">
-                        <div className="loading-spinner"></div>
-                        <div>Duke ngarkuar... ⏳</div>
+                    <div className="loading page-loading" role="status" aria-live="polite" aria-busy="true">
+                        <div className="page-loading-mark" aria-hidden="true">
+                            <BrandLogo size={44} decorative />
+                        </div>
+                        <div className="page-loading-spinner" aria-hidden="true"></div>
+                        <p className="page-loading-title">Duke ngarkuar</p>
+                        <p className="page-loading-subtitle">Ju lutem prisni një moment</p>
                     </div>
                 ) : !selectedClass ? (
                     <div className="welcome-screen-modern">
@@ -3380,7 +3393,13 @@ function MainContent({
                         {/* AI Practice Section - ULTRA ADVANCED VERSION */}
                         {userId && selectedLevel && (
                             <LazyErrorBoundary label="ushtrimeve me AI">
-                                <Suspense fallback={<div className="section-loading">Duke ngarkuar ushtrimet me AI…</div>}>
+                                <Suspense fallback={
+                                    <div className="section-loading page-loading" role="status" aria-live="polite" aria-busy="true">
+                                        <div className="page-loading-spinner" aria-hidden="true"></div>
+                                        <p className="page-loading-title">Duke ngarkuar</p>
+                                        <p className="page-loading-subtitle">Ushtrimet me AI</p>
+                                    </div>
+                                }>
                                     <AdvancedAIPractice
                                         userId={userId}
                                         levelId={selectedLevel.id}
