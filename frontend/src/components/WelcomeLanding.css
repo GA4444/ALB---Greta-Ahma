@@ -31,24 +31,25 @@
 	align-items: center;
 	gap: 0.4rem;
 	line-height: 1;
+	font-size: 0.9375rem;
 }
 
 .welcome-brand .brand-logo.welcome-brand-mark,
 .welcome-brand-mark {
-	width: 5px !important;
-	height: 5px !important;
-	max-width: 5px !important;
-	max-height: 5px !important;
-	min-width: 5px !important;
-	min-height: 5px !important;
-	border-radius: 1px !important;
+	width: 1em !important;
+	height: 1em !important;
+	max-width: 1em !important;
+	max-height: 1em !important;
+	min-width: 1em !important;
+	min-height: 1em !important;
+	border-radius: 0.22em !important;
 	display: block;
 	flex-shrink: 0;
 	object-fit: cover;
 }
 
 .welcome-brand-name {
-	font-size: 0.9375rem;
+	font-size: 1em;
 	font-weight: 700;
 	letter-spacing: -0.015em;
 	color: var(--color-primary, #1F6F8B);
@@ -358,19 +359,23 @@
 		display: none;
 	}
 
-	.welcome-brand-name {
+	.welcome-brand {
 		font-size: 0.875rem;
+	}
+
+	.welcome-brand-name {
+		font-size: 1em;
 	}
 
 	.welcome-brand .brand-logo.welcome-brand-mark,
 	.welcome-brand-mark {
-		width: 5px !important;
-		height: 5px !important;
-		max-width: 5px !important;
-		max-height: 5px !important;
-		min-width: 5px !important;
-		min-height: 5px !important;
-		border-radius: 1px !important;
+		width: 1em !important;
+		height: 1em !important;
+		max-width: 1em !important;
+		max-height: 1em !important;
+		min-width: 1em !important;
+		min-height: 1em !important;
+		border-radius: 0.22em !important;
 	}
 
 	.welcome-float-pen,
