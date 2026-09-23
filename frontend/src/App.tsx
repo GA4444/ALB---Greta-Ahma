@@ -285,6 +285,8 @@ function App() {
     const [profileImage, setProfileImage] = useState<string | null>(null)
     const [isEditingProfile, setIsEditingProfile] = useState(false)
     const [profileFormData, setProfileFormData] = useState({
+        first_name: '',
+        last_name: '',
         email: '',
         age: '',
         date_of_birth: '',
@@ -303,6 +305,8 @@ function App() {
 
     // Enhanced user registration state
     const [registrationData, setRegistrationData] = useState({
+        firstName: '',
+        lastName: '',
         username: '',
         email: '',
         age: '',
@@ -972,6 +976,8 @@ function App() {
             const profile = await getUserProfile(parseInt(userId))
             setUserProfile(profile)
             setProfileFormData({
+                first_name: profile.first_name || '',
+                last_name: profile.last_name || '',
                 email: profile.email || '',
                 age: profile.age?.toString() || '',
                 date_of_birth: profile.date_of_birth 
@@ -995,6 +1001,8 @@ function App() {
             setProfileError(null)
             
             const updateData: any = {}
+            if (profileFormData.first_name) updateData.first_name = profileFormData.first_name.trim()
+            if (profileFormData.last_name) updateData.last_name = profileFormData.last_name.trim()
             if (profileFormData.email) updateData.email = profileFormData.email
             if (profileFormData.age) {
                 const ageNum = parseInt(profileFormData.age)
@@ -1289,14 +1297,17 @@ function App() {
                             <div className="auth-form">
                                 <input
                                     className="auth-input"
-                                    placeholder="Përdoruesi"
+                                    placeholder="Username *"
+                                    autoComplete="username"
                                     value={auth.username}
                                     onChange={(e) => setAuth({ ...auth, username: e.target.value })}
                                 />
+                                <p className="auth-hint">Username është ai që përdor për të hyrë (jo emri i plotë).</p>
                                 <input
                                     className="auth-input"
-                                    placeholder="Fjalëkalimi"
+                                    placeholder="Fjalëkalimi *"
                                     type="password"
+                                    autoComplete="current-password"
                                     value={auth.password}
                                     onChange={(e) => setAuth({ ...auth, password: e.target.value })}
                                 />
@@ -1307,7 +1318,7 @@ function App() {
                                         const username = auth.username?.trim()
                                         const password = auth.password
                                         if (!username || !password) {
-                                            setMessage('Plotëso përdoruesin dhe fjalëkalimin! ❌')
+                                            setMessage('Plotëso username dhe fjalëkalimin! ❌')
                                             return
                                         }
                                         try {
@@ -1336,13 +1347,32 @@ function App() {
                         ) : (
                             // Enhanced Registration Form
                             <div className="auth-form enhanced-registration">
+                                <div className="form-row">
+                                    <input
+                                        className="auth-input"
+                                        placeholder="Emri *"
+                                        autoComplete="given-name"
+                                        value={registrationData.firstName}
+                                        onChange={(e) => setRegistrationData({...registrationData, firstName: e.target.value})}
+                                    />
+                                    <input
+                                        className="auth-input"
+                                        placeholder="Mbiemri *"
+                                        autoComplete="family-name"
+                                        value={registrationData.lastName}
+                                        onChange={(e) => setRegistrationData({...registrationData, lastName: e.target.value})}
+                                    />
+                                </div>
+
                                 <div className="form-row single-column">
                                     <input
                                         className="auth-input"
-                                        placeholder="Përdoruesi *"
+                                        placeholder="Username * (për login)"
+                                        autoComplete="username"
                                         value={registrationData.username}
-                                        onChange={(e) => setRegistrationData({...registrationData, username: e.target.value})}
+                                        onChange={(e) => setRegistrationData({...registrationData, username: e.target.value.replace(/\s/g, '')})}
                                     />
+                                    <p className="auth-hint">Pa hapësira. Ky username përdoret për t’u kyçur.</p>
                                 </div>
 
                                 <div className="form-row single-column">
@@ -1350,6 +1380,7 @@ function App() {
                                         className="auth-input"
                                         type="email"
                                         placeholder="Email *"
+                                        autoComplete="email"
                                         value={registrationData.email}
                                         onChange={(e) => setRegistrationData({...registrationData, email: e.target.value})}
                                     />
@@ -1370,6 +1401,7 @@ function App() {
                                         className="auth-input"
                                         type="password"
                                         placeholder="Fjalëkalimi *"
+                                        autoComplete="new-password"
                                         value={registrationData.password}
                                         onChange={(e) => setRegistrationData({...registrationData, password: e.target.value})}
                                     />
@@ -1380,6 +1412,7 @@ function App() {
                                         className="auth-input"
                                         type="password"
                                         placeholder="Konfirmo fjalëkalimin *"
+                                        autoComplete="new-password"
                                         value={registrationData.confirmPassword}
                                         onChange={(e) => setRegistrationData({...registrationData, confirmPassword: e.target.value})}
                                     />
@@ -1388,6 +1421,22 @@ function App() {
                                 <button
                                     className="auth-submit"
                                     onClick={async () => {
+                                        const firstName = registrationData.firstName.trim()
+                                        const lastName = registrationData.lastName.trim()
+                                        const username = registrationData.username.trim()
+                                        const email = registrationData.email.trim()
+                                        if (!firstName || !lastName) {
+                                            setMessage('Plotëso emrin dhe mbiemrin! ❌')
+                                            return
+                                        }
+                                        if (!username || username.length < 3) {
+                                            setMessage('Username duhet të ketë të paktën 3 karaktere! ❌')
+                                            return
+                                        }
+                                        if (!email || !registrationData.password) {
+                                            setMessage('Plotëso email dhe fjalëkalimin! ❌')
+                                            return
+                                        }
                                         if (registrationData.password !== registrationData.confirmPassword) {
                                             setMessage('Fjalëkalimet nuk përputhen! ❌')
                                             return
@@ -1395,14 +1444,19 @@ function App() {
                                         
                                         try {
                                             await register(
-                                                registrationData.username,
-                                                registrationData.email,
+                                                firstName,
+                                                lastName,
+                                                username,
+                                                email,
                                                 registrationData.password,
                                                 registrationData.age ? parseInt(registrationData.age) : undefined
                                             )
-                                            setMessage('Regjistrimi u krye me sukses! Tani mund të hyni. ✅')
+                                            setMessage('Regjistrimi u krye me sukses! Tani hyr me username-in tënd. ✅')
                                             setShowAuth(false)
+                                            setAuth({ username, password: '' })
                                             setRegistrationData({
+                                                firstName: '',
+                                                lastName: '',
                                                 username: '',
                                                 email: '',
                                                 age: '',
@@ -1644,7 +1698,7 @@ function App() {
                                                 />
                                             ) : (
                                                 <div className="profile-avatar-placeholder">
-                                                    {userProfile?.username?.charAt(0).toUpperCase() || '👤'}
+                                                    {(userProfile?.first_name || userProfile?.username || 'P').charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                             <label className="profile-avatar-upload">
@@ -1673,8 +1727,16 @@ function App() {
                                     </div>
                                     
                                     <div className="profile-info-header">
-                                        <h2 className="profile-username">{userProfile?.username || localStorage.getItem('username') || 'Përdorues'}</h2>
+                                        <h2 className="profile-username">
+                                            {[userProfile?.first_name, userProfile?.last_name].filter(Boolean).join(' ')
+                                                || userProfile?.username
+                                                || localStorage.getItem('username')
+                                                || 'Përdorues'}
+                                        </h2>
                                         <p className="profile-email">{userProfile?.email || 'Nuk është vendosur email'}</p>
+                                        {userProfile?.username && (
+                                            <p className="profile-username-sub">Username: {userProfile.username}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -1724,6 +1786,8 @@ function App() {
                                                         setProfileError(null)
                                                         if (userProfile) {
                                                             setProfileFormData({
+                                                                first_name: userProfile.first_name || '',
+                                                                last_name: userProfile.last_name || '',
                                                                 email: userProfile.email || '',
                                                                 age: userProfile.age?.toString() || '',
                                                                 date_of_birth: userProfile.date_of_birth 
@@ -1763,7 +1827,49 @@ function App() {
                                     )}
                                     <div className="profile-info-grid">
                                         <div className="profile-info-item">
-                                            <span className="info-label">👤 Emri i përdoruesit:</span>
+                                            <span className="info-label">🧾 Emri:</span>
+                                            {isEditingProfile ? (
+                                                <input
+                                                    type="text"
+                                                    value={profileFormData.first_name}
+                                                    onChange={(e) => setProfileFormData({ ...profileFormData, first_name: e.target.value })}
+                                                    style={{
+                                                        padding: '0.5rem',
+                                                        border: '1px solid #ddd',
+                                                        borderRadius: '6px',
+                                                        fontSize: '0.95rem',
+                                                        width: '100%',
+                                                        maxWidth: '300px'
+                                                    }}
+                                                    placeholder="Emri"
+                                                />
+                                            ) : (
+                                                <span className="info-value">{userProfile?.first_name || 'Nuk është vendosur'}</span>
+                                            )}
+                                        </div>
+                                        <div className="profile-info-item">
+                                            <span className="info-label">🧾 Mbiemri:</span>
+                                            {isEditingProfile ? (
+                                                <input
+                                                    type="text"
+                                                    value={profileFormData.last_name}
+                                                    onChange={(e) => setProfileFormData({ ...profileFormData, last_name: e.target.value })}
+                                                    style={{
+                                                        padding: '0.5rem',
+                                                        border: '1px solid #ddd',
+                                                        borderRadius: '6px',
+                                                        fontSize: '0.95rem',
+                                                        width: '100%',
+                                                        maxWidth: '300px'
+                                                    }}
+                                                    placeholder="Mbiemri"
+                                                />
+                                            ) : (
+                                                <span className="info-value">{userProfile?.last_name || 'Nuk është vendosur'}</span>
+                                            )}
+                                        </div>
+                                        <div className="profile-info-item">
+                                            <span className="info-label">👤 Username (login):</span>
                                             <span className="info-value">{userProfile?.username || localStorage.getItem('username') || 'N/A'}</span>
                                         </div>
                                         <div className="profile-info-item">

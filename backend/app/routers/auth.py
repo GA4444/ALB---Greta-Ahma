@@ -17,10 +17,22 @@ pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 @router.post("/register", response_model=schemas.AuthResponse)
 def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
 	normalized_email = user_data.email.strip().lower()
+	first_name = (user_data.first_name or "").strip()
+	last_name = (user_data.last_name or "").strip()
+	username = (user_data.username or "").strip()
+
+	if not first_name or not last_name:
+		raise HTTPException(status_code=400, detail="Emri dhe mbiemri janë të detyrueshëm.")
+	if not username:
+		raise HTTPException(status_code=400, detail="Username është i detyrueshëm për hyrje.")
+	if " " in username:
+		raise HTTPException(status_code=400, detail="Username nuk duhet të ketë hapësira.")
+	if len(username) < 3:
+		raise HTTPException(status_code=400, detail="Username duhet të ketë të paktën 3 karaktere.")
 
 	# Check if username already exists
-	if db.query(models.User).filter(models.User.username == user_data.username).first():
-		raise HTTPException(status_code=400, detail="Username already registered")
+	if db.query(models.User).filter(models.User.username == username).first():
+		raise HTTPException(status_code=400, detail="Ky username është i zënë. Zgjidh një tjetër.")
 	
 	# Check if email already exists
 	if db.query(models.User).filter(func.lower(models.User.email) == normalized_email).first():
@@ -38,7 +50,9 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
 	
 	# Create user
 	db_user = models.User(
-		username=user_data.username,
+		first_name=first_name,
+		last_name=last_name,
+		username=username,
 		email=normalized_email,
 		age=user_data.age,
 		password_hash=hashed_password,
@@ -60,11 +74,12 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
 		raise HTTPException(status_code=409, detail="Username already registered")
 	db.refresh(db_user)
 	
-	# Dërgo welcome email në thread të veçantë (nuk bllokojë HTTP response-in)
+	# Dërgo welcome email në thread të veçantë (nuk bllokon HTTP response-in)
 	if normalized_email:
+		display_name = first_name or username
 		send_welcome_email(
 			normalized_email,
-			user_data.username,
+			display_name,
 			blocking=False,
 			user_id=db_user.id,
 		)
@@ -122,6 +137,18 @@ def update_user_profile(
 	if not user:
 		raise HTTPException(status_code=404, detail="User not found")
 	
+	if user_update.first_name is not None:
+		first_name = user_update.first_name.strip()
+		if not first_name:
+			raise HTTPException(status_code=400, detail="Emri nuk mund të jetë bosh.")
+		user.first_name = first_name
+
+	if user_update.last_name is not None:
+		last_name = user_update.last_name.strip()
+		if not last_name:
+			raise HTTPException(status_code=400, detail="Mbiemri nuk mund të jetë bosh.")
+		user.last_name = last_name
+
 	# Update email if provided and not already taken
 	if user_update.email is not None:
 		normalized_email = user_update.email.strip().lower()

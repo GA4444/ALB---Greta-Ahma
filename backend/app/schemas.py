@@ -179,6 +179,8 @@ class UserProgressOut(BaseModel):
 
 
 class UserCreate(BaseModel):
+	first_name: str
+	last_name: str
 	username: str
 	email: str
 	age: Optional[int] = None
@@ -188,6 +190,8 @@ class UserCreate(BaseModel):
 
 class UserOut(BaseModel):
 	id: int
+	first_name: Optional[str] = None
+	last_name: Optional[str] = None
 	username: str
 	email: str
 	age: Optional[int]
@@ -200,6 +204,8 @@ class UserOut(BaseModel):
 	is_admin: bool
 
 class UserUpdate(BaseModel):
+	first_name: Optional[str] = None
+	last_name: Optional[str] = None
 	email: Optional[str] = None
 	age: Optional[int] = None
 	date_of_birth: Optional[datetime] = None
@@ -219,6 +225,8 @@ class AuthResponse(BaseModel):
 	is_admin: bool = False
 
 class AdminUserCreate(BaseModel):
+	first_name: Optional[str] = None
+	last_name: Optional[str] = None
 	username: str
 	email: str
 	password: str

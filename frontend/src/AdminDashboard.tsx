@@ -1541,7 +1541,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<thead>
 										<tr>
 											<th>ID</th>
-											<th>Emri i përdoruesit</th>
+											<th>Emri / Mbiemri</th>
+											<th>Username</th>
 											<th>Email</th>
 											<th>Moshë</th>
 											<th>Gjendja</th>
@@ -1553,6 +1554,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										{users.map(user => (
 											<tr key={user.id}>
 												<td>{user.id}</td>
+												<td>{[user.first_name, user.last_name].filter(Boolean).join(' ') || '—'}</td>
 												<td>{user.username}</td>
 												<td>{user.email}</td>
 												<td>{user.age || '-'}</td>

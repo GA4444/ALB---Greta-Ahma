@@ -3979,9 +3979,32 @@ html, body, #root {
 /* Enhanced Registration Form */
 .enhanced-registration .form-row {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
+}
+
+.enhanced-registration .form-row.single-column {
+  grid-template-columns: 1fr;
+}
+
+.auth-hint {
+  margin: -4px 0 10px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.profile-username-sub {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+@media (max-width: 520px) {
+  .enhanced-registration .form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Profile Button Styles */

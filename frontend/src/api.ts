@@ -320,12 +320,16 @@ export async function login(username: string, password: string) {
 }
 
 export async function register(
+	firstName: string,
+	lastName: string,
 	username: string,
 	email: string,
 	password: string,
 	age?: number
 ) {
 	const { data } = await client.post('/api/register', {
+		first_name: firstName,
+		last_name: lastName,
 		username,
 		email,
 		password,
@@ -395,6 +399,8 @@ export async function getUserRank(userId: number) {
 // Admin API interfaces and functions
 export interface UserOut {
 	id: number
+	first_name?: string | null
+	last_name?: string | null
 	username: string
 	email: string
 	age?: number | null
@@ -447,6 +453,8 @@ export async function getUserProfile(userId: number) {
 }
 
 export interface UserProfileUpdate {
+	first_name?: string
+	last_name?: string
 	email?: string
 	age?: number
 	date_of_birth?: string

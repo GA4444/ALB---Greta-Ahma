@@ -27,6 +27,14 @@ def migrate_email_notification_schema(engine: Engine) -> None:
                     ))
                     logger.info("Added users.%s", name)
 
+            for name in ("first_name", "last_name"):
+                if name not in user_columns:
+                    connection.execute(text(
+                        f"ALTER TABLE users ADD COLUMN {name} VARCHAR(80)"
+                    ))
+                    logger.info("Added users.%s", name)
+                    user_columns.add(name)
+
         if "attempts" in table_names:
             attempt_columns = {column["name"] for column in inspector.get_columns("attempts")}
             if "created_at" not in attempt_columns:

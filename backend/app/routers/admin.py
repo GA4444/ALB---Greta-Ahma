@@ -37,6 +37,8 @@ def create_admin_user(user_data: schemas.AdminUserCreate, db: Session = Depends(
 	
 	# Create admin user
 	db_user = models.User(
+		first_name=(user_data.first_name or "").strip() or None,
+		last_name=(user_data.last_name or "").strip() or None,
 		username=user_data.username,
 		email=user_data.email,
 		age=user_data.age,
