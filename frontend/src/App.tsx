@@ -1366,7 +1366,7 @@ function App() {
                                 <div className="form-row single-column">
                                     <input
                                         className="auth-input"
-                                        placeholder="Username * (për login)"
+                                        placeholder="Username *"
                                         autoComplete="username"
                                         value={registrationData.username}
                                         onChange={(e) => setRegistrationData({...registrationData, username: e.target.value.replace(/\s/g, '')})}
