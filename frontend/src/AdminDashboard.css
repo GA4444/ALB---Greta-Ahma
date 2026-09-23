@@ -2159,14 +2159,15 @@ textarea:focus-visible {
 	}
 
 	.admin-header {
-		flex-direction: column;
+		flex-direction: row;
 		gap: 0.75rem;
-		align-items: stretch;
-		text-align: center;
+		align-items: center;
+		text-align: left;
 	}
 
 	.admin-logout-btn {
-		width: 100%;
+		width: auto;
+		flex-shrink: 0;
 	}
 }
 

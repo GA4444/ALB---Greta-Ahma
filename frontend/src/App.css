@@ -7407,13 +7407,16 @@ body {
     color: var(--text-secondary);
 }
 
-/* Modern Course Grid */
+/* Modern Course Grid — min(100%, …) prevents zero-width / clipped columns on phones */
 .course-preview-grid-modern {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
     gap: var(--space-5);
     margin-top: var(--space-6);
     padding: var(--space-2) 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .course-card-modern {
@@ -8000,10 +8003,13 @@ body {
 
 .level-grid-modern {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
     gap: var(--space-5);
     margin-top: var(--space-6);
     padding: var(--space-2) 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .level-card-modern {

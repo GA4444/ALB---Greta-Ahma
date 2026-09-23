@@ -152,17 +152,27 @@
 	display: none !important;
 }
 
-/* Admin brand row */
+/* Admin brand row — logo + title on one professional line */
 .admin-header-brand {
 	display: flex;
+	flex-direction: row;
 	align-items: center;
-	gap: 0.65rem;
+	gap: 0.75rem;
+	min-width: 0;
 }
 
 .admin-header-brand .brand-logo {
 	width: 36px;
 	height: 36px;
 	border-radius: 10px;
+	flex-shrink: 0;
+}
+
+.admin-header-brand > div {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	min-width: 0;
 }
 
 /* Footer brand */

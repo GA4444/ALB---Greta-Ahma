@@ -523,18 +523,32 @@
   /* ===== Course / level cards ===== */
   .app .course-preview-grid-modern,
   .app .level-grid-modern,
+  .app .level-picker-grid,
   .app .class-grid-modern {
     display: grid !important;
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
   }
 
   .app .course-card-modern,
   .app .level-card-modern,
+  .app .level-picker-card,
   .app .class-card-modern {
     padding: 16px !important;
     border-radius: 18px !important;
     min-height: 88px;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    animation: none !important;
   }
 
   .app .back-button-modern {
