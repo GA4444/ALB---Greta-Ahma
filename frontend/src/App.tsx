@@ -2494,9 +2494,21 @@ function MainContent({
         if (currentExercise?.category === 'synonyms_antonyms') return 'Zgjidh ose shkruaj përgjigjen...'
         return 'Shkruaj përgjigjen këtu...'
     }
+
+    // Mobile: open class/course/level as a dedicated top-of-screen view (not below the class list).
+    useEffect(() => {
+        if (!selectedClass) return
+        if (typeof window === 'undefined') return
+        if (!window.matchMedia('(max-width: 768px)').matches) return
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+        const content = document.querySelector('.app .content-area')
+        if (content instanceof HTMLElement) {
+            content.scrollTop = 0
+        }
+    }, [selectedClass?.id, selectedCourse?.id, selectedLevel?.id])
     
     return (
-        <div className={`main-content ${selectedLevel ? 'with-ai-panel' : ''} ${!selectedClass ? 'main-content--home' : ''}`}>
+        <div className={`main-content ${selectedLevel ? 'with-ai-panel' : ''} ${!selectedClass ? 'main-content--home' : 'main-content--class-view'}`}>
             {/* Compact Left Sidebar - Navigation Only */}
             <aside className="sidebar sidebar-compact">
                 <div className="sidebar-section sidebar-section-classes alblingo-world">
