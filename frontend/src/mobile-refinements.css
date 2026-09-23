@@ -90,12 +90,12 @@
   }
 
   .leaderboard-card {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    min-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
     margin: 0 !important;
-    max-height: min(96dvh, 96vh) !important;
-    border-radius: 16px 16px 0 0 !important;
+    max-height: min(94dvh, 94vh) !important;
+    border-radius: 18px 18px 0 0 !important;
     padding: 0 !important;
     overflow: hidden !important;
   }

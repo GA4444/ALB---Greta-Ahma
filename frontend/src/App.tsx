@@ -2021,10 +2021,11 @@ function App() {
                                     <div className="leaderboard-body">
                                         {leaderboardData.map((entry) => {
                                             const isCurrentUser = userId && entry.user_id === parseInt(userId)
+                                            const avatarLetter = (entry.username?.trim()?.charAt(0) || '?').toUpperCase()
                                             return (
                                                 <div
                                                     key={entry.user_id}
-                                                    className={`leaderboard-row ${isCurrentUser ? 'current-user' : ''}`}
+                                                    className={`leaderboard-row ${isCurrentUser ? 'current-user' : ''} ${entry.rank <= 3 ? `lb-top-${entry.rank}` : ''}`}
                                                 >
                                                     <div className="lb-col rank-col" data-label="Vend">
                                                         {entry.rank === 1 && '🥇'}
@@ -2032,6 +2033,7 @@ function App() {
                                                         {entry.rank === 3 && '🥉'}
                                                         {entry.rank > 3 && `#${entry.rank}`}
                                                     </div>
+                                                    <div className="lb-avatar" aria-hidden="true">{avatarLetter}</div>
                                                     <div className="lb-col user-col" data-label="Përdoruesi">
                                                         <strong>{entry.username}</strong>
                                                         {isCurrentUser && <span className="you-badge">Ti</span>}

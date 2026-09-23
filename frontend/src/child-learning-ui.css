@@ -3367,6 +3367,11 @@
 	display: none;
 }
 
+/* Avatar is mobile-only; keep desktop grid columns unchanged. */
+.app .lb-avatar {
+	display: none;
+}
+
 .app .rank-col {
 	justify-content: center !important;
 	font-weight: 800 !important;
@@ -3430,34 +3435,27 @@
 		align-items: flex-end !important;
 		justify-content: stretch !important;
 		inset: 0 !important;
-		left: 0 !important;
-		right: 0 !important;
-		width: 100vw !important;
-		max-width: 100vw !important;
+		width: 100% !important;
+		max-width: none !important;
 		margin: 0 !important;
 		padding: 0 !important;
-		background: rgba(15, 23, 42, 0.48) !important;
+		background: rgba(15, 23, 42, 0.45) !important;
 	}
 
 	.app .profile-card.leaderboard-card,
 	.app .leaderboard-card {
-		width: 100vw !important;
-		max-width: 100vw !important;
-		min-width: 100vw !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
 		margin: 0 !important;
-		margin-left: 0 !important;
-		margin-right: 0 !important;
-		left: 0 !important;
-		right: 0 !important;
-		min-height: min(90dvh, 90vh) !important;
-		max-height: min(96dvh, 96vh) !important;
-		border-radius: 16px 16px 0 0 !important;
+		left: auto !important;
+		right: auto !important;
+		min-height: min(88dvh, 88vh) !important;
+		max-height: min(94dvh, 94vh) !important;
+		border-radius: 18px 18px 0 0 !important;
 		border: 0 !important;
-		border-left: 0 !important;
-		border-right: 0 !important;
-		border-bottom: 0 !important;
 		padding: 0 !important;
-		box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.18) !important;
+		box-shadow: 0 -10px 36px rgba(15, 23, 42, 0.16) !important;
 		overflow: hidden !important;
 		transform: none !important;
 	}
@@ -3473,14 +3471,14 @@
 	}
 
 	.app .leaderboard-card .profile-header {
-		padding: 10px 12px 12px !important;
+		padding: 10px 16px 12px !important;
 		margin: 0 !important;
 		background: #fff !important;
 		border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
 	}
 
 	.app .leaderboard-card .profile-title {
-		font-size: 1.08rem !important;
+		font-size: 1.06rem !important;
 		letter-spacing: -0.02em !important;
 	}
 
@@ -3493,14 +3491,13 @@
 	}
 
 	.app .leaderboard-content {
-		padding: 0 0 calc(10px + env(safe-area-inset-bottom, 0px)) !important;
-		gap: 0 !important;
-		background: #fff !important;
+		padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+		gap: 12px !important;
+		background: #f8fafc !important;
 		flex: 1 1 auto !important;
 		min-height: 0 !important;
 		margin: 0 !important;
 		width: 100% !important;
-		max-width: 100% !important;
 		box-sizing: border-box !important;
 	}
 
@@ -3509,30 +3506,27 @@
 		flex-wrap: wrap !important;
 		align-items: center !important;
 		justify-content: space-between !important;
-		margin: 0 !important;
-		padding: 14px 12px !important;
-		gap: 8px 10px !important;
-		border-radius: 0 !important;
-		border-left: 0 !important;
-		border-right: 0 !important;
-		border-top: 0 !important;
-		width: 100% !important;
-		max-width: 100% !important;
+		margin: 0 12px !important;
+		padding: 12px 14px !important;
+		gap: 8px 12px !important;
+		border-radius: 14px !important;
+		width: auto !important;
+		max-width: none !important;
 		box-sizing: border-box !important;
-		box-shadow: none !important;
+		box-shadow: 0 6px 16px rgba(31, 111, 139, 0.14) !important;
 	}
 
 	.app .rank-value {
-		font-size: 1.55rem !important;
+		font-size: 1.4rem !important;
 	}
 
 	.app .rank-stats {
-		width: 100% !important;
+		width: auto !important;
 		gap: 6px !important;
 	}
 
 	.app .rank-stat-pill {
-		font-size: 0.72rem !important;
+		font-size: 0.7rem !important;
 		padding: 5px 9px !important;
 	}
 
@@ -3542,7 +3536,7 @@
 
 	.app .leaderboard-table {
 		border: 0 !important;
-		background: transparent !important;
+		background: #fff !important;
 		overflow: hidden !important;
 		border-radius: 0 !important;
 		flex: 1 1 auto !important;
@@ -3551,7 +3545,7 @@
 		flex-direction: column !important;
 		margin: 0 !important;
 		width: 100% !important;
-		max-width: 100% !important;
+		border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
 	}
 
 	.app .leaderboard-body {
@@ -3565,20 +3559,23 @@
 		overflow-x: hidden !important;
 		overflow-y: auto !important;
 		-webkit-overflow-scrolling: touch;
-		border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
 		width: 100% !important;
 	}
 
+	/* Clean list row: rank | avatar | name | points
+	                  meta under name                       */
 	.app .leaderboard-row {
 		display: grid !important;
-		grid-template-columns: 44px minmax(0, 1fr) auto !important;
+		grid-template-columns: 34px 36px minmax(0, 1fr) auto !important;
 		grid-template-areas:
-			"rank user points"
-			"rank meta meta" !important;
-		gap: 2px 10px !important;
+			"rank avatar user points"
+			"rank avatar meta points" !important;
+		column-gap: 10px !important;
+		row-gap: 2px !important;
 		align-items: center !important;
-		padding: 12px 10px !important;
+		padding: 12px 14px !important;
 		margin: 0 !important;
+		min-height: 64px !important;
 		border: 0 !important;
 		border-radius: 0 !important;
 		border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
@@ -3595,9 +3592,8 @@
 	}
 
 	.app .leaderboard-row.current-user {
-		border-color: transparent !important;
-		border-bottom-color: rgba(31, 111, 139, 0.12) !important;
 		background: #f0f9fc !important;
+		border-bottom-color: rgba(31, 111, 139, 0.1) !important;
 		border-left: 0 !important;
 		box-shadow: inset 3px 0 0 #1f6f8b !important;
 	}
@@ -3606,28 +3602,105 @@
 		grid-area: rank !important;
 		align-self: center !important;
 		justify-content: center !important;
-		width: 40px !important;
-		height: 40px !important;
-		border-radius: 12px !important;
+		width: 32px !important;
+		height: 32px !important;
+		min-width: 32px !important;
+		border-radius: 10px !important;
 		background: #f1f5f9 !important;
-		font-size: 1rem !important;
+		font-size: 0.78rem !important;
 		font-weight: 800 !important;
+		line-height: 1 !important;
+		color: #475569 !important;
+	}
+
+	.app .leaderboard-row.lb-top-1 .rank-col,
+	.app .leaderboard-row.lb-top-2 .rank-col,
+	.app .leaderboard-row.lb-top-3 .rank-col {
+		background: #fff7ed !important;
+		font-size: 0.95rem !important;
 	}
 
 	.app .leaderboard-row.current-user .rank-col {
-		background: rgba(31, 111, 139, 0.14) !important;
+		background: rgba(31, 111, 139, 0.12) !important;
 		color: #1f6f8b !important;
+	}
+
+	.app .leaderboard-row .lb-avatar {
+		grid-area: avatar !important;
+		display: grid !important;
+		place-items: center !important;
+		width: 36px !important;
+		height: 36px !important;
+		min-width: 36px !important;
+		border-radius: 50% !important;
+		background: linear-gradient(145deg, #e0f2fe 0%, #dbeafe 100%) !important;
+		border: 1px solid rgba(31, 111, 139, 0.14) !important;
+		color: #1f6f8b !important;
+		font-size: 0.85rem !important;
+		font-weight: 800 !important;
+		line-height: 1 !important;
+		user-select: none !important;
+	}
+
+	.app .leaderboard-row.current-user .lb-avatar {
+		background: linear-gradient(145deg, #1f6f8b 0%, #2b8bb8 100%) !important;
+		border-color: transparent !important;
+		color: #fff !important;
+	}
+
+	.app .leaderboard-row.lb-top-1 .lb-avatar {
+		background: linear-gradient(145deg, #fef3c7 0%, #fde68a 100%) !important;
+		border-color: rgba(245, 158, 11, 0.35) !important;
+		color: #b45309 !important;
+	}
+
+	.app .leaderboard-row.lb-top-2 .lb-avatar {
+		background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+		border-color: rgba(100, 116, 139, 0.3) !important;
+		color: #475569 !important;
+	}
+
+	.app .leaderboard-row.lb-top-3 .lb-avatar {
+		background: linear-gradient(145deg, #ffedd5 0%, #fed7aa 100%) !important;
+		border-color: rgba(194, 120, 60, 0.3) !important;
+		color: #9a3412 !important;
 	}
 
 	.app .leaderboard-row .user-col {
 		grid-area: user !important;
+		align-self: end !important;
+		display: flex !important;
+		flex-direction: row !important;
+		flex-wrap: nowrap !important;
+		align-items: center !important;
 		font-size: 0.95rem !important;
 		min-width: 0 !important;
+		max-width: 100% !important;
 		gap: 6px !important;
+		overflow: hidden !important;
+	}
+
+	.app .leaderboard-row .user-col strong {
+		flex: 1 1 auto !important;
+		min-width: 0 !important;
+		display: block !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		white-space: nowrap !important;
+		max-width: 100% !important;
+		font-size: 0.95rem !important;
+		font-weight: 750 !important;
+		line-height: 1.25 !important;
+	}
+
+	.app .leaderboard-row .you-badge {
+		padding: 2px 6px !important;
+		font-size: 0.62rem !important;
 	}
 
 	.app .leaderboard-row .points-col {
 		grid-area: points !important;
+		align-self: center !important;
 		display: flex !important;
 		flex-direction: column !important;
 		align-items: flex-end !important;
@@ -3639,19 +3712,26 @@
 		border-radius: 0 !important;
 		text-align: right !important;
 		white-space: nowrap !important;
+		min-width: 0 !important;
+		max-width: 88px !important;
+		overflow: hidden !important;
 	}
 
 	.app .leaderboard-row .points-col .lb-stat-value {
-		font-size: 1.05rem !important;
+		display: block !important;
+		font-size: 1.02rem !important;
 		font-weight: 800 !important;
 		color: #1f6f8b !important;
 		letter-spacing: -0.03em !important;
 		line-height: 1.1 !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		max-width: 100% !important;
 	}
 
 	.app .leaderboard-row .points-col .lb-stat-unit {
 		display: block !important;
-		font-size: 0.6rem !important;
+		font-size: 0.58rem !important;
 		font-weight: 700 !important;
 		color: #94a3b8 !important;
 		text-transform: uppercase !important;
@@ -3661,109 +3741,180 @@
 
 	.app .leaderboard-row .lb-meta {
 		grid-area: meta !important;
-		display: grid !important;
-		grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-		align-items: stretch !important;
-		gap: 6px !important;
+		align-self: start !important;
+		display: flex !important;
+		flex-wrap: nowrap !important;
+		align-items: center !important;
+		gap: 0 !important;
 		width: 100% !important;
 		min-width: 0 !important;
-		padding-top: 4px !important;
-		overflow: visible !important;
+		padding: 0 !important;
+		overflow: hidden !important;
 	}
 
 	.app .leaderboard-row .level-col,
 	.app .leaderboard-row .accuracy-col,
 	.app .leaderboard-row .courses-col {
-		display: flex !important;
-		flex-direction: column !important;
-		align-items: flex-start !important;
-		justify-content: center !important;
-		gap: 1px !important;
-		padding: 6px 8px !important;
-		border: 1px solid rgba(148, 163, 184, 0.28) !important;
-		background: #f8fafc !important;
-		border-radius: 10px !important;
+		display: inline-flex !important;
+		flex-direction: row !important;
+		align-items: center !important;
+		justify-content: flex-start !important;
+		gap: 0 !important;
+		padding: 0 !important;
+		border: 0 !important;
+		background: transparent !important;
+		border-radius: 0 !important;
 		min-width: 0 !important;
 		white-space: nowrap !important;
-		font-size: 0.78rem !important;
+		font-size: 0.72rem !important;
 		color: #64748b !important;
 	}
 
 	.app .leaderboard-row .level-col::after,
 	.app .leaderboard-row .accuracy-col::after {
-		content: none !important;
-		display: none !important;
-		margin: 0 !important;
+		content: "·" !important;
+		display: inline-block !important;
+		margin: 0 6px !important;
+		color: #cbd5e1 !important;
+		font-weight: 700 !important;
 	}
 
 	.app .leaderboard-row .lb-col[data-label]::before {
-		display: block !important;
-		content: attr(data-label) !important;
-		font-size: 0.58rem !important;
-		font-weight: 750 !important;
-		letter-spacing: 0.03em !important;
-		text-transform: uppercase !important;
-		color: #94a3b8 !important;
-		line-height: 1.1 !important;
-	}
-
-	.app .leaderboard-row .points-col[data-label]::before {
 		display: none !important;
 	}
 
 	.app .leaderboard-row .level-col .lb-stat-value,
 	.app .leaderboard-row .accuracy-col .lb-stat-value,
 	.app .leaderboard-row .courses-col .lb-stat-value {
-		font-size: 0.8rem !important;
-		font-weight: 750 !important;
-		color: #334155 !important;
+		font-size: 0.72rem !important;
+		font-weight: 600 !important;
+		color: #64748b !important;
 		overflow: hidden !important;
 		text-overflow: ellipsis !important;
 		white-space: nowrap !important;
-		max-width: 100% !important;
 	}
 
 	.app .leaderboard-row .courses-col .lb-stat-unit {
-		display: none !important;
+		display: inline !important;
+		margin-left: 3px !important;
+		font-size: 0.72rem !important;
+		font-weight: 600 !important;
+		color: #94a3b8 !important;
+		text-transform: none !important;
+		letter-spacing: 0 !important;
 	}
 }
 
-@media (max-width: 380px) {
+/* ~375px phones */
+@media (max-width: 390px) {
 	.app .leaderboard-row {
-		grid-template-columns: 38px minmax(0, 1fr) auto !important;
-		gap: 2px 8px !important;
-		padding: 11px 8px !important;
+		grid-template-columns: 30px 34px minmax(0, 1fr) auto !important;
+		column-gap: 8px !important;
+		padding: 11px 12px !important;
+		min-height: 60px !important;
+	}
+
+	.app .user-rank-badge {
+		margin: 0 10px !important;
+		padding: 11px 12px !important;
 	}
 
 	.app .leaderboard-row .rank-col {
-		width: 36px !important;
-		height: 36px !important;
-		border-radius: 10px !important;
+		width: 28px !important;
+		height: 28px !important;
+		min-width: 28px !important;
+		border-radius: 8px !important;
+		font-size: 0.72rem !important;
+	}
+
+	.app .leaderboard-row.lb-top-1 .rank-col,
+	.app .leaderboard-row.lb-top-2 .rank-col,
+	.app .leaderboard-row.lb-top-3 .rank-col {
+		font-size: 0.88rem !important;
+	}
+
+	.app .leaderboard-row .lb-avatar {
+		width: 34px !important;
+		height: 34px !important;
+		min-width: 34px !important;
+		font-size: 0.8rem !important;
+	}
+
+	.app .leaderboard-row .user-col strong {
 		font-size: 0.9rem !important;
 	}
 
-	.app .leaderboard-row .user-col {
-		font-size: 0.9rem !important;
+	.app .leaderboard-row .points-col {
+		max-width: 76px !important;
 	}
 
 	.app .leaderboard-row .points-col .lb-stat-value {
-		font-size: 0.98rem !important;
+		font-size: 0.95rem !important;
+	}
+}
+
+/* ~320px very small */
+@media (max-width: 340px) {
+	.app .leaderboard-card .profile-header {
+		padding: 8px 10px 10px !important;
 	}
 
-	.app .leaderboard-row .lb-meta {
-		gap: 4px !important;
+	.app .leaderboard-row {
+		grid-template-columns: 26px 30px minmax(0, 1fr) auto !important;
+		column-gap: 6px !important;
+		padding: 10px 10px !important;
+		min-height: 56px !important;
 	}
 
-	.app .leaderboard-row .level-col,
-	.app .leaderboard-row .accuracy-col,
-	.app .leaderboard-row .courses-col {
-		padding: 5px 6px !important;
+	.app .user-rank-badge {
+		margin: 0 8px !important;
+		padding: 10px !important;
+	}
+
+	.app .rank-stats {
+		width: 100% !important;
+	}
+
+	.app .leaderboard-row .rank-col {
+		width: 26px !important;
+		height: 26px !important;
+		min-width: 26px !important;
+		font-size: 0.68rem !important;
+	}
+
+	.app .leaderboard-row .lb-avatar {
+		width: 30px !important;
+		height: 30px !important;
+		min-width: 30px !important;
+		font-size: 0.75rem !important;
+	}
+
+	.app .leaderboard-row .user-col strong {
+		font-size: 0.86rem !important;
+	}
+
+	.app .leaderboard-row .points-col {
+		max-width: 64px !important;
+	}
+
+	.app .leaderboard-row .points-col .lb-stat-value {
+		font-size: 0.9rem !important;
+	}
+
+	.app .leaderboard-row .points-col .lb-stat-unit {
+		font-size: 0.52rem !important;
 	}
 
 	.app .leaderboard-row .level-col .lb-stat-value,
 	.app .leaderboard-row .accuracy-col .lb-stat-value,
-	.app .leaderboard-row .courses-col .lb-stat-value {
-		font-size: 0.74rem !important;
+	.app .leaderboard-row .courses-col .lb-stat-value,
+	.app .leaderboard-row .courses-col .lb-stat-unit {
+		font-size: 0.66rem !important;
+	}
+
+	.app .leaderboard-row .level-col::after,
+	.app .leaderboard-row .accuracy-col::after {
+		margin: 0 4px !important;
 	}
 }
 
