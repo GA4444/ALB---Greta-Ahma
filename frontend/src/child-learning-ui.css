@@ -3184,6 +3184,7 @@
 	display: flex !important;
 	flex-direction: column !important;
 	background: #fff !important;
+	box-sizing: border-box !important;
 }
 
 .app .leaderboard-card .profile-header {
@@ -3410,10 +3411,10 @@
 	font-weight: 650 !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 900px) and (min-width: 769px) {
 	.app .leaderboard-card {
-		width: min(100%, 640px) !important;
-		max-width: 640px !important;
+		width: min(100%, 720px) !important;
+		max-width: 720px !important;
 	}
 
 	.app .leaderboard-header,
@@ -3427,16 +3428,30 @@
 @media (max-width: 768px) {
 	.app .profile-overlay:has(.leaderboard-card) {
 		align-items: flex-end !important;
+		justify-content: stretch !important;
+		inset: 0 !important;
+		left: 0 !important;
+		right: 0 !important;
+		width: 100vw !important;
+		max-width: 100vw !important;
+		margin: 0 !important;
 		padding: 0 !important;
 		background: rgba(15, 23, 42, 0.48) !important;
 	}
 
+	.app .profile-card.leaderboard-card,
 	.app .leaderboard-card {
-		width: 100% !important;
-		max-width: 100% !important;
-		min-height: min(88dvh, 88vh) !important;
+		width: 100vw !important;
+		max-width: 100vw !important;
+		min-width: 100vw !important;
+		margin: 0 !important;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+		left: 0 !important;
+		right: 0 !important;
+		min-height: min(90dvh, 90vh) !important;
 		max-height: min(96dvh, 96vh) !important;
-		border-radius: 22px 22px 0 0 !important;
+		border-radius: 16px 16px 0 0 !important;
 		border: 0 !important;
 		border-left: 0 !important;
 		border-right: 0 !important;
@@ -3444,26 +3459,28 @@
 		padding: 0 !important;
 		box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.18) !important;
 		overflow: hidden !important;
+		transform: none !important;
 	}
 
 	.app .leaderboard-sheet-handle {
 		display: block !important;
-		width: 40px !important;
+		width: 36px !important;
 		height: 4px !important;
-		margin: 10px auto 0 !important;
+		margin: 8px auto 0 !important;
 		border-radius: 999px !important;
 		background: #cbd5e1 !important;
 		flex-shrink: 0 !important;
 	}
 
 	.app .leaderboard-card .profile-header {
-		padding: 12px 18px 14px !important;
+		padding: 10px 12px 12px !important;
+		margin: 0 !important;
 		background: #fff !important;
 		border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
 	}
 
 	.app .leaderboard-card .profile-title {
-		font-size: 1.12rem !important;
+		font-size: 1.08rem !important;
 		letter-spacing: -0.02em !important;
 	}
 
@@ -3476,11 +3493,15 @@
 	}
 
 	.app .leaderboard-content {
-		padding: 14px 0 calc(12px + env(safe-area-inset-bottom, 0px)) !important;
-		gap: 14px !important;
+		padding: 0 0 calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+		gap: 0 !important;
 		background: #fff !important;
 		flex: 1 1 auto !important;
 		min-height: 0 !important;
+		margin: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		box-sizing: border-box !important;
 	}
 
 	.app .user-rank-badge {
@@ -3488,26 +3509,31 @@
 		flex-wrap: wrap !important;
 		align-items: center !important;
 		justify-content: space-between !important;
-		margin: 0 16px !important;
-		padding: 16px 18px !important;
-		gap: 10px 14px !important;
-		border-radius: 18px !important;
-		width: auto !important;
+		margin: 0 !important;
+		padding: 14px 12px !important;
+		gap: 8px 10px !important;
+		border-radius: 0 !important;
+		border-left: 0 !important;
+		border-right: 0 !important;
+		border-top: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
 		box-sizing: border-box !important;
+		box-shadow: none !important;
 	}
 
 	.app .rank-value {
-		font-size: 1.65rem !important;
+		font-size: 1.55rem !important;
 	}
 
 	.app .rank-stats {
 		width: 100% !important;
-		gap: 8px !important;
+		gap: 6px !important;
 	}
 
 	.app .rank-stat-pill {
-		font-size: 0.74rem !important;
-		padding: 6px 11px !important;
+		font-size: 0.72rem !important;
+		padding: 5px 9px !important;
 	}
 
 	.app .leaderboard-header {
@@ -3523,6 +3549,9 @@
 		min-height: 0 !important;
 		display: flex !important;
 		flex-direction: column !important;
+		margin: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
 	}
 
 	.app .leaderboard-body {
@@ -3532,21 +3561,24 @@
 		flex-direction: column !important;
 		gap: 0 !important;
 		padding: 0 !important;
+		margin: 0 !important;
 		overflow-x: hidden !important;
 		overflow-y: auto !important;
 		-webkit-overflow-scrolling: touch;
 		border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
+		width: 100% !important;
 	}
 
 	.app .leaderboard-row {
 		display: grid !important;
-		grid-template-columns: 52px minmax(0, 1fr) auto !important;
+		grid-template-columns: 44px minmax(0, 1fr) auto !important;
 		grid-template-areas:
 			"rank user points"
 			"rank meta meta" !important;
-		gap: 2px 14px !important;
+		gap: 2px 10px !important;
 		align-items: center !important;
-		padding: 14px 18px !important;
+		padding: 12px 10px !important;
+		margin: 0 !important;
 		border: 0 !important;
 		border-radius: 0 !important;
 		border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
@@ -3554,6 +3586,7 @@
 		box-shadow: none !important;
 		min-width: 0 !important;
 		width: 100% !important;
+		max-width: 100% !important;
 		box-sizing: border-box !important;
 	}
 
@@ -3573,11 +3606,11 @@
 		grid-area: rank !important;
 		align-self: center !important;
 		justify-content: center !important;
-		width: 48px !important;
-		height: 48px !important;
-		border-radius: 14px !important;
+		width: 40px !important;
+		height: 40px !important;
+		border-radius: 12px !important;
 		background: #f1f5f9 !important;
-		font-size: 1.05rem !important;
+		font-size: 1rem !important;
 		font-weight: 800 !important;
 	}
 
@@ -3588,9 +3621,9 @@
 
 	.app .leaderboard-row .user-col {
 		grid-area: user !important;
-		font-size: 1rem !important;
+		font-size: 0.95rem !important;
 		min-width: 0 !important;
-		gap: 8px !important;
+		gap: 6px !important;
 	}
 
 	.app .leaderboard-row .points-col {
@@ -3609,7 +3642,7 @@
 	}
 
 	.app .leaderboard-row .points-col .lb-stat-value {
-		font-size: 1.12rem !important;
+		font-size: 1.05rem !important;
 		font-weight: 800 !important;
 		color: #1f6f8b !important;
 		letter-spacing: -0.03em !important;
@@ -3618,54 +3651,63 @@
 
 	.app .leaderboard-row .points-col .lb-stat-unit {
 		display: block !important;
-		font-size: 0.64rem !important;
+		font-size: 0.6rem !important;
 		font-weight: 700 !important;
 		color: #94a3b8 !important;
 		text-transform: uppercase !important;
-		letter-spacing: 0.05em !important;
+		letter-spacing: 0.04em !important;
 		line-height: 1.1 !important;
 	}
 
 	.app .leaderboard-row .lb-meta {
 		grid-area: meta !important;
-		display: flex !important;
-		flex-wrap: nowrap !important;
-		align-items: center !important;
-		gap: 0 !important;
+		display: grid !important;
+		grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+		align-items: stretch !important;
+		gap: 6px !important;
 		width: 100% !important;
 		min-width: 0 !important;
-		padding-top: 1px !important;
-		overflow: hidden !important;
+		padding-top: 4px !important;
+		overflow: visible !important;
 	}
 
 	.app .leaderboard-row .level-col,
 	.app .leaderboard-row .accuracy-col,
 	.app .leaderboard-row .courses-col {
-		display: inline-flex !important;
-		flex-direction: row !important;
-		align-items: center !important;
-		justify-content: flex-start !important;
-		gap: 0 !important;
-		padding: 0 !important;
-		border: 0 !important;
-		background: transparent !important;
-		border-radius: 0 !important;
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: flex-start !important;
+		justify-content: center !important;
+		gap: 1px !important;
+		padding: 6px 8px !important;
+		border: 1px solid rgba(148, 163, 184, 0.28) !important;
+		background: #f8fafc !important;
+		border-radius: 10px !important;
 		min-width: 0 !important;
 		white-space: nowrap !important;
-		font-size: 0.8rem !important;
+		font-size: 0.78rem !important;
 		color: #64748b !important;
 	}
 
 	.app .leaderboard-row .level-col::after,
 	.app .leaderboard-row .accuracy-col::after {
-		content: "·" !important;
-		display: inline-block !important;
-		margin: 0 8px !important;
-		color: #cbd5e1 !important;
-		font-weight: 700 !important;
+		content: none !important;
+		display: none !important;
+		margin: 0 !important;
 	}
 
 	.app .leaderboard-row .lb-col[data-label]::before {
+		display: block !important;
+		content: attr(data-label) !important;
+		font-size: 0.58rem !important;
+		font-weight: 750 !important;
+		letter-spacing: 0.03em !important;
+		text-transform: uppercase !important;
+		color: #94a3b8 !important;
+		line-height: 1.1 !important;
+	}
+
+	.app .leaderboard-row .points-col[data-label]::before {
 		display: none !important;
 	}
 
@@ -3673,64 +3715,55 @@
 	.app .leaderboard-row .accuracy-col .lb-stat-value,
 	.app .leaderboard-row .courses-col .lb-stat-value {
 		font-size: 0.8rem !important;
-		font-weight: 600 !important;
-		color: #64748b !important;
-		overflow: visible !important;
+		font-weight: 750 !important;
+		color: #334155 !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
 		white-space: nowrap !important;
+		max-width: 100% !important;
 	}
 
 	.app .leaderboard-row .courses-col .lb-stat-unit {
-		display: inline !important;
-		margin-left: 4px !important;
-		font-size: 0.8rem !important;
-		font-weight: 600 !important;
-		color: #94a3b8 !important;
-		text-transform: none !important;
-		letter-spacing: 0 !important;
+		display: none !important;
 	}
 }
 
 @media (max-width: 380px) {
 	.app .leaderboard-row {
-		grid-template-columns: 44px minmax(0, 1fr) auto !important;
-		gap: 2px 12px !important;
-		padding: 13px 14px !important;
-	}
-
-	.app .leaderboard-content {
-		padding-top: 12px !important;
-	}
-
-	.app .user-rank-badge {
-		margin: 0 12px !important;
-		padding: 14px 14px !important;
+		grid-template-columns: 38px minmax(0, 1fr) auto !important;
+		gap: 2px 8px !important;
+		padding: 11px 8px !important;
 	}
 
 	.app .leaderboard-row .rank-col {
-		width: 42px !important;
-		height: 42px !important;
-		border-radius: 12px !important;
-		font-size: 0.95rem !important;
+		width: 36px !important;
+		height: 36px !important;
+		border-radius: 10px !important;
+		font-size: 0.9rem !important;
 	}
 
 	.app .leaderboard-row .user-col {
-		font-size: 0.94rem !important;
+		font-size: 0.9rem !important;
 	}
 
 	.app .leaderboard-row .points-col .lb-stat-value {
-		font-size: 1.02rem !important;
+		font-size: 0.98rem !important;
 	}
 
 	.app .leaderboard-row .lb-meta {
-		flex-wrap: wrap !important;
-		row-gap: 2px !important;
+		gap: 4px !important;
+	}
+
+	.app .leaderboard-row .level-col,
+	.app .leaderboard-row .accuracy-col,
+	.app .leaderboard-row .courses-col {
+		padding: 5px 6px !important;
 	}
 
 	.app .leaderboard-row .level-col .lb-stat-value,
 	.app .leaderboard-row .accuracy-col .lb-stat-value,
-	.app .leaderboard-row .courses-col .lb-stat-value,
-	.app .leaderboard-row .courses-col .lb-stat-unit {
-		font-size: 0.75rem !important;
+	.app .leaderboard-row .courses-col .lb-stat-value {
+		font-size: 0.74rem !important;
 	}
 }
 
