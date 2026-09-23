@@ -675,9 +675,9 @@
 
 .app .level-picker-card .course-card-top {
 	display: grid;
-	grid-template-columns: auto auto minmax(0, 1fr) auto;
+	grid-template-columns: auto minmax(0, 1fr) auto;
 	align-items: center;
-	gap: 8px;
+	gap: 10px;
 }
 
 .app .level-picker-card .course-number-badge {
@@ -692,15 +692,6 @@
 	text-align: center;
 }
 
-.app .level-picker-card .course-icon-modern {
-	font-size: 1.15rem;
-	line-height: 1;
-	margin: 0;
-	width: auto;
-	height: auto;
-	background: none;
-}
-
 .app .level-picker-card .course-name-modern {
 	margin: 0;
 	font-size: 1rem;
@@ -713,9 +704,31 @@
 	justify-self: end;
 	white-space: nowrap;
 	margin: 0;
-	padding: 4px 8px;
+	padding: 5px 10px;
 	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.01em;
 	border-radius: 999px;
+	border: 1px solid transparent;
+	line-height: 1.2;
+}
+
+.app .level-picker-card .status-badge.completed-badge {
+	color: #1d6b4a;
+	background: rgba(47, 158, 107, 0.12);
+	border-color: rgba(47, 158, 107, 0.22);
+}
+
+.app .level-picker-card .status-badge.active-badge {
+	color: #1f6f8b;
+	background: rgba(31, 111, 139, 0.1);
+	border-color: rgba(31, 111, 139, 0.18);
+}
+
+.app .level-picker-card .status-badge.locked-badge {
+	color: #64748b;
+	background: #f1f5f9;
+	border-color: #e2e8f0;
 }
 
 .app .level-picker-card .course-progress-modern {
@@ -744,6 +757,7 @@
 	border: 0;
 	font-size: 0.8rem;
 	color: #5a7384;
+	font-weight: 600;
 }
 
 .app .level-picker-card .course-start-prompt {
@@ -761,14 +775,13 @@
 	}
 
 	.app .level-picker-card .course-card-top {
-		grid-template-columns: auto auto minmax(0, 1fr);
+		grid-template-columns: auto minmax(0, 1fr);
 		grid-template-areas:
-			"num icon name"
-			"status status status";
+			"num name"
+			"status status";
 	}
 
 	.app .level-picker-card .course-number-badge { grid-area: num; }
-	.app .level-picker-card .course-icon-modern { grid-area: icon; }
 	.app .level-picker-card .course-name-modern { grid-area: name; }
 	.app .level-picker-card .status-badge {
 		grid-area: status;

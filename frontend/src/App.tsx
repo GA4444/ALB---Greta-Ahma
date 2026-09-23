@@ -3051,25 +3051,7 @@ function MainContent({
                                     ? Math.min(100, (course.progress.completed_exercises / Math.max(1, course.progress.total_exercises)) * 100)
                                     : 0
                                 const isCompleted = course.progress?.is_completed || false
-                                const categoryIcon =
-                                    (course.category === 'listen_write' && '🎧') ||
-                                    (course.category === 'word_from_description' && '🧩') ||
-                                    (course.category === 'synonyms_antonyms' && '🔁') ||
-                                    (course.category === 'albanian_or_loanword' && '🇦🇱') ||
-                                    (course.category === 'missing_letter' && '🔠') ||
-                                    (course.category === 'wrong_letter' && '❌') ||
-                                    (course.category === 'build_word' && '🧱') ||
-                                    (course.category === 'number_to_word' && '🔢') ||
-                                    (course.category === 'phrases' && '💬') ||
-                                    (course.category === 'spelling_punctuation' && '📝') ||
-                                    (course.category === 'abstract_concrete' && '🧠') ||
-                                    (course.category === 'build_sentence' && '✍️') ||
-                                    (course.category === 'vocabulary' && '📚') ||
-                                    (course.category === 'spelling' && '✍️') ||
-                                    (course.category === 'grammar' && '🔤') ||
-                                    (course.category === 'numbers' && '🔢') ||
-                                    (course.category === 'punctuation' && '📝') ||
-                                    '📘'
+                                const statusLabel = isCompleted ? 'I përfunduar' : course.enabled ? 'I hapur' : 'I mbyllur'
                                 
                                 return (
                                     <button
@@ -3079,28 +3061,14 @@ function MainContent({
                                         className={`course-card-modern level-picker-card ${course.enabled ? 'unlocked' : 'locked'} ${isCompleted ? 'completed' : ''}`}
                                         onClick={() => course.enabled && onCourseClick(course)}
                                         disabled={!course.enabled}
-                                        aria-label={`${course.name}, ${isCompleted ? 'I përfunduar' : course.enabled ? 'I hapur' : 'I mbyllur'}`}
+                                        aria-label={`${course.name}, ${statusLabel}`}
                                     >
                                         <div className="course-card-top">
                                             <span className="course-number-badge">#{index + 1}</span>
-                                            <span className="course-icon-modern" aria-hidden="true">{categoryIcon}</span>
                                             <h4 className="course-name-modern">{course.name}</h4>
-                                            {isCompleted ? (
-                                                <span className="status-badge completed-badge">
-                                                    <span aria-hidden="true">🏆</span>
-                                                    <span>I përfunduar</span>
-                                                </span>
-                                            ) : course.enabled ? (
-                                                <span className="status-badge active-badge">
-                                                    <span aria-hidden="true">✅</span>
-                                                    <span>I hapur</span>
-                                                </span>
-                                            ) : (
-                                                <span className="status-badge locked-badge">
-                                                    <span aria-hidden="true">🔒</span>
-                                                    <span>I mbyllur</span>
-                                                </span>
-                                            )}
+                                            <span className={`status-badge ${isCompleted ? 'completed-badge' : course.enabled ? 'active-badge' : 'locked-badge'}`}>
+                                                {statusLabel}
+                                            </span>
                                         </div>
 
                                         {course.progress ? (
@@ -3117,12 +3085,10 @@ function MainContent({
                                                 </div>
                                                 <div className="progress-details-modern">
                                                     <div className="progress-stat-item">
-                                                        <span className="stat-icon-small" aria-hidden="true">📝</span>
                                                         <span>{course.progress.completed_exercises}/{course.progress.total_exercises} ushtrime</span>
                                                     </div>
                                                     {course.progress.accuracy_percentage > 0 && (
                                                         <div className="progress-stat-item">
-                                                            <span className="stat-icon-small" aria-hidden="true">🎯</span>
                                                             <span>{course.progress.accuracy_percentage.toFixed(0)}% saktësi</span>
                                                         </div>
                                                     )}
@@ -3130,7 +3096,6 @@ function MainContent({
                                             </div>
                                         ) : course.enabled ? (
                                             <div className="course-start-prompt">
-                                                <span className="start-icon" aria-hidden="true">▶</span>
                                                 <span>Kliko për të filluar</span>
                                             </div>
                                         ) : null}
