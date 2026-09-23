@@ -697,10 +697,10 @@
 
 .app .leaderboard-header,
 .app .leaderboard-row {
-  min-width: 760px;
-  grid-template-columns: 54px minmax(160px, 1fr) 100px 86px 86px 86px;
-  gap: 10px;
-  padding: 11px 14px;
+  min-width: 0;
+  grid-template-columns: 52px minmax(0, 1.5fr) 80px 72px 72px 72px;
+  gap: 8px;
+  padding: 10px 12px;
 }
 
 .app .leaderboard-body {

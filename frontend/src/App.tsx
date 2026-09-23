@@ -1987,18 +1987,17 @@ function App() {
                                 {userRank && (
                                     <div className="user-rank-badge">
                                         <div className="rank-info">
-                                            <span className="rank-label">Renditja juaj:</span>
+                                            <span className="rank-label">Renditja juaj</span>
                                             <span className="rank-value">#{userRank.rank}</span>
                                         </div>
                                         <div className="rank-stats">
-                                            <span>Nga {userRank.total_users} përdorues</span>
-                                            <span>•</span>
-                                            <span>Në top {userRank.percentile}%</span>
+                                            <span className="rank-stat-pill">Nga {userRank.total_users} përdorues</span>
+                                            <span className="rank-stat-pill">Top {userRank.percentile}%</span>
                                         </div>
                                     </div>
                                 )}
                                 <div className="leaderboard-table">
-                                    <div className="leaderboard-header">
+                                    <div className="leaderboard-header" aria-hidden="true">
                                         <div className="lb-col rank-col">#</div>
                                         <div className="lb-col user-col">Përdoruesi</div>
                                         <div className="lb-col points-col">Pikë</div>
@@ -2010,24 +2009,34 @@ function App() {
                                         {leaderboardData.map((entry) => {
                                             const isCurrentUser = userId && entry.user_id === parseInt(userId)
                                             return (
-                                                <div 
-                                                    key={entry.user_id} 
+                                                <div
+                                                    key={entry.user_id}
                                                     className={`leaderboard-row ${isCurrentUser ? 'current-user' : ''}`}
                                                 >
-                                                    <div className="lb-col rank-col">
+                                                    <div className="lb-col rank-col" data-label="Vend">
                                                         {entry.rank === 1 && '🥇'}
                                                         {entry.rank === 2 && '🥈'}
                                                         {entry.rank === 3 && '🥉'}
                                                         {entry.rank > 3 && `#${entry.rank}`}
                                                     </div>
-                                                    <div className="lb-col user-col">
+                                                    <div className="lb-col user-col" data-label="Përdoruesi">
                                                         <strong>{entry.username}</strong>
                                                         {isCurrentUser && <span className="you-badge">Ti</span>}
                                                     </div>
-                                                    <div className="lb-col points-col">{entry.total_points.toLocaleString()}</div>
-                                                    <div className="lb-col level-col">⭐ {entry.level}</div>
-                                                    <div className="lb-col accuracy-col">{entry.accuracy.toFixed(1)}%</div>
-                                                    <div className="lb-col courses-col">{entry.completed_courses}</div>
+                                                    <div className="lb-col points-col" data-label="Pikë">
+                                                        {entry.total_points.toLocaleString()}
+                                                    </div>
+                                                    <div className="lb-meta">
+                                                        <div className="lb-col level-col" data-label="Niveli">
+                                                            ⭐ {entry.level}
+                                                        </div>
+                                                        <div className="lb-col accuracy-col" data-label="Saktësi">
+                                                            {entry.accuracy.toFixed(1)}%
+                                                        </div>
+                                                        <div className="lb-col courses-col" data-label="Kurset">
+                                                            {entry.completed_courses}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             )
                                         })}
