@@ -746,9 +746,22 @@ export interface AdvancedChatRequest {
 	generate_exercise?: boolean
 	voice_input?: boolean
 	context?: {
+		current_class?: string
+		current_course?: string
 		current_level?: string
+		current_level_id?: number
 		current_exercise?: string
+		current_exercise_id?: number
+		current_exercise_category?: string
 		recent_mistakes?: string[]
+		weak_categories?: string[]
+		recommendation_message?: string
+		daily_challenge_description?: string
+		points?: number
+		streak?: number
+		response_length?: string
+		chatbot_tone?: string
+		difficulty_level?: string
 	}
 }
 

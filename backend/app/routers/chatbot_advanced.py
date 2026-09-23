@@ -165,6 +165,399 @@ def _build_rag_context(query: str, db: Session) -> str:
 
 
 # ============================================================================
+# PLATFORM LEARNER SNAPSHOT (existing AlbLingo features only)
+# ============================================================================
+
+def _build_platform_learner_snapshot(
+    user_id: Optional[str],
+    db: Session,
+    page_context: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Aggregate REAL platform data for the chatbot AI layer.
+    Does not create challenges/exercises/badges — only reads existing systems.
+    """
+    page_context = page_context or {}
+    snapshot: Dict[str, Any] = {
+        "role": "AI layer over existing AlbLingo platform",
+        "must_use_only_existing": True,
+        "page": {},
+        "user": None,
+        "progress": {},
+        "recommendations": None,
+        "daily_challenge": None,
+        "leaderboard": None,
+        "recent_mistakes": [],
+        "weak_categories": [],
+        "next_level": None,
+        "guidance": [],
+    }
+
+    # Page / UI context (names that already exist in the app)
+    for key in (
+        "current_class",
+        "current_course",
+        "current_level",
+        "current_level_id",
+        "current_exercise",
+        "current_exercise_id",
+        "current_exercise_category",
+    ):
+        if page_context.get(key) is not None and page_context.get(key) != "":
+            snapshot["page"][key] = page_context[key]
+
+    if page_context.get("recent_mistakes"):
+        snapshot["recent_mistakes"] = [
+            m for m in page_context["recent_mistakes"] if m
+        ][:8]
+    if page_context.get("weak_categories"):
+        snapshot["weak_categories"] = list(page_context["weak_categories"])[:8]
+    if page_context.get("recommendation_message"):
+        snapshot["frontend_recommendation"] = page_context["recommendation_message"]
+    if page_context.get("daily_challenge_description"):
+        snapshot["page"]["daily_challenge_from_ui"] = page_context[
+            "daily_challenge_description"
+        ]
+    if page_context.get("points") is not None:
+        snapshot["progress"]["points"] = page_context["points"]
+    if page_context.get("streak") is not None:
+        snapshot["progress"]["streak_from_ui"] = page_context["streak"]
+
+    if not user_id:
+        snapshot["guidance"] = [
+            "Identifikohu që të të sugjeroj aktivitete reale nga progresi yt në AlbLingo."
+        ]
+        return snapshot
+
+    uid_str = str(user_id).strip()
+    try:
+        uid_int = int(uid_str)
+    except (TypeError, ValueError):
+        uid_int = None
+
+    user = None
+    if uid_int is not None:
+        user = db.query(models.User).filter(models.User.id == uid_int).first()
+    if user:
+        snapshot["user"] = {
+            "username": user.username,
+            "current_streak": user.current_streak or 0,
+            "longest_streak": user.longest_streak or 0,
+            "total_achievements": user.total_achievements or 0,
+        }
+        snapshot["progress"]["current_streak"] = user.current_streak or 0
+        snapshot["progress"]["total_achievements"] = user.total_achievements or 0
+
+    # Category progress + weak areas (existing Progress rows)
+    progress_rows = (
+        db.query(models.Progress)
+        .filter(models.Progress.user_id == uid_str)
+        .all()
+    )
+    snapshot["progress"]["progress_rows"] = len(progress_rows)
+    snapshot["progress"]["completed_levels"] = sum(
+        1 for p in progress_rows if p.completed
+    )
+    weak = []
+    for p in progress_rows:
+        if (p.errors or 0) > (p.points or 0) and p.category is not None:
+            cat = p.category.value if hasattr(p.category, "value") else str(p.category)
+            if cat not in weak:
+                weak.append(cat)
+    if weak:
+        snapshot["weak_categories"] = list(
+            dict.fromkeys(snapshot["weak_categories"] + weak)
+        )[:8]
+
+    # Recent incorrect attempts → real exercise prompts/categories
+    if not snapshot["recent_mistakes"]:
+        wrong = (
+            db.query(models.Attempt)
+            .filter(
+                models.Attempt.user_id == uid_str,
+                models.Attempt.is_correct == False,  # noqa: E712
+            )
+            .order_by(models.Attempt.id.desc())
+            .limit(12)
+            .all()
+        )
+        mistakes = []
+        for a in wrong:
+            ex = db.get(models.Exercise, a.exercise_id)
+            if not ex:
+                continue
+            cat = ex.category.value if ex.category else None
+            label = (ex.prompt or "")[:80]
+            if cat:
+                mistakes.append(f"{cat}: {label}")
+            elif label:
+                mistakes.append(label)
+            if cat and cat not in snapshot["weak_categories"]:
+                snapshot["weak_categories"].append(cat)
+        snapshot["recent_mistakes"] = mistakes[:8]
+        snapshot["weak_categories"] = snapshot["weak_categories"][:8]
+
+    # Existing AI recommendations endpoint (rule-based, real exercise ids)
+    try:
+        from .ai import get_ai_recommendations
+
+        rec = get_ai_recommendations(uid_str, db)
+        if isinstance(rec, dict):
+            snapshot["recommendations"] = {
+                "type": rec.get("recommendation_type"),
+                "message": rec.get("message"),
+                "accuracy": rec.get("accuracy"),
+                "weak_categories": rec.get("weak_categories") or [],
+                "recommended_exercise_id": rec.get("recommended_exercise"),
+                "recommended_course_id": rec.get("recommended_course"),
+                "difficulty": rec.get("difficulty"),
+            }
+            for cat in snapshot["recommendations"]["weak_categories"]:
+                if cat and cat not in snapshot["weak_categories"]:
+                    snapshot["weak_categories"].append(cat)
+            # Resolve exercise title if recommended
+            ex_id = snapshot["recommendations"].get("recommended_exercise_id")
+            if ex_id:
+                ex = db.get(models.Exercise, ex_id)
+                if ex:
+                    snapshot["recommendations"]["recommended_exercise_prompt"] = (
+                        ex.prompt or ""
+                    )[:120]
+                    if ex.level_id:
+                        lvl = db.get(models.Level, ex.level_id)
+                        if lvl:
+                            snapshot["recommendations"]["recommended_level_name"] = (
+                                lvl.name
+                            )
+    except Exception as e:
+        print(f"[chatbot] recommendations snapshot skipped: {e}")
+
+    # Existing daily challenge (not invented)
+    try:
+        from .gamification import get_daily_challenge
+
+        challenge = get_daily_challenge(user_id=str(uid_int) if uid_int else uid_str, db=db)
+        if isinstance(challenge, dict):
+            snapshot["daily_challenge"] = {
+                "description": challenge.get("description"),
+                "challenge_type": challenge.get("challenge_type"),
+                "target_value": challenge.get("target_value"),
+                "points_reward": challenge.get("points_reward"),
+                "level_id": challenge.get("level_id"),
+                "user_progress": challenge.get("user_progress"),
+            }
+            if challenge.get("level_id"):
+                lvl = db.get(models.Level, challenge["level_id"])
+                if lvl:
+                    snapshot["daily_challenge"]["level_name"] = lvl.name
+    except Exception as e:
+        print(f"[chatbot] daily challenge snapshot skipped: {e}")
+
+    # Next real level after current (by order_index in same course)
+    level_id = page_context.get("current_level_id")
+    if level_id:
+        try:
+            level_id_int = int(level_id)
+        except (TypeError, ValueError):
+            level_id_int = None
+        if level_id_int is not None:
+            current_level = db.get(models.Level, level_id_int)
+            if current_level:
+                nxt = (
+                    db.query(models.Level)
+                    .filter(
+                        models.Level.course_id == current_level.course_id,
+                        models.Level.order_index > (current_level.order_index or 0),
+                    )
+                    .order_by(models.Level.order_index.asc())
+                    .first()
+                )
+                if nxt:
+                    snapshot["next_level"] = {
+                        "id": nxt.id,
+                        "name": nxt.name,
+                        "course_id": nxt.course_id,
+                    }
+
+    # Leaderboard rank (existing)
+    if uid_int is not None:
+        try:
+            from .leaderboard import get_user_rank
+
+            rank = get_user_rank(uid_int, db)
+            if isinstance(rank, dict):
+                snapshot["leaderboard"] = {
+                    "rank": rank.get("rank"),
+                    "total_users": rank.get("total_users"),
+                    "percentile": rank.get("percentile"),
+                }
+        except Exception as e:
+            print(f"[chatbot] leaderboard snapshot skipped: {e}")
+
+    # Build short guidance lines from REAL data only
+    guidance: List[str] = []
+    page = snapshot["page"]
+    if page.get("current_level") and snapshot.get("next_level"):
+        guidance.append(
+            f"Je te {page['current_level']}. Niveli tjetër që ekziston: {snapshot['next_level']['name']}."
+        )
+    elif page.get("current_level"):
+        guidance.append(
+            f"Je te {page['current_level']}. Vazhdo me ushtrimet e këtij niveli në AlbLingo."
+        )
+    if snapshot["weak_categories"]:
+        cats = ", ".join(snapshot["weak_categories"][:3])
+        guidance.append(
+            f"Ke pasur gabime te këto kategori ekzistuese: {cats}. Mund të provosh përsëri ushtrimet e tyre."
+        )
+    rec = snapshot.get("recommendations") or {}
+    if rec.get("message"):
+        guidance.append(rec["message"])
+    if rec.get("recommended_level_name"):
+        guidance.append(
+            f"Ushtrim i rekomanduar nga sistemi: niveli «{rec['recommended_level_name']}»."
+        )
+    elif rec.get("recommended_exercise_prompt"):
+        guidance.append(
+            f"Ushtrim i rekomanduar nga sistemi: «{rec['recommended_exercise_prompt']}»."
+        )
+    ch = snapshot.get("daily_challenge") or {}
+    if ch.get("description"):
+        prog = ch.get("user_progress") or {}
+        if prog.get("completed"):
+            guidance.append(
+                f"Sfida ditore ekzistuese «{ch['description']}» është e përfunduar."
+            )
+        else:
+            cur = prog.get("current_value", 0)
+            tgt = ch.get("target_value")
+            progress_bit = f" ({cur}/{tgt})" if tgt is not None else ""
+            guidance.append(
+                f"Mund të provosh sfidën ditore ekzistuese: «{ch['description']}»{progress_bit}."
+            )
+    if snapshot.get("user") and (snapshot["user"].get("current_streak") or 0) > 0:
+        guidance.append(
+            f"Streak aktual: {snapshot['user']['current_streak']} ditë (sistemi ekzistues i streak-ut)."
+        )
+    if not guidance:
+        guidance.append(
+            "Nuk ka ende mjaftueshëm të dhëna personale. Fillo me Klasat → Nivelet → Ushtrimet që ekzistojnë në AlbLingo."
+        )
+    snapshot["guidance"] = guidance[:6]
+    return snapshot
+
+
+def _format_snapshot_for_prompt(snapshot: Dict[str, Any]) -> str:
+    """Compact Albanian context block for the LLM / local replies."""
+    lines = [
+        "KONTEKSTI I PLATFORMËS (vetëm të dhëna reale — mos invento emra):",
+    ]
+    page = snapshot.get("page") or {}
+    if page:
+        bits = []
+        if page.get("current_class"):
+            bits.append(f"Klasa: {page['current_class']}")
+        if page.get("current_course"):
+            bits.append(f"Kursi/Niveli kurrikular: {page['current_course']}")
+        if page.get("current_level"):
+            bits.append(f"Niveli: {page['current_level']}")
+        if page.get("current_exercise"):
+            bits.append(f"Ushtrimi aktual: {page['current_exercise'][:100]}")
+        if bits:
+            lines.append("- " + " | ".join(bits))
+    if snapshot.get("next_level"):
+        lines.append(f"- Niveli tjetër ekzistues: {snapshot['next_level']['name']}")
+    if snapshot.get("weak_categories"):
+        lines.append(
+            "- Kategori të dobëta (reale): "
+            + ", ".join(snapshot["weak_categories"][:5])
+        )
+    if snapshot.get("recent_mistakes"):
+        lines.append(
+            "- Gabime të fundit (nga përpjekjet reale): "
+            + " · ".join(snapshot["recent_mistakes"][:4])
+        )
+    rec = snapshot.get("recommendations") or {}
+    if rec.get("message"):
+        lines.append(f"- Rekomandimi i sistemit: {rec['message']}")
+    if rec.get("recommended_level_name") or rec.get("recommended_exercise_prompt"):
+        lines.append(
+            "- Përmbajtje e rekomanduar ekzistuese: "
+            + (
+                rec.get("recommended_level_name")
+                or rec.get("recommended_exercise_prompt")
+            )
+        )
+    ch = snapshot.get("daily_challenge") or {}
+    if ch.get("description"):
+        lines.append(f"- Sfida ditore ekzistuese: {ch['description']}")
+    user = snapshot.get("user") or {}
+    if user:
+        lines.append(
+            f"- Streak: {user.get('current_streak', 0)} · Badges: {user.get('total_achievements', 0)}"
+        )
+    lb = snapshot.get("leaderboard") or {}
+    if lb.get("rank") is not None:
+        lines.append(
+            f"- Leaderboard: renditja {lb.get('rank')} nga {lb.get('total_users', '—')}"
+        )
+    if snapshot.get("guidance"):
+        lines.append("Sugjerime të sigurta (bazuar në platformë):")
+        for g in snapshot["guidance"]:
+            lines.append(f"  • {g}")
+    return "\n".join(lines)
+
+
+def _is_next_action_query(query: str) -> bool:
+    q = (query or "").lower()
+    keys = [
+        "çfarë mund",
+        "cfare mund",
+        "çfarë të bëj",
+        "cfare te bej",
+        "çfarë të provoj",
+        "cfare te provoj",
+        "rekomando",
+        "sugjero",
+        "çfarë tani",
+        "cfare tani",
+        "mund të bëj tani",
+        "mund te bej tani",
+        "aktivitet tjetër",
+        "aktivitet tjeter",
+        "sfidën",
+        "sfiden",
+        "daily challenge",
+    ]
+    return any(k in q for k in keys)
+
+
+def _build_platform_guidance_reply(snapshot: Dict[str, Any]) -> Dict[str, Any]:
+    """Local (non-LLM) answer that only recommends existing platform content."""
+    guidance = snapshot.get("guidance") or []
+    body = (
+        "Bazuar në funksionalitetet ekzistuese të AlbLingo dhe në të dhënat e tua:\n\n"
+        + "\n".join(f"• {g}" for g in guidance)
+        + "\n\nNuk po krijoj sfida ose ushtrime të reja — po të drejtoj te ato që ekzistojnë tashmë në platformë."
+    )
+    suggestions = [
+        "Si përdor ushtrimet?",
+        "Si funksionon streak-u?",
+        "Si shoh progresin tim?",
+    ]
+    page = snapshot.get("page") or {}
+    if page.get("current_level"):
+        suggestions.insert(0, f"Si vazhdoj te {page['current_level']}?")
+    if (snapshot.get("daily_challenge") or {}).get("description"):
+        suggestions.insert(0, "Si e plotësoj sfidën ditore?")
+    return {
+        "response": body,
+        "suggestions": suggestions[:4],
+        "related_topics": ["Progresi", "Nivele", "Sfida ditore"],
+    }
+
+
+# ============================================================================
 # LLM INTEGRATION
 # ============================================================================
 
@@ -253,28 +646,34 @@ def _build_context_aware_prompt(
 ) -> str:
     """Build context-aware addition to the query"""
     context_parts = []
-    
+
     if context:
-        if "current_level" in context:
-            context_parts.append(f"Përdoruesi është aktualisht në Nivelin {context['current_level']}")
-        
-        if "current_exercise" in context:
-            context_parts.append(f"Po punon në ushtrimin: {context['current_exercise']}")
-        
-        if "recent_mistakes" in context:
-            mistakes = ", ".join(context['recent_mistakes'][:5])
+        if context.get("current_class"):
+            context_parts.append(f"Klasa aktuale: {context['current_class']}")
+        if context.get("current_course"):
+            context_parts.append(f"Kursi: {context['current_course']}")
+        if context.get("current_level"):
+            context_parts.append(f"Niveli: {context['current_level']}")
+        if context.get("current_exercise"):
+            context_parts.append(f"Ushtrimi: {context['current_exercise']}")
+        if context.get("recent_mistakes"):
+            mistakes = ", ".join(context["recent_mistakes"][:5])
             context_parts.append(f"Gabime të fundit: {mistakes}")
-    
+
     if user_info:
         if user_info.get("progress_count", 0) > 0:
             context_parts.append(f"Ka plotësuar {user_info['progress_count']} nivele")
-        
         if user_info.get("current_streak", 0) > 0:
             context_parts.append(f"Streak aktual: {user_info['current_streak']} ditë")
-    
+        snap = user_info.get("platform_snapshot")
+        if isinstance(snap, dict) and snap.get("guidance"):
+            context_parts.append(
+                "Sugjerime platforme: " + " | ".join(snap["guidance"][:3])
+            )
+
     if context_parts:
         return f"\n\n[Kontekst: {' | '.join(context_parts)}]"
-    
+
     return ""
 
 
@@ -289,40 +688,71 @@ def _generate_llm_response(
     Generate response using LLM with RAG context.
     Returns: (response, model_used, tokens_used, suggestions)
     """
-    # Build system prompt
-    system_prompt = """Ti je asistenti i platformes AlbLingo per mesimin e gjuhes shqipe.
+    system_prompt = """Ti je AI layer mbi platformën ekzistuese AlbLingo (mësim i gjuhës shqipe për fëmijë).
 
-Detyrat:
-- Pergjigju ne shqip, me ton profesional dhe te qarte
-- Jep keshilla per drejtshkrim dhe gramatike shqipe
-- Ndihmo perdoruesit me platformen
-- Ofro rekomandime bazuar ne progresin e tyre
+Roli yt:
+- Kupto pyetjen e përdoruesit
+- Përdor kontekstin real të platformës që të jepet
+- Shpjego, udhëzo dhe rekomando VETËM përmbajtje/funksione që ekzistojnë tashmë në AlbLingo
+- Ndihmo me drejtshkrim/gramatikë shqipe kur pyetet
 
-Rregullat e formatimit (SHUME TE RENDESISHME):
-- ASNJEHERE mos perdor ** per bold, * per italic, apo ## per tituj
-- Mos perdor markdown fare ne pergjigje
-- Shkruaj tekst te thjesht, te lexueshem
-- Per lista perdor vetem: 1. 2. 3. ose - per pika
-- Mos perdor emoji te tepruar, vetem aty ku eshte e nevojshme
-- Pergjigjet duhet te duken profesionale, jo si te gjeneruara me AI
-- Ne fund, sugjeroje 2-3 pyetje te lidhura qe perdoruesi mund te beje"""
+Arkitektura (MOS krijo sisteme të reja):
+Existing AlbLingo Platform → Classes → Levels → Exercises → Challenges → Progress → Points → Badges → Streaks → Leaderboard → Recommendations
+AI Chatbot → explains / guides / recommends existing content / educational help
+
+RREGULLA TË Rrepta:
+- Mos shpik emra challenges, nivele, ushtrime, kategori ose funksione që NUK janë në kontekstin/databazën e dhënë
+- Mos krijo challenge të ri nëse ekziston tashmë një challenge përkatës (p.sh. sfida ditore)
+- Kur pyetet "Çfarë mund të bëj tani?", përdor guidance/rekomandimet reale nga konteksti
+- Nëse mungojnë të dhëna, thuaj qartë që nuk ke informacion të mjaftueshëm — mos invento
+- Rekomando: challenge ekzistues, ushtrim ekzistues, nivel ekzistues, kategori ekzistuese, ose si përdoret një funksion ekzistues
+
+Formatimi:
+- Pergjigju ne shqip, me ton te qarte dhe miqesor per femije
+- ASNJEHERE mos perdor ** bold, * italic, ## tituj ose markdown
+- Per lista: 1. 2. 3. ose -
+- Ne fund sugjero 2-3 pyetje te lidhura"""
+
+    # Tone / length / difficulty from UI settings (if present)
+    if context:
+        tone = context.get("chatbot_tone")
+        length = context.get("response_length")
+        difficulty = context.get("difficulty_level")
+        prefs = []
+        if tone:
+            prefs.append(f"toni: {tone}")
+        if length:
+            prefs.append(f"gjatësia e përgjigjes: {length}")
+        if difficulty:
+            prefs.append(f"niveli i shpjegimit: {difficulty}")
+        if prefs:
+            system_prompt += "\n\nPreferencat e UI: " + ", ".join(prefs)
 
     if rag_context:
         system_prompt += f"\n\n{rag_context}"
-    
+
     if user_info:
-        system_prompt += f"\n\nInformacion për përdoruesin: {json.dumps(user_info, ensure_ascii=False)}"
-    
-    # Add context awareness
+        snap = user_info.get("platform_snapshot")
+        if isinstance(snap, dict):
+            system_prompt += "\n\n" + _format_snapshot_for_prompt(snap)
+        else:
+            safe_info = {
+                k: v
+                for k, v in user_info.items()
+                if k != "platform_snapshot"
+            }
+            system_prompt += (
+                f"\n\nInformacion për përdoruesin: "
+                f"{json.dumps(safe_info, ensure_ascii=False)}"
+            )
+
     context_addition = _build_context_aware_prompt(query, user_info, context)
     query_with_context = query + context_addition
-    
-    # Build messages
+
     messages = [{"role": "system", "content": system_prompt}]
-    messages.extend(conversation_history[-10:])  # Last 10 messages for context
+    messages.extend(conversation_history[-10:])
     messages.append({"role": "user", "content": query_with_context})
-    
-    # Try OpenAI first, then Anthropic, then fallback
+
     try:
         if OPENAI_AVAILABLE:
             content, tokens = _call_openai(messages)
@@ -331,7 +761,7 @@ Rregullat e formatimit (SHUME TE RENDESISHME):
             return content, "gpt-4-turbo", tokens, suggestions
     except Exception as e:
         print(f"[WARNING] OpenAI failed: {e}")
-    
+
     try:
         if ANTHROPIC_AVAILABLE:
             content, tokens = _call_anthropic(messages)
@@ -340,11 +770,20 @@ Rregullat e formatimit (SHUME TE RENDESISHME):
             return content, "claude-3-sonnet", tokens, suggestions
     except Exception as e:
         print(f"[WARNING] Anthropic failed: {e}")
-    
-    # Fallback to local logic
+
     from .chatbot import _get_contextual_response
-    result = _get_contextual_response(query, user_info.get("user_id") if user_info else None, None)
-    return _clean_llm_response(result["response"]), "local-advanced", 0, result.get("suggestions", [])
+    result = _get_contextual_response(
+        query,
+        user_info.get("user_id") if user_info else None,
+        None,
+        platform_snapshot=user_info.get("platform_snapshot") if user_info else None,
+    )
+    return (
+        _clean_llm_response(result["response"]),
+        "local-advanced",
+        0,
+        result.get("suggestions", []),
+    )
 
 
 # ============================================================================
@@ -483,6 +922,11 @@ async def advanced_chatbot_ask(request: AdvancedChatRequest, db: Session = Depen
     # Get conversation history
     conversation_history = _get_conversation_history(session, db)
     
+    # Build real platform snapshot (classes/levels/exercises/challenge/progress/…)
+    platform_snapshot = _build_platform_learner_snapshot(
+        request.user_id, db, request.context
+    )
+
     # Get user info if logged in
     user_info = None
     if request.user_id:
@@ -493,24 +937,41 @@ async def advanced_chatbot_ask(request: AdvancedChatRequest, db: Session = Depen
         if uid is not None:
             user = db.query(models.User).filter(models.User.id == uid).first()
             if user:
-                progress_count = db.query(models.Progress).filter(models.Progress.user_id == uid).count()
+                progress_count = db.query(models.Progress).filter(
+                    models.Progress.user_id == str(uid)
+                ).count()
                 user_info = {
                     "user_id": str(uid),
                     "username": user.username,
                     "progress_count": progress_count,
                     "current_streak": user.current_streak,
-                    "total_achievements": user.total_achievements
+                    "total_achievements": user.total_achievements,
+                    "platform_snapshot": platform_snapshot,
                 }
+    if user_info is None:
+        user_info = {
+            "user_id": request.user_id,
+            "platform_snapshot": platform_snapshot,
+        }
     
     # RAG: Search corpus
     rag_context = _build_rag_context(request.message, db) if (request.use_llm or USE_LLM) else ""
     
     # Check if context-aware
-    context_aware = request.context is not None and len(request.context) > 0
+    context_aware = (
+        (request.context is not None and len(request.context) > 0)
+        or bool(platform_snapshot.get("guidance"))
+    )
     
-    # Generate response
+    # Generate response — prefer platform guidance for "what can I do now?"
     suggestions = []
-    if request.use_llm or USE_LLM:
+    if _is_next_action_query(request.message) and not (request.use_llm or USE_LLM):
+        result = _build_platform_guidance_reply(platform_snapshot)
+        response_text = _clean_llm_response(result["response"])
+        model_used = "platform-guidance"
+        tokens_used = 0
+        suggestions = result.get("suggestions", [])
+    elif request.use_llm or USE_LLM:
         response_text, model_used, tokens_used, suggestions = _generate_llm_response(
             query=request.message,
             conversation_history=conversation_history,
@@ -520,7 +981,12 @@ async def advanced_chatbot_ask(request: AdvancedChatRequest, db: Session = Depen
         )
     else:
         from .chatbot import _get_contextual_response
-        result = _get_contextual_response(request.message, request.user_id, db)
+        result = _get_contextual_response(
+            request.message,
+            request.user_id,
+            db,
+            platform_snapshot=platform_snapshot,
+        )
         response_text = _clean_llm_response(result["response"])
         model_used = "local-basic"
         tokens_used = 0
@@ -531,18 +997,18 @@ async def advanced_chatbot_ask(request: AdvancedChatRequest, db: Session = Depen
         session_id=session.id,
         role="user",
         content=request.message,
+        context_data=json.dumps(request.context, ensure_ascii=False) if request.context else None,
         created_at=datetime.utcnow()
     )
     db.add(user_msg)
     
-    # Generate exercise if requested
+    # Generate exercise if requested — use real mistakes; still prefer existing content messaging
     generated_exercise = None
     if request.generate_exercise:
-        # Detect topic and user mistakes
-        user_mistakes = []  # TODO: Extract from progress
+        user_mistakes = list(platform_snapshot.get("recent_mistakes") or [])
         generated_exercise = _generate_exercise_with_llm(
             topic=request.message,
-            difficulty="medium",
+            difficulty=(request.context or {}).get("difficulty_level") or "medium",
             user_mistakes=user_mistakes,
             db=db
         )

@@ -1617,10 +1617,27 @@ function App() {
                 <Suspense fallback={null}>
                     <ChatbotFloating
                         userId={userId || undefined}
-                        context={selectedLevel ? {
-                            current_level: selectedLevel.name,
+                        context={{
+                            current_class: selectedClass?.name,
+                            current_course: selectedCourse?.name,
+                            current_level: selectedLevel?.name,
+                            current_level_id: selectedLevel?.id,
                             current_exercise: exercises[currentExerciseIndex]?.prompt,
-                        } : undefined}
+                            current_exercise_id: exercises[currentExerciseIndex]?.id,
+                            current_exercise_category: exercises[currentExerciseIndex]?.category,
+                            recent_mistakes: (() => {
+                                const coach = aiCoachLevel || aiCoach
+                                if (!coach?.patterns?.length) return undefined
+                                return coach.patterns.slice(0, 5).flatMap((p) =>
+                                    (p.examples || []).slice(0, 2).map((ex) => `${p.type}: ${ex}`)
+                                )
+                            })(),
+                            weak_categories: aiRecommendations?.weak_categories,
+                            recommendation_message: aiRecommendations?.message,
+                            daily_challenge_description: dailyChallenge?.description,
+                            points: userStats.totalPoints,
+                            streak: userStreak?.current_streak ?? userStats.streakDays,
+                        }}
                     />
                 </Suspense>
             </LazyErrorBoundary>

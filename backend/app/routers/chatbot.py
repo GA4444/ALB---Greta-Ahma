@@ -154,9 +154,49 @@ def _match_faq(query: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _get_contextual_response(query: str, user_id: Optional[str], db: Optional[Session]) -> Dict[str, Any]:
+def _get_contextual_response(
+    query: str,
+    user_id: Optional[str],
+    db: Optional[Session],
+    platform_snapshot: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     """Generate contextual response based on query and user data"""
     query_norm = _normalize_query(query)
+
+    # Prefer real platform guidance for "what can I do now?" style questions
+    next_keys = [
+        "cfare mund",
+        "çfarë mund",
+        "cfare te bej",
+        "çfarë të bëj",
+        "rekomando",
+        "sugjero",
+        "aktivitet tjetër",
+        "aktivitet tjeter",
+        "sfiden",
+        "sfidën",
+        "challenge",
+        "cfare tani",
+        "çfarë tani",
+        "mund te bej tani",
+        "mund të bëj tani",
+    ]
+    if platform_snapshot and any(k in query_norm for k in next_keys):
+        guidance = platform_snapshot.get("guidance") or []
+        if guidance:
+            return {
+                "response": (
+                    "Bazuar në funksionalitetet ekzistuese të AlbLingo dhe në të dhënat e tua:\n\n"
+                    + "\n".join(f"• {g}" for g in guidance)
+                    + "\n\nNuk po krijoj sfida ose ushtrime të reja — po të drejtoj te ato që ekzistojnë tashmë."
+                ),
+                "suggestions": [
+                    "Si plotësoj ushtrime?",
+                    "Si funksionon streak-u?",
+                    "Si shoh progresin tim?",
+                ],
+                "related_topics": ["Progresi", "Nivele", "Sfida ditore"],
+            }
     
     # Category detection
     if any(word in query_norm for word in ["cila", "sa", "platforme", "alblingo", "kush", "pershkrim"]):
@@ -194,8 +234,18 @@ def _get_contextual_response(query: str, user_id: Optional[str], db: Optional[Se
     
     if any(word in query_norm for word in ["gamifikimi", "badge", "streak", "pike", "competition"]):
         steps = PLATFORM_KNOWLEDGE['how_to_use']['gamification']
+        extra = ""
+        if platform_snapshot and platform_snapshot.get("user"):
+            u = platform_snapshot["user"]
+            extra = (
+                f"\n\nTë dhënat e tua reale: streak {u.get('current_streak', 0)} ditë, "
+                f"badges {u.get('total_achievements', 0)}."
+            )
+            ch = platform_snapshot.get("daily_challenge") or {}
+            if ch.get("description"):
+                extra += f"\nSfida ditore ekzistuese: {ch['description']}."
         return {
-            "response": "Gamifikimi ne AlbLingo:\n\n" + "\n".join(f"- {step}" for step in steps),
+            "response": "Gamifikimi ne AlbLingo:\n\n" + "\n".join(f"- {step}" for step in steps) + extra,
             "suggestions": ["Si fitoj badges?", "Çfarë është streak-u?", "Si shoh tabelën e rezultateve?"],
             "related_topics": ["Arritjet", "Seritë", "Tabela e rezultateve"]
         }
@@ -214,19 +264,34 @@ def _get_contextual_response(query: str, user_id: Optional[str], db: Optional[Se
         try:
             user = db.query(models.User).filter(models.User.id == int(user_id)).first()
             if user:
-                progress_count = db.query(models.Progress).filter(models.Progress.user_id == user_id).count()
+                progress_count = db.query(models.Progress).filter(models.Progress.user_id == str(user_id)).count()
                 
                 if "progres" in query_norm or "status" in query_norm:
+                    extra_lines = []
+                    if platform_snapshot:
+                        if platform_snapshot.get("weak_categories"):
+                            extra_lines.append(
+                                "Kategori me gabime: "
+                                + ", ".join(platform_snapshot["weak_categories"][:4])
+                            )
+                        rec = platform_snapshot.get("recommendations") or {}
+                        if rec.get("message"):
+                            extra_lines.append(rec["message"])
+                        ch = platform_snapshot.get("daily_challenge") or {}
+                        if ch.get("description"):
+                            extra_lines.append(f"Sfida ditore: {ch['description']}")
+                    extra = ("\n" + "\n".join(extra_lines) + "\n") if extra_lines else "\n"
                     return {
                         "response": f"Progresi yt, {user.username}:\n\n"
                                    f"Nivele te plotesuara: {progress_count}\n"
                                    f"Streak aktual: {user.current_streak or 0} dite\n"
-                                   f"Arritje te fituara: {user.total_achievements or 0}\n\n"
-                                   f"Vazhdo keshtu!",
-                        "suggestions": ["Si përmirësohem?", "Çfarë është AI Coach?"],
+                                   f"Arritje te fituara: {user.total_achievements or 0}"
+                                   f"{extra}\n"
+                                   f"Vazhdo me nivelet dhe ushtrimet ekzistuese ne AlbLingo!",
+                        "suggestions": ["Çfarë mund të bëj tani?", "Çfarë është AI Coach?"],
                         "related_topics": ["Progresi", "Statistika", "Tabela e rezultateve"]
                     }
-        except:
+        except Exception:
             pass
     
     # Default helpful response
@@ -234,12 +299,13 @@ def _get_contextual_response(query: str, user_id: Optional[str], db: Optional[Se
         "response": "Më fal, nuk e kuptova plotësisht pyetjen. Por jam këtu për të ndihmuar!\n\n"
                    "Mund të më pyesësh për:\n"
                    "• Si të përdor platformën\n"
-                   "• Ushtrime dhe nivele\n"
-                   "• Gamifikimi (badges, streaks)\n"
+                   "• Ushtrime dhe nivele ekzistuese\n"
+                   "• Gamifikimi (badges, streaks, sfida ditore)\n"
                    "• Këshilla drejtshkrimi\n"
+                   "• Çfarë mund të bësh tani (sipas progresit tënd)\n"
                    "• OCR dhe audio\n"
-                   "• AI Coach dhe ushtrime të personalizuara",
-        "suggestions": ["Si filloj?", "Çfarë ofron platforma?", "Si marr më shumë pikë?"],
+                   "• AI Coach",
+        "suggestions": ["Çfarë mund të bëj tani?", "Si filloj?", "Si marr më shumë pikë?"],
         "related_topics": ["Pyetje të shpeshta", "Udhëzuesi", "Veçoritë"]
     }
 
@@ -257,11 +323,22 @@ async def ask_chatbot(message: ChatMessage, db: Session = Depends(get_db)):
     if not message.message or len(message.message.strip()) < 2:
         raise HTTPException(status_code=400, detail="Mesazhi është shumë i shkurtër")
     
-    # Get contextual response
+    # Get contextual response — attach real platform snapshot when logged in
+    platform_snapshot = None
+    if message.user_id:
+        try:
+            from .chatbot_advanced import _build_platform_learner_snapshot
+            platform_snapshot = _build_platform_learner_snapshot(
+                message.user_id, db, message.context
+            )
+        except Exception as e:
+            print(f"[chatbot] snapshot skipped: {e}")
+
     result = _get_contextual_response(
         query=message.message,
         user_id=message.user_id,
-        db=db
+        db=db,
+        platform_snapshot=platform_snapshot,
     )
     
     return ChatResponse(
@@ -277,8 +354,8 @@ async def get_chat_suggestions():
     """Get quick suggestions for common questions"""
     return {
         "suggestions": [
+            "Çfarë mund të bëj tani?",
             "Si filloj të përdor platformën?",
-            "Çfarë janë ushtrimet AI?",
             "Si hap klasën tjetër?",
             "Si funksionon gamifikimi?",
             "Më jep këshilla për drejtshkrim"
