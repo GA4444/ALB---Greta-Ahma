@@ -24,6 +24,7 @@ export default function BrandLogo({
 			width={size}
 			height={size}
 			className={`brand-logo ${className}`.trim()}
+			style={{ width: size, height: size }}
 			draggable={false}
 			decoding="async"
 			aria-hidden={decorative || undefined}
