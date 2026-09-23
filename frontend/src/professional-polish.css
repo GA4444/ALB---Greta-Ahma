@@ -329,14 +329,24 @@
   box-shadow: none;
 }
 
-/* Main shell: measured spacing and aligned surface edges. */
-.app .main-content {
+/* Main shell: measured spacing and centered on the page. */
+.app .main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 18px 20px 30px;
+}
+
+.app .main-content {
+  width: min(calc(100% - 40px), 1180px);
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 18px 0 30px;
   gap: 18px;
   align-items: flex-start;
+  align-self: center;
+  box-sizing: border-box;
 }
 
 .app .sidebar {
@@ -919,7 +929,10 @@
 }
 
 .app .main-content {
-  width: min(100% - 32px, 1280px);
+  width: min(calc(100% - 32px), 1180px);
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 16px 0 28px;
   gap: 16px;
 }
@@ -1164,7 +1177,10 @@
     display: grid !important;
     grid-template-columns: 200px minmax(0, 1fr);
     align-items: start;
-    max-width: 1280px;
+    width: min(calc(100% - 48px), 1180px);
+    max-width: 1180px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .app .sidebar {
@@ -1216,8 +1232,10 @@
 
 @media (min-width: 1367px) and (max-width: 1440px) {
   .app .main-content {
-    width: min(100% - 32px, 1320px);
-    max-width: 1320px;
+    width: min(calc(100% - 48px), 1180px);
+    max-width: 1180px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
@@ -1273,7 +1291,10 @@
 
 @media (min-width: 769px) and (max-width: 1100px) {
   .app .main-content {
-    width: min(100% - 24px, 1040px);
+    width: min(calc(100% - 32px), 1000px);
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
     gap: 12px;
   }
 
