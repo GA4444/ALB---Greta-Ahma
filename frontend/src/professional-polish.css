@@ -50,10 +50,11 @@
 
 .app .header-logo h1 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.05rem;
   line-height: 1;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   white-space: nowrap;
+  font-weight: 750;
 }
 
 .app .header-emoji {

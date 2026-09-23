@@ -48,13 +48,13 @@ export function AppHeader({
 				<div className="header-content">
 					<div className="header-main">
 						<div className="header-logo brand-mark">
-							<BrandLogo size={40} className="brand-logo-md" decorative />
+							<BrandLogo size={28} className="brand-logo-sm" decorative />
 							<h1>AlbLingo</h1>
 						</div>
 						<nav className="header-navigation" aria-label="Navigimi kryesor">
 							<button
 								type="button"
-								className={`nav-btn ${!selectedClass ? 'active' : ''}`}
+								className={`nav-btn nav-btn-home ${!selectedClass ? 'active' : ''}`}
 								onClick={onBackToClasses}
 							>
 								Shtëpia
