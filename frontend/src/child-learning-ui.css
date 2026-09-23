@@ -2377,28 +2377,31 @@
 	box-shadow: none !important;
 }
 
-/* Welcome page: centered homepage with restored brand effects */
+/* Welcome / content-area: restore pre-restyle organization with teal hero effects */
 .app .content-area:has(.welcome-screen-modern),
 .app .main-content > .content-area:has(.welcome-screen-modern) {
 	padding: 0 !important;
 	background: transparent !important;
+	border: 0 !important;
+	box-shadow: none !important;
 }
 
 .app .welcome-screen-modern {
+	padding: 0 !important;
+	margin: 0 !important;
+	gap: 12px !important;
 	display: flex !important;
 	flex-direction: column !important;
-	gap: 22px !important;
-	padding: 0 !important;
-	margin: 0 auto !important;
-	max-width: 100% !important;
+	max-width: none !important;
 	animation: kid-fade-up 480ms ease both;
 }
 
+/* Keep teal brand hero background + glow (professional-pro effect) */
 .app .hero-section-modern {
 	position: relative !important;
 	overflow: hidden !important;
-	margin: 0 !important;
-	padding: 40px 32px 32px !important;
+	margin: 0 0 12px !important;
+	padding: 28px 28px 22px !important;
 	border-radius: 24px !important;
 	border: 1px solid rgba(255, 255, 255, 0.4) !important;
 	background:
@@ -2421,27 +2424,27 @@
 }
 
 .app .hero-content-modern {
-	max-width: 680px !important;
+	max-width: 760px !important;
 	margin: 0 auto !important;
 	position: relative !important;
 	z-index: 1 !important;
 }
 
 .app .welcome-brand-hero {
-	margin: 0 auto 14px !important;
+	margin: 0 auto 10px !important;
 	line-height: 0;
 	filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.12));
 }
 
 .app .welcome-brand-hero .brand-logo,
 .app .welcome-brand-hero img {
-	width: 72px !important;
-	height: 72px !important;
+	width: 64px !important;
+	height: 64px !important;
 }
 
 .app .hero-title-modern {
-	margin: 0 0 10px !important;
-	font-size: clamp(2.1rem, 3.6vw, 3rem) !important;
+	margin: 0 0 8px !important;
+	font-size: clamp(1.85rem, 3.4vw, 2.6rem) !important;
 	font-weight: 800 !important;
 	line-height: 1.12 !important;
 	letter-spacing: -0.03em !important;
@@ -2452,10 +2455,10 @@
 }
 
 .app .hero-description-modern {
-	margin: 0 auto 22px !important;
-	font-size: 1.12rem !important;
-	line-height: 1.55 !important;
-	max-width: 34rem !important;
+	margin: 0 auto 16px !important;
+	font-size: 1.05rem !important;
+	line-height: 1.5 !important;
+	max-width: 36rem !important;
 	color: rgba(255, 255, 255, 0.92) !important;
 	font-weight: 500 !important;
 }
@@ -2469,7 +2472,7 @@
 }
 
 .app .hero-stat-modern {
-	padding: 14px 10px !important;
+	padding: 12px 8px !important;
 	border-radius: 14px !important;
 	border: 1px solid rgba(31, 111, 139, 0.14) !important;
 	background: #fff !important;
@@ -2478,55 +2481,54 @@
 }
 
 .app .hero-stat-modern:hover {
-	transform: translateY(-3px) !important;
+	transform: translateY(-2px) !important;
 	box-shadow: 0 12px 24px rgba(31, 111, 139, 0.16) !important;
 }
 
 .app .stat-number-modern {
-	margin-bottom: 4px !important;
-	font-size: 1.5rem !important;
+	margin-bottom: 2px !important;
+	font-size: 1.45rem !important;
 	color: #1f6f8b !important;
 	font-weight: 800 !important;
 }
 
 .app .stat-label-modern {
-	font-size: 0.8rem !important;
+	font-size: 0.78rem !important;
 	color: #4d6270 !important;
 	font-weight: 600 !important;
 }
 
-/* Features: 2-col cards with restored lift effects (never 5-across) */
+/* Features below: original 5-across desktop organization */
 .app .features-section-modern {
 	margin: 0 !important;
-	padding: 24px 22px 20px !important;
-	border: 1px solid rgba(31, 111, 139, 0.12) !important;
-	border-radius: 22px !important;
-	background: #fff !important;
-	box-shadow: 0 10px 28px rgba(19, 41, 61, 0.06) !important;
+	padding: 0 !important;
+	border: 0 !important;
+	background: transparent !important;
+	box-shadow: none !important;
 }
 
 .app .section-header-modern {
-	margin: 0 0 16px !important;
-	text-align: center !important;
+	margin: 0 0 12px !important;
+	text-align: left !important;
 }
 
 .app .section-title-modern {
-	margin: 0 0 4px !important;
-	font-size: 1.35rem !important;
+	margin: 0 0 2px !important;
+	font-size: 1.25rem !important;
 	font-weight: 800 !important;
 	color: #13293d !important;
 }
 
 .app .section-subtitle-modern {
 	margin: 0 !important;
-	font-size: 0.95rem !important;
+	font-size: 0.9rem !important;
 	color: #5a7384 !important;
 }
 
 .app .features-grid-modern {
 	display: grid !important;
-	grid-template-columns: 1fr !important;
-	gap: 12px !important;
+	grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+	gap: 10px !important;
 	margin: 0 !important;
 }
 
@@ -2540,12 +2542,12 @@
 	align-items: center !important;
 	grid-template-columns: none !important;
 	grid-template-areas: none !important;
-	padding: 20px 16px !important;
-	border-radius: 18px !important;
+	padding: 16px 12px !important;
+	border-radius: 16px !important;
 	border: 1px solid rgba(31, 111, 139, 0.12) !important;
 	background: #fff !important;
 	box-shadow: 0 8px 20px rgba(31, 111, 139, 0.07) !important;
-	min-height: 148px !important;
+	min-height: 140px !important;
 	text-align: center !important;
 	transition: transform 160ms ease, box-shadow 160ms ease !important;
 }
@@ -2559,20 +2561,20 @@
 
 .app .feature-icon-wrapper {
 	grid-area: auto !important;
-	margin: 0 auto 12px !important;
-	width: 52px !important;
-	height: 52px !important;
+	margin: 0 auto 10px !important;
+	width: 48px !important;
+	height: 48px !important;
 	display: grid !important;
 	place-items: center !important;
-	border-radius: 16px !important;
+	border-radius: 14px !important;
 	background: #eaf6fb !important;
 	border: 1px solid rgba(43, 139, 184, 0.16) !important;
 }
 
 .app .feature-title-modern {
 	grid-area: auto !important;
-	margin: 0 0 6px !important;
-	font-size: 1.05rem !important;
+	margin: 0 0 4px !important;
+	font-size: 0.92rem !important;
 	font-weight: 800 !important;
 	color: #13293d !important;
 	text-align: center !important;
@@ -2582,16 +2584,10 @@
 .app .feature-description-modern {
 	grid-area: auto !important;
 	margin: 0 !important;
-	font-size: 0.9rem !important;
-	line-height: 1.45 !important;
+	font-size: 0.78rem !important;
+	line-height: 1.4 !important;
 	color: #4d6270 !important;
 	text-align: center !important;
-}
-
-@media (min-width: 900px) {
-	.app .features-grid-modern {
-		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-	}
 }
 
 @media (min-width: 1101px) {
@@ -2611,7 +2607,7 @@
 	}
 
 	.app .features-grid-modern {
-		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+		grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
 	}
 }
 
@@ -2636,11 +2632,11 @@
 	}
 
 	.app .hero-section-modern {
-		padding: 32px 22px 24px !important;
+		padding: 22px 18px 18px !important;
 	}
 
 	.app .features-grid-modern {
-		grid-template-columns: 1fr !important;
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 	}
 }
 
@@ -2691,24 +2687,24 @@
 	}
 
 	.app .hero-section-modern {
-		padding: 28px 16px 22px !important;
+		padding: 22px 16px 18px !important;
 		margin-bottom: 0 !important;
 		border-radius: 20px !important;
 	}
 
 	.app .welcome-brand-hero .brand-logo,
 	.app .welcome-brand-hero img {
-		width: 56px !important;
-		height: 56px !important;
+		width: 52px !important;
+		height: 52px !important;
 	}
 
 	.app .hero-title-modern {
-		font-size: 1.75rem !important;
+		font-size: 1.6rem !important;
 	}
 
 	.app .hero-description-modern {
-		font-size: 0.98rem !important;
-		margin-bottom: 16px !important;
+		font-size: 0.95rem !important;
+		margin-bottom: 12px !important;
 	}
 
 	.app .hero-stats-modern {
@@ -2717,25 +2713,39 @@
 	}
 
 	.app .hero-stat-modern {
-		padding: 12px 8px !important;
-	}
-
-	.app .features-section-modern {
-		padding: 16px 14px !important;
-		border-radius: 18px !important;
+		padding: 10px 6px !important;
 	}
 
 	.app .features-grid-modern {
 		grid-template-columns: 1fr !important;
-		gap: 10px !important;
+		gap: 8px !important;
 	}
 
 	.app .feature-card-modern {
 		min-height: 0 !important;
-		padding: 16px 14px !important;
+		padding: 12px !important;
+		display: grid !important;
+		grid-template-columns: 40px minmax(0, 1fr) !important;
+		flex-direction: unset !important;
+		align-items: start !important;
+		column-gap: 10px !important;
+		row-gap: 2px !important;
+		text-align: left !important;
+	}
+
+	.app .feature-icon-wrapper {
+		grid-row: 1 / span 2;
+		margin: 0 !important;
+		width: 40px !important;
+		height: 40px !important;
+	}
+
+	.app .feature-title-modern,
+	.app .feature-description-modern {
+		text-align: left !important;
 	}
 
 	.app .section-header-modern {
-		margin-bottom: 12px !important;
+		margin-bottom: 8px !important;
 	}
 }
