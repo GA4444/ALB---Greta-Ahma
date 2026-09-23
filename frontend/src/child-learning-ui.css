@@ -2284,10 +2284,13 @@
 	}
 }
 
-/* Main shell density: remove unused whitespace across breakpoints */
+/* Main shell: centered page frame */
 .app .main {
 	padding: 0 !important;
 	margin: 0 !important;
+	display: flex !important;
+	justify-content: center !important;
+	width: 100% !important;
 }
 
 .app .main-content {
@@ -2295,12 +2298,12 @@
 	grid-template-columns: 220px minmax(0, 1fr) !important;
 	grid-template-areas: "sidebar content" !important;
 	align-items: start !important;
-	column-gap: 20px !important;
+	column-gap: 24px !important;
 	row-gap: 0 !important;
-	width: min(100% - 32px, 1120px) !important;
-	max-width: 1120px !important;
+	width: min(100% - 48px, 1180px) !important;
+	max-width: 1180px !important;
 	margin: 0 auto !important;
-	padding: 20px 0 32px !important;
+	padding: 24px 0 40px !important;
 	min-height: 0 !important;
 }
 
@@ -2374,7 +2377,7 @@
 	box-shadow: none !important;
 }
 
-/* Welcome page: centered editorial homepage */
+/* Welcome page: centered homepage with restored brand effects */
 .app .content-area:has(.welcome-screen-modern),
 .app .main-content > .content-area:has(.welcome-screen-modern) {
 	padding: 0 !important;
@@ -2384,64 +2387,76 @@
 .app .welcome-screen-modern {
 	display: flex !important;
 	flex-direction: column !important;
-	gap: 20px !important;
+	gap: 22px !important;
 	padding: 0 !important;
-	margin: 0 !important;
+	margin: 0 auto !important;
 	max-width: 100% !important;
+	animation: kid-fade-up 480ms ease both;
 }
 
 .app .hero-section-modern {
+	position: relative !important;
+	overflow: hidden !important;
 	margin: 0 !important;
-	padding: 36px 32px 28px !important;
-	border-radius: 18px !important;
-	border: 1px solid rgba(31, 111, 139, 0.12) !important;
+	padding: 40px 32px 32px !important;
+	border-radius: 24px !important;
+	border: 1px solid rgba(255, 255, 255, 0.4) !important;
 	background:
-		radial-gradient(circle at 92% 8%, rgba(31, 111, 139, 0.08), transparent 34%),
-		linear-gradient(180deg, #ffffff 0%, #f7fbfe 100%) !important;
-	box-shadow: 0 8px 28px rgba(19, 41, 61, 0.06) !important;
+		linear-gradient(145deg, #1f6f8b 0%, #2b8bb8 45%, #2f9e6b 100%) !important;
+	box-shadow: 0 14px 36px rgba(31, 111, 139, 0.22) !important;
 	text-align: center !important;
-	color: inherit !important;
+	color: #fff !important;
 }
 
 .app .hero-section-modern::before {
-	display: none !important;
+	content: "" !important;
+	display: block !important;
+	position: absolute !important;
+	inset: 0 !important;
+	background:
+		radial-gradient(circle at 88% 18%, rgba(255, 255, 255, 0.22), transparent 40%),
+		radial-gradient(circle at 12% 88%, rgba(240, 162, 2, 0.22), transparent 42%) !important;
+	pointer-events: none !important;
+	z-index: 0 !important;
 }
 
 .app .hero-content-modern {
-	max-width: 640px !important;
+	max-width: 680px !important;
 	margin: 0 auto !important;
-	position: relative;
-	z-index: 1;
+	position: relative !important;
+	z-index: 1 !important;
 }
 
 .app .welcome-brand-hero {
 	margin: 0 auto 14px !important;
 	line-height: 0;
+	filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.12));
 }
 
 .app .welcome-brand-hero .brand-logo,
 .app .welcome-brand-hero img {
-	width: 64px !important;
-	height: 64px !important;
+	width: 72px !important;
+	height: 72px !important;
 }
 
 .app .hero-title-modern {
 	margin: 0 0 10px !important;
-	font-size: clamp(2rem, 3.2vw, 2.6rem) !important;
+	font-size: clamp(2.1rem, 3.6vw, 3rem) !important;
 	font-weight: 800 !important;
 	line-height: 1.12 !important;
 	letter-spacing: -0.03em !important;
-	color: #13293d !important;
+	color: #fff !important;
 	background: none !important;
-	-webkit-text-fill-color: currentColor !important;
+	-webkit-text-fill-color: #fff !important;
+	text-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
 .app .hero-description-modern {
 	margin: 0 auto 22px !important;
-	font-size: 1.05rem !important;
+	font-size: 1.12rem !important;
 	line-height: 1.55 !important;
 	max-width: 34rem !important;
-	color: #5a7384 !important;
+	color: rgba(255, 255, 255, 0.92) !important;
 	font-weight: 500 !important;
 }
 
@@ -2449,120 +2464,128 @@
 	display: grid !important;
 	grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 	gap: 10px !important;
-	max-width: 560px !important;
+	max-width: 600px !important;
 	margin: 0 auto !important;
 }
 
 .app .hero-stat-modern {
 	padding: 14px 10px !important;
-	border-radius: 12px !important;
-	border: 1px solid rgba(31, 111, 139, 0.12) !important;
+	border-radius: 14px !important;
+	border: 1px solid rgba(31, 111, 139, 0.14) !important;
 	background: #fff !important;
-	box-shadow: none !important;
+	box-shadow: 0 6px 18px rgba(31, 111, 139, 0.1) !important;
+	transition: transform 160ms ease, box-shadow 160ms ease !important;
 }
 
 .app .hero-stat-modern:hover {
-	transform: none !important;
+	transform: translateY(-3px) !important;
+	box-shadow: 0 12px 24px rgba(31, 111, 139, 0.16) !important;
 }
 
 .app .stat-number-modern {
 	margin-bottom: 4px !important;
-	font-size: 1.45rem !important;
+	font-size: 1.5rem !important;
 	color: #1f6f8b !important;
+	font-weight: 800 !important;
 }
 
 .app .stat-label-modern {
-	font-size: 0.78rem !important;
-	color: #5a7384 !important;
+	font-size: 0.8rem !important;
+	color: #4d6270 !important;
+	font-weight: 600 !important;
 }
 
-/* Features: stacked cards, never one single crowded row */
+/* Features: 2-col cards with restored lift effects (never 5-across) */
 .app .features-section-modern {
 	margin: 0 !important;
-	padding: 22px 22px 20px !important;
+	padding: 24px 22px 20px !important;
 	border: 1px solid rgba(31, 111, 139, 0.12) !important;
-	border-radius: 18px !important;
+	border-radius: 22px !important;
 	background: #fff !important;
-	box-shadow: 0 8px 28px rgba(19, 41, 61, 0.05) !important;
+	box-shadow: 0 10px 28px rgba(19, 41, 61, 0.06) !important;
 }
 
 .app .section-header-modern {
 	margin: 0 0 16px !important;
-	text-align: left !important;
+	text-align: center !important;
 }
 
 .app .section-title-modern {
 	margin: 0 0 4px !important;
-	font-size: 1.2rem !important;
+	font-size: 1.35rem !important;
 	font-weight: 800 !important;
 	color: #13293d !important;
 }
 
 .app .section-subtitle-modern {
 	margin: 0 !important;
-	font-size: 0.9rem !important;
+	font-size: 0.95rem !important;
 	color: #5a7384 !important;
 }
 
 .app .features-grid-modern {
 	display: grid !important;
 	grid-template-columns: 1fr !important;
-	gap: 10px !important;
+	gap: 12px !important;
 	margin: 0 !important;
+}
+
+.app .features-grid-modern > * {
+	animation: kid-fade-up 420ms ease both;
 }
 
 .app .feature-card-modern {
-	display: grid !important;
-	grid-template-columns: 44px minmax(0, 1fr) !important;
-	grid-template-areas:
-		"icon title"
-		"icon desc" !important;
-	column-gap: 12px !important;
-	row-gap: 2px !important;
-	align-items: start !important;
-	padding: 14px 14px !important;
-	border-radius: 12px !important;
-	border: 1px solid rgba(31, 111, 139, 0.1) !important;
-	background: #f8fafc !important;
-	box-shadow: none !important;
-	min-height: 0 !important;
-	text-align: left !important;
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+	grid-template-columns: none !important;
+	grid-template-areas: none !important;
+	padding: 20px 16px !important;
+	border-radius: 18px !important;
+	border: 1px solid rgba(31, 111, 139, 0.12) !important;
+	background: #fff !important;
+	box-shadow: 0 8px 20px rgba(31, 111, 139, 0.07) !important;
+	min-height: 148px !important;
+	text-align: center !important;
+	transition: transform 160ms ease, box-shadow 160ms ease !important;
 }
 
 .app .feature-card-modern:hover {
-	transform: none !important;
-	box-shadow: none !important;
-	border-color: rgba(31, 111, 139, 0.2) !important;
-	background: #f7fbfe !important;
+	transform: translateY(-3px) !important;
+	box-shadow: 0 14px 32px rgba(31, 111, 139, 0.14) !important;
+	border-color: rgba(43, 139, 184, 0.28) !important;
+	background: #fff !important;
 }
 
 .app .feature-icon-wrapper {
-	grid-area: icon !important;
-	margin: 0 !important;
-	width: 44px !important;
-	height: 44px !important;
+	grid-area: auto !important;
+	margin: 0 auto 12px !important;
+	width: 52px !important;
+	height: 52px !important;
 	display: grid !important;
 	place-items: center !important;
-	border-radius: 10px !important;
-	background: rgba(31, 111, 139, 0.08) !important;
+	border-radius: 16px !important;
+	background: #eaf6fb !important;
+	border: 1px solid rgba(43, 139, 184, 0.16) !important;
 }
 
 .app .feature-title-modern {
-	grid-area: title !important;
-	margin: 0 !important;
-	font-size: 0.95rem !important;
+	grid-area: auto !important;
+	margin: 0 0 6px !important;
+	font-size: 1.05rem !important;
 	font-weight: 800 !important;
 	color: #13293d !important;
-	text-align: left !important;
+	text-align: center !important;
+	width: 100%;
 }
 
 .app .feature-description-modern {
-	grid-area: desc !important;
+	grid-area: auto !important;
 	margin: 0 !important;
-	font-size: 0.84rem !important;
+	font-size: 0.9rem !important;
 	line-height: 1.45 !important;
-	color: #5a7384 !important;
-	text-align: left !important;
+	color: #4d6270 !important;
+	text-align: center !important;
 }
 
 @media (min-width: 900px) {
@@ -2576,8 +2599,8 @@
 		display: grid !important;
 		grid-template-columns: 220px minmax(0, 1fr) !important;
 		grid-template-areas: "sidebar content" !important;
-		column-gap: 20px !important;
-		width: min(100% - 32px, 1120px) !important;
+		column-gap: 24px !important;
+		width: min(100% - 48px, 1180px) !important;
 	}
 
 	.app .sidebar,
@@ -2597,9 +2620,9 @@
 		display: grid !important;
 		grid-template-columns: 200px minmax(0, 1fr) !important;
 		grid-template-areas: "sidebar content" !important;
-		width: min(100% - 24px, 980px) !important;
-		column-gap: 16px !important;
-		padding: 16px 0 24px !important;
+		width: min(100% - 32px, 1000px) !important;
+		column-gap: 18px !important;
+		padding: 18px 0 28px !important;
 	}
 
 	.app .main-content > .sidebar,
@@ -2613,7 +2636,7 @@
 	}
 
 	.app .hero-section-modern {
-		padding: 28px 22px 22px !important;
+		padding: 32px 22px 24px !important;
 	}
 
 	.app .features-grid-modern {
@@ -2622,6 +2645,10 @@
 }
 
 @media (max-width: 768px) {
+	.app .main {
+		display: block !important;
+	}
+
 	.app .main-content {
 		display: flex !important;
 		flex-direction: column !important;
@@ -2664,9 +2691,9 @@
 	}
 
 	.app .hero-section-modern {
-		padding: 24px 16px 18px !important;
+		padding: 28px 16px 22px !important;
 		margin-bottom: 0 !important;
-		border-radius: 16px !important;
+		border-radius: 20px !important;
 	}
 
 	.app .welcome-brand-hero .brand-logo,
@@ -2676,11 +2703,11 @@
 	}
 
 	.app .hero-title-modern {
-		font-size: 1.7rem !important;
+		font-size: 1.75rem !important;
 	}
 
 	.app .hero-description-modern {
-		font-size: 0.95rem !important;
+		font-size: 0.98rem !important;
 		margin-bottom: 16px !important;
 	}
 
@@ -2695,17 +2722,17 @@
 
 	.app .features-section-modern {
 		padding: 16px 14px !important;
-		border-radius: 16px !important;
+		border-radius: 18px !important;
 	}
 
 	.app .features-grid-modern {
 		grid-template-columns: 1fr !important;
-		gap: 8px !important;
+		gap: 10px !important;
 	}
 
 	.app .feature-card-modern {
-		grid-template-columns: 40px minmax(0, 1fr) !important;
-		padding: 12px !important;
+		min-height: 0 !important;
+		padding: 16px 14px !important;
 	}
 
 	.app .section-header-modern {
