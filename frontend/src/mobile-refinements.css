@@ -176,9 +176,7 @@
 }
 
 /* ============================== LEADERBOARD =============================== */
-/* The desktop leaderboard is a 6-column grid. On phones we keep the most
-   meaningful columns (rank, user, points, level) and hide the rest, so the
-   table stays readable without horizontal scrolling. */
+/* Mobile layout is owned by child-learning-ui.css (card rows with all 4 stats). */
 @media (max-width: 768px) {
   .leaderboard-card {
     width: 100vw;
@@ -196,26 +194,6 @@
     padding: 14px 16px;
   }
 
-  .leaderboard-header,
-  .leaderboard-row {
-    grid-template-columns: 40px minmax(0, 1fr) 70px 56px;
-    gap: 8px;
-    padding: 12px 14px;
-    font-size: 0.85rem;
-  }
-
-  .leaderboard-header .accuracy-col,
-  .leaderboard-header .courses-col,
-  .leaderboard-row .accuracy-col,
-  .leaderboard-row .courses-col {
-    display: none;
-  }
-
-  .rank-col {
-    font-size: 1rem;
-  }
-
-  /* Keep long usernames from breaking the layout */
   .user-col {
     min-width: 0;
   }
@@ -224,23 +202,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .leaderboard-body {
-    max-height: 60vh;
-  }
-}
-
-@media (max-width: 380px) {
-  /* On very small screens drop the level column too */
-  .leaderboard-header,
-  .leaderboard-row {
-    grid-template-columns: 36px minmax(0, 1fr) 64px;
-  }
-
-  .leaderboard-header .level-col,
-  .leaderboard-row .level-col {
-    display: none;
   }
 }
 

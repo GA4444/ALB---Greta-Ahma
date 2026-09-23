@@ -2023,18 +2023,18 @@ function App() {
                                                         <strong>{entry.username}</strong>
                                                         {isCurrentUser && <span className="you-badge">Ti</span>}
                                                     </div>
-                                                    <div className="lb-col points-col" data-label="Pikë">
-                                                        {entry.total_points.toLocaleString()}
-                                                    </div>
                                                     <div className="lb-meta">
+                                                        <div className="lb-col points-col" data-label="Pikë">
+                                                            <span className="lb-stat-value">{entry.total_points.toLocaleString()}</span>
+                                                        </div>
                                                         <div className="lb-col level-col" data-label="Niveli">
-                                                            ⭐ {entry.level}
+                                                            <span className="lb-stat-value">⭐ {entry.level}</span>
                                                         </div>
                                                         <div className="lb-col accuracy-col" data-label="Saktësi">
-                                                            {entry.accuracy.toFixed(1)}%
+                                                            <span className="lb-stat-value">{entry.accuracy.toFixed(1)}%</span>
                                                         </div>
                                                         <div className="lb-col courses-col" data-label="Kurset">
-                                                            {entry.completed_courses}
+                                                            <span className="lb-stat-value">{entry.completed_courses}</span>
                                                         </div>
                                                     </div>
                                                 </div>

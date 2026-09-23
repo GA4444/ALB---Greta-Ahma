@@ -3358,6 +3358,10 @@
 	display: none;
 }
 
+.app .lb-stat-value {
+	display: inline;
+}
+
 .app .rank-col {
 	justify-content: center !important;
 	font-weight: 800 !important;
@@ -3474,27 +3478,31 @@
 	}
 
 	.app .leaderboard-body {
-		max-height: min(58dvh, 520px) !important;
+		max-height: min(62dvh, 560px) !important;
 		display: flex !important;
 		flex-direction: column !important;
 		gap: 8px !important;
 		padding: 0 !important;
+		overflow-x: hidden !important;
 		overflow-y: auto !important;
 	}
 
 	.app .leaderboard-row {
 		display: grid !important;
-		grid-template-columns: 44px minmax(0, 1fr) auto !important;
+		grid-template-columns: 40px minmax(0, 1fr) !important;
 		grid-template-areas:
-			"rank user points"
-			"rank meta meta" !important;
-		gap: 6px 10px !important;
-		padding: 12px !important;
+			"rank user"
+			"meta meta" !important;
+		gap: 8px 10px !important;
+		padding: 10px 12px !important;
 		border: 1px solid rgba(31, 111, 139, 0.12) !important;
 		border-radius: 14px !important;
 		border-bottom: 1px solid rgba(31, 111, 139, 0.12) !important;
 		background: #fff !important;
 		box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+		min-width: 0 !important;
+		width: 100% !important;
+		box-sizing: border-box !important;
 	}
 
 	.app .leaderboard-row.current-user {
@@ -3505,40 +3513,85 @@
 
 	.app .leaderboard-row .rank-col {
 		grid-area: rank !important;
-		align-self: start !important;
-		padding-top: 2px !important;
+		align-self: center !important;
 		font-size: 1.05rem !important;
 	}
 
 	.app .leaderboard-row .user-col {
 		grid-area: user !important;
 		font-size: 0.95rem !important;
-	}
-
-	.app .leaderboard-row .points-col {
-		grid-area: points !important;
-		font-size: 0.98rem !important;
+		min-width: 0 !important;
 	}
 
 	.app .leaderboard-row .lb-meta {
 		grid-area: meta !important;
-		display: flex !important;
-		flex-wrap: wrap !important;
+		display: grid !important;
+		grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 		gap: 6px !important;
-		align-items: center !important;
+		width: 100% !important;
+		min-width: 0 !important;
 	}
 
+	.app .leaderboard-row .points-col,
 	.app .leaderboard-row .level-col,
 	.app .leaderboard-row .accuracy-col,
 	.app .leaderboard-row .courses-col {
-		display: inline-flex !important;
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: stretch !important;
 		justify-content: center !important;
-		padding: 4px 8px !important;
-		border-radius: 999px !important;
+		gap: 2px !important;
+		padding: 6px 4px !important;
+		border-radius: 10px !important;
 		background: #f1f5f9 !important;
-		border: 1px solid rgba(148, 163, 184, 0.35) !important;
-		font-size: 0.72rem !important;
-		color: #475569 !important;
+		border: 1px solid rgba(148, 163, 184, 0.3) !important;
+		min-width: 0 !important;
+		text-align: center !important;
+		white-space: normal !important;
+	}
+
+	.app .leaderboard-row .points-col {
+		justify-content: center !important;
+		color: #1f6f8b !important;
+	}
+
+	.app .leaderboard-row .lb-col[data-label]::before {
+		display: block !important;
+		content: attr(data-label) !important;
+		font-size: 0.58rem !important;
+		font-weight: 750 !important;
+		letter-spacing: 0.02em !important;
+		text-transform: uppercase !important;
+		color: #64748b !important;
+		line-height: 1.1 !important;
+	}
+
+	.app .leaderboard-row .lb-stat-value {
+		font-size: 0.78rem !important;
+		font-weight: 800 !important;
+		color: #13293d !important;
+		line-height: 1.15 !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
 		white-space: nowrap !important;
+	}
+
+	.app .leaderboard-row .points-col .lb-stat-value {
+		color: #1f6f8b !important;
+	}
+}
+
+@media (max-width: 380px) {
+	.app .leaderboard-row .lb-meta {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+		gap: 6px !important;
+	}
+
+	.app .leaderboard-row .lb-col[data-label]::before {
+		font-size: 0.56rem !important;
+	}
+
+	.app .leaderboard-row .lb-stat-value {
+		font-size: 0.8rem !important;
 	}
 }
