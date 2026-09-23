@@ -2379,7 +2379,11 @@
 /* Keep path sidebar width and content gap aligned so they don't collide. */
 .app .main-content:has(.alblingo-world) {
 	grid-template-columns: 248px minmax(0, 1fr) !important;
-	column-gap: 28px !important;
+	column-gap: 48px !important;
+}
+
+.app .main-content:has(.alblingo-world) > .content-area {
+	margin-left: 4px !important;
 }
 
 .app .main-content > .sidebar,
