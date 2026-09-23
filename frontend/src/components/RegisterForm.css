@@ -1,0 +1,350 @@
+/* Register form validation UI + auth shell responsive fixes */
+
+.register-form {
+	width: 100%;
+	max-width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+	box-sizing: border-box;
+}
+
+.register-form .form-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 0.75rem;
+	margin: 0;
+	width: 100%;
+	min-width: 0;
+}
+
+.register-form .form-row.single-column {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.register-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	min-width: 0;
+	width: 100%;
+}
+
+.register-label {
+	font-size: 0.82rem;
+	font-weight: 700;
+	color: #1e293b;
+}
+
+.register-required {
+	color: #e11d48;
+	font-weight: 800;
+}
+
+.register-optional {
+	color: #64748b;
+	font-weight: 500;
+	font-size: 0.78rem;
+}
+
+.register-input {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+	min-height: 48px;
+	padding: 0.75rem 0.9rem;
+	border: 2px solid #e2e8f0;
+	border-radius: 12px;
+	font-size: 1rem;
+	line-height: 1.3;
+	background: #fff;
+	color: #0f172a;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.register-input:focus {
+	outline: none;
+	border-color: #4a9fd4;
+	box-shadow: 0 0 0 3px rgba(74, 159, 212, 0.22);
+}
+
+.register-input.is-invalid,
+.register-field.has-error .register-input {
+	border-color: #ef6461;
+	background: #fff8f8;
+}
+
+.register-input.is-invalid:focus,
+.register-field.has-error .register-input:focus {
+	border-color: #ef6461;
+	box-shadow: 0 0 0 3px rgba(239, 100, 97, 0.2);
+}
+
+.register-input:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+
+.register-helper {
+	margin: 0;
+	font-size: 0.78rem;
+	line-height: 1.35;
+	color: #475569;
+	font-weight: 500;
+}
+
+.register-error {
+	margin: 0;
+	font-size: 0.8rem;
+	line-height: 1.35;
+	color: #b91c1c;
+	font-weight: 600;
+	word-break: break-word;
+}
+
+.register-form-alert {
+	margin: 0;
+	padding: 0.75rem 0.9rem;
+	border-radius: 12px;
+	background: #fef2f2;
+	border: 1px solid #fecaca;
+	color: #991b1b;
+	font-size: 0.88rem;
+	font-weight: 650;
+	line-height: 1.4;
+	word-break: break-word;
+}
+
+.register-submit {
+	width: 100%;
+	min-height: 52px;
+	margin-top: 0.25rem;
+	border: none;
+	border-radius: 14px;
+	font-size: 1rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	cursor: pointer;
+	color: #fff;
+	background: linear-gradient(135deg, #4a9fd4 0%, #3b8bbf 100%);
+	box-shadow: 0 4px 0 #2d7aa8;
+	transition: filter 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+}
+
+.register-submit:hover:not(:disabled) {
+	filter: brightness(1.04);
+}
+
+.register-submit:active:not(:disabled) {
+	transform: translateY(2px);
+	box-shadow: 0 2px 0 #2d7aa8;
+}
+
+.register-submit:disabled {
+	opacity: 0.75;
+	cursor: wait;
+	box-shadow: 0 2px 0 #2d7aa8;
+}
+
+.register-submit:focus-visible,
+.register-input:focus-visible {
+	outline: 3px solid rgba(74, 159, 212, 0.45);
+	outline-offset: 2px;
+}
+
+.register-form .auth-switch-hint {
+	margin: 0.15rem 0 0;
+	text-align: center;
+	font-size: 0.9rem;
+	color: #64748b;
+}
+
+.register-form .auth-switch-link {
+	background: none;
+	border: none;
+	padding: 0;
+	color: #1f6f8b;
+	font-weight: 800;
+	cursor: pointer;
+	text-decoration: underline;
+	font-size: inherit;
+	font-family: inherit;
+}
+
+.register-form .auth-switch-link:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+/* ========== Auth shell: scrollable + responsive ========== */
+
+.auth-app {
+	min-height: 100dvh;
+	min-height: 100vh;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+	overflow-x: hidden;
+}
+
+.auth-app .auth-container {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+	right: auto !important;
+	bottom: auto !important;
+	inset: auto !important;
+	width: 100% !important;
+	max-width: 100%;
+	min-height: 100dvh;
+	min-height: 100vh;
+	height: auto !important;
+	overflow-x: hidden !important;
+	overflow-y: auto !important;
+	display: flex !important;
+	align-items: flex-start;
+	justify-content: center;
+	padding: clamp(0.75rem, 2.5vw, 2rem) !important;
+	box-sizing: border-box;
+	z-index: 1;
+}
+
+@media (min-height: 820px) {
+	.auth-app .auth-container {
+		align-items: center;
+	}
+}
+
+.auth-app .auth-card {
+	width: 100% !important;
+	max-width: min(460px, 100%) !important;
+	margin: 0 auto !important;
+	padding: clamp(1.1rem, 3.5vw, 2rem) !important;
+	box-sizing: border-box;
+	overflow: visible !important;
+	transform: none !important;
+}
+
+.auth-app .auth-header h2 {
+	font-size: clamp(1.25rem, 2.8vw, 1.65rem);
+	line-height: 1.25;
+	overflow-wrap: anywhere;
+}
+
+.auth-app .auth-header p {
+	font-size: clamp(0.88rem, 2vw, 1rem);
+	line-height: 1.45;
+}
+
+.auth-app .auth-tabs {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.auth-app .auth-tab {
+	min-height: 44px;
+	font-size: clamp(0.85rem, 2vw, 0.95rem);
+}
+
+.auth-app .auth-input,
+.auth-app .auth-submit {
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+@media (max-width: 560px) {
+	.register-form .form-row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.auth-app .auth-card {
+		max-width: 100% !important;
+		border-radius: 18px;
+	}
+}
+
+@media (max-height: 720px) {
+	.auth-app .auth-container {
+		align-items: flex-start;
+		padding-top: 0.75rem !important;
+		padding-bottom: 1.25rem !important;
+	}
+
+	.auth-app .auth-header {
+		margin-bottom: 0.75rem;
+	}
+
+	.auth-app .auth-header h2 {
+		font-size: 1.2rem;
+	}
+
+	.register-form {
+		gap: 0.65rem;
+	}
+
+	.register-input {
+		min-height: 44px;
+		padding: 0.65rem 0.8rem;
+	}
+
+	.register-submit {
+		min-height: 48px;
+	}
+}
+
+@media (max-width: 430px) {
+	.auth-app .auth-container {
+		padding: 0.65rem 0.75rem 1.25rem !important;
+	}
+
+	.auth-app .auth-card {
+		padding: 1rem 0.9rem 1.25rem !important;
+		border-radius: 16px;
+	}
+
+	.register-label {
+		font-size: 0.8rem;
+	}
+
+	.register-input {
+		font-size: 16px; /* avoid iOS zoom */
+	}
+}
+
+@media (max-width: 360px) {
+	.auth-app .auth-container {
+		padding: 0.5rem 0.55rem 1rem !important;
+	}
+
+	.auth-app .auth-tab {
+		padding: 0.55rem 0.4rem;
+		font-size: 0.8rem;
+	}
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+	.auth-app .auth-container {
+		align-items: flex-start;
+		padding: 0.5rem 1rem 1rem !important;
+	}
+
+	.auth-app .auth-card {
+		max-width: min(560px, 100%) !important;
+	}
+
+	.register-form .form-row {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+
+	.register-form .form-row.single-column {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.auth-app img,
+.auth-app svg,
+.auth-app input,
+.auth-app button {
+	max-width: 100%;
+}

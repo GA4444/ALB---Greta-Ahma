@@ -259,6 +259,23 @@ export async function fetchUserOverview(userId: string) {
 	return data
 }
 
+export async function fetchUserTotals(userId: string) {
+	try {
+		const { data } = await client.get<{ user_id: string; total_points: number; total_stars: number }>(
+			`/api/progress/${userId}/totals`
+		)
+		return data
+	} catch {
+		// Fallback while older backends still only expose the heavy overview route
+		const overview = await fetchUserOverview(userId)
+		return {
+			user_id: userId,
+			total_points: overview.total_points,
+			total_stars: overview.total_stars,
+		}
+	}
+}
+
 export async function fetchCourseProgress(courseId: number, userId: string) {
 	const { data } = await client.get<CourseProgressOut>(`/api/courses/${courseId}/progress/${userId}`)
 	return data

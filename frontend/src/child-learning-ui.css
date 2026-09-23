@@ -1,0 +1,574 @@
+/*
+ * ALBLingo — modern educational UI for children
+ * Design-only layer. No content/text changes.
+ * Balance: Educational + Child-friendly + Modern + Professional + Simple
+ */
+
+:root {
+	--learn-ink: var(--color-ink, #13293D);
+	--learn-sky: var(--color-brand-sky, #4A9FD4);
+	--learn-deep: var(--color-primary, #1F6F8B);
+	--learn-ok: var(--color-success, #5BBD6C);
+	--learn-warm: #F4A261;
+	--learn-soft: #EEF7FB;
+	--learn-paper: #F7FBFE;
+	--learn-line: rgba(19, 41, 61, 0.1);
+	--learn-radius: 18px;
+	--learn-radius-sm: 14px;
+	--learn-touch: 48px;
+	--learn-shadow: 0 10px 28px rgba(31, 111, 139, 0.1);
+}
+
+/* ---------- Readability & base ---------- */
+.app,
+.auth-app,
+.welcome-landing {
+	color: var(--learn-ink);
+	font-size: clamp(16px, 1.05vw + 14px, 18px);
+	line-height: 1.55;
+	-webkit-font-smoothing: antialiased;
+}
+
+.app h1,
+.app h2,
+.app h3,
+.welcome-landing h1,
+.auth-card h2 {
+	line-height: 1.25;
+	letter-spacing: -0.02em;
+	color: var(--learn-ink);
+	overflow-wrap: anywhere;
+}
+
+.app p,
+.welcome-landing p,
+.auth-card p,
+.feature-description-modern,
+.class-subtitle,
+.section-subtitle-modern {
+	line-height: 1.55;
+	color: #3d5566;
+}
+
+/* Soft learning canvas — warm, not babyish */
+.app {
+	background:
+		radial-gradient(900px 420px at 6% -10%, rgba(74, 159, 212, 0.14), transparent 55%),
+		radial-gradient(700px 360px at 100% 0%, rgba(91, 189, 108, 0.08), transparent 50%),
+		linear-gradient(180deg, #f7fbfe 0%, #eef6fa 100%) !important;
+}
+
+/* ---------- Touch-friendly controls ---------- */
+.app button,
+.app .nav-btn,
+.app .profile-btn,
+.app .leaderboard-btn,
+.app .logout-btn,
+.app .auth-submit,
+.app .register-submit,
+.app .submit-btn-modern,
+.app .ocr-button,
+.app .choice-btn-modern,
+.app .back-button-modern,
+.app .class-card,
+.app .course-card-modern,
+.welcome-btn,
+.mobile-bottom-nav .mobile-tab {
+	min-height: var(--learn-touch);
+	border-radius: var(--learn-radius-sm) !important;
+}
+
+.app input,
+.app textarea,
+.app select,
+.app .auth-input,
+.app .register-input {
+	min-height: 48px;
+	border-radius: var(--learn-radius-sm) !important;
+	border: 2px solid var(--learn-line) !important;
+	font-size: 16px !important; /* prevent iOS zoom */
+	line-height: 1.4;
+}
+
+.app input:focus,
+.app textarea:focus,
+.app select:focus,
+.app .auth-input:focus,
+.app .register-input:focus {
+	border-color: var(--learn-sky) !important;
+	box-shadow: 0 0 0 4px rgba(74, 159, 212, 0.18) !important;
+	outline: none;
+}
+
+/* ---------- Cards: soft, clear, calm ---------- */
+.app .feature-card-modern,
+.app .class-card,
+.app .course-card-modern,
+.app .exercise-card-modern,
+.app .stat-card,
+.app .profile-card,
+.app .auth-card,
+.welcome-landing .welcome-mascot {
+	border-radius: var(--learn-radius) !important;
+	border: 1px solid var(--learn-line) !important;
+	box-shadow: var(--learn-shadow) !important;
+	background: #fff !important;
+}
+
+.app .feature-card-modern,
+.app .class-card,
+.app .course-card-modern {
+	padding: clamp(1rem, 2.5vw, 1.35rem) !important;
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.app .feature-card-modern:hover,
+.app .class-card:hover,
+.app .course-card-modern:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 14px 32px rgba(31, 111, 139, 0.14) !important;
+}
+
+/* ---------- Primary actions: clear & motivating ---------- */
+.app .auth-submit,
+.app .register-submit,
+.app .submit-btn-modern,
+.welcome-btn-primary,
+.app .ocr-button.primary,
+.app .nav-btn.active {
+	background: linear-gradient(135deg, var(--learn-sky), var(--learn-deep)) !important;
+	color: #fff !important;
+	border: none !important;
+	font-weight: 750 !important;
+	box-shadow: 0 4px 0 rgba(31, 111, 139, 0.35) !important;
+}
+
+.app .auth-submit:hover:not(:disabled),
+.app .register-submit:hover:not(:disabled),
+.app .submit-btn-modern:hover:not(:disabled),
+.welcome-btn-primary:hover {
+	filter: brightness(1.04);
+}
+
+.app .auth-submit:active:not(:disabled),
+.app .register-submit:active:not(:disabled),
+.app .submit-btn-modern:active:not(:disabled) {
+	transform: translateY(2px);
+	box-shadow: 0 2px 0 rgba(31, 111, 139, 0.35) !important;
+}
+
+/* Success / progress feel */
+.app .user-progress,
+.app .progress-bar,
+.app .overall-progress-bar,
+.app .level-progress-bar {
+	height: 10px !important;
+	border-radius: 999px !important;
+	background: #e7f1f6 !important;
+	overflow: hidden;
+}
+
+.app .user-progress-fill,
+.app .progress-bar-fill,
+.app .overall-progress-fill,
+.app .level-progress-fill {
+	border-radius: 999px !important;
+	background: linear-gradient(90deg, var(--learn-ok), #7ed08a) !important;
+}
+
+/* Stat chips: readable progress cues */
+.app .stat-item,
+.app .mobile-top-chip,
+.app .hero-stat-modern {
+	border-radius: 14px !important;
+	background: #fff !important;
+	border: 1px solid var(--learn-line) !important;
+	box-shadow: 0 4px 12px rgba(19, 41, 61, 0.04);
+}
+
+.app .user-stats {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.app .stat-item {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 6px;
+}
+
+.app .stat-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	color: var(--learn-deep, #1F6F8B);
+	line-height: 0;
+	font-size: 0;
+}
+
+.app .stat-icon svg {
+	display: block;
+	width: 16px;
+	height: 16px;
+}
+
+.app .stat-value,
+.app .stat-number-modern,
+.app .mobile-top-chip strong {
+	font-weight: 800;
+	color: var(--learn-deep, #1F6F8B) !important;
+	font-variant-numeric: tabular-nums;
+}
+
+.app .stat-icon-large {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--learn-deep, #1F6F8B);
+	line-height: 0;
+	font-size: 0;
+}
+
+.app .stat-icon-large svg {
+	display: block;
+	width: 28px;
+	height: 28px;
+}
+
+.app .stat-label-modern,
+.app .stat-label {
+	font-size: 0.85em;
+	font-weight: 600;
+	color: #4d6270 !important;
+}
+
+.app .hero-stat-modern .stat-number-modern {
+	color: var(--color-primary, #1F6F8B) !important;
+}
+
+.app .hero-stat-modern .stat-label-modern {
+	color: #4d6270 !important;
+}
+
+/* ---------- Header: calm orientation ---------- */
+.app .header {
+	background: rgba(255, 255, 255, 0.94) !important;
+	backdrop-filter: blur(12px);
+	border-bottom: 1px solid var(--learn-line) !important;
+}
+
+.app .header-logo h1,
+.app .header-logo.brand-mark h1 {
+	color: var(--learn-deep) !important;
+	font-weight: 800;
+}
+
+.app .nav-btn {
+	background: var(--learn-soft) !important;
+	color: var(--learn-deep) !important;
+	border: 1px solid rgba(74, 159, 212, 0.22) !important;
+	font-weight: 700 !important;
+}
+
+/* ---------- Home / learning surfaces ---------- */
+.app .hero-section-modern,
+.app .welcome-screen-modern {
+	padding: clamp(1rem, 3vw, 2rem);
+}
+
+/* Badge "Për fëmijë" removed from home — hide if leftover markup */
+.hero-badge-modern {
+	display: none !important;
+}
+
+.app .feature-icon-modern {
+	width: 52px !important;
+	height: 52px !important;
+	border-radius: 16px !important;
+	background: rgba(74, 159, 212, 0.12) !important;
+}
+
+.app .section-title-modern,
+.app .class-title,
+.app .course-title-modern {
+	font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+}
+
+/* Exercise / feedback clarity */
+.app .exercise-card-modern,
+.app .ocr-main-container {
+	padding: clamp(1rem, 2.5vw, 1.5rem) !important;
+}
+
+.app .message,
+.app .app-toast,
+.app .register-form-alert,
+.app .register-error {
+	border-radius: 14px;
+	line-height: 1.45;
+}
+
+/* Keep toasts opaque and readable (do not wash out on light UI) */
+.app .app-toast {
+	background: #2f2f2f !important;
+	color: #ffffff !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	box-shadow:
+		0 10px 28px rgba(0, 0, 0, 0.35),
+		0 2px 8px rgba(0, 0, 0, 0.2) !important;
+	-webkit-text-fill-color: #ffffff;
+}
+
+.app .app-toast-text {
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff;
+	font-weight: 700;
+}
+
+.app .app-toast--success {
+	background: #243528 !important;
+	border-color: rgba(91, 189, 108, 0.45) !important;
+}
+
+.app .app-toast--error,
+.app .register-form-alert {
+	background: #3a2424 !important;
+	border: 1px solid rgba(239, 100, 97, 0.45) !important;
+	color: #ffffff !important;
+}
+
+.app .ocr-clean-box {
+	background: rgba(91, 189, 108, 0.1);
+	border: 1px solid rgba(91, 189, 108, 0.28);
+}
+
+.app .register-error {
+	background: rgba(239, 100, 97, 0.08);
+	border: 1px solid rgba(239, 100, 97, 0.25);
+}
+
+/* ---------- Mobile / tablet learning ergonomics ---------- */
+.mobile-bottom-nav {
+	background: rgba(255, 255, 255, 0.96) !important;
+	border-top: 1px solid var(--learn-line) !important;
+	backdrop-filter: blur(10px);
+	padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.mobile-bottom-nav .mobile-tab {
+	color: #5a7384;
+}
+
+.mobile-bottom-nav .mobile-tab-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	color: inherit;
+	line-height: 0;
+}
+
+.mobile-bottom-nav .mobile-tab-icon svg {
+	display: block;
+	width: 22px;
+	height: 22px;
+}
+
+.mobile-bottom-nav .mobile-tab.active {
+	color: var(--learn-deep) !important;
+	background: rgba(74, 159, 212, 0.1) !important;
+}
+
+/* Mobile top strip: logo + 3 equal chips fill header (no empty right gap) */
+@media (max-width: 768px) {
+	.app .header {
+		display: grid !important;
+		grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+		grid-template-areas:
+			"brand stats"
+			"curr curr";
+		align-items: center;
+		column-gap: 10px;
+		row-gap: 8px;
+	}
+
+	.app .header-content {
+		grid-area: brand;
+		width: auto !important;
+		max-width: none !important;
+		margin: 0 !important;
+	}
+
+	.app .header-navigation,
+	.app .header-account,
+	.app .header-actions,
+	.app .header-progress-summary {
+		display: none !important;
+	}
+
+	.app .mobile-top-strip {
+		grid-area: stats;
+		display: flex !important;
+		flex-direction: column;
+		gap: 8px;
+		margin: 0 !important;
+		padding: 0 !important;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.app .mobile-top-strip-row {
+		display: grid !important;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 6px;
+		width: 100%;
+	}
+
+	.app .mobile-top-chip {
+		display: inline-flex !important;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+		width: 100% !important;
+		min-width: 0;
+		min-height: 40px !important;
+		padding: 6px 8px !important;
+		border-radius: 12px !important;
+		background: #f3fafd !important;
+		border: 1px solid rgba(31, 111, 139, 0.16) !important;
+		color: #1f6f8b !important;
+		box-shadow: none !important;
+	}
+
+	.app .mobile-top-chip-wide {
+		width: 100% !important;
+		justify-content: flex-start;
+	}
+
+	.app .mobile-top-strip:has(.mobile-top-chip-wide) {
+		display: contents !important;
+	}
+
+	.app .mobile-top-strip:has(.mobile-top-chip-wide) .mobile-top-strip-row {
+		grid-area: stats;
+	}
+
+	.app .mobile-top-strip:has(.mobile-top-chip-wide) .mobile-top-chip-wide {
+		grid-area: curr;
+	}
+
+	/* Keep platform tools usable on phones (parity with desktop) */
+	.app .features-section-modern,
+	.app .sidebar-section + .sidebar-section,
+	.app .sidebar .ocr-launch-card,
+	.app .ai-practice-sidebar,
+	.app .advanced-ai-practice {
+		display: block !important;
+	}
+
+	.app .advanced-ai-practice {
+		margin-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+	}
+
+	.app .profile-overlay,
+	.app .ocr-modal-overlay {
+		z-index: 1200 !important;
+	}
+}
+
+.mobile-top-strip {
+	gap: 8px;
+	padding: 0;
+	width: 100%;
+}
+
+@media (max-width: 480px) {
+	.app .mobile-top-chip {
+		padding: 8px 8px !important;
+		min-height: 40px !important;
+	}
+}
+
+@media (max-width: 860px) {
+	.app {
+		font-size: 16.5px;
+	}
+
+	.app .content-area,
+	.app .welcome-screen-modern {
+		padding-left: clamp(0.75rem, 3vw, 1.25rem);
+		padding-right: clamp(0.75rem, 3vw, 1.25rem);
+	}
+
+	.app .feature-card-modern,
+	.app .class-card,
+	.app .course-card-modern {
+		border-radius: 16px !important;
+	}
+}
+
+@media (max-width: 480px) {
+	.app button,
+	.app .nav-btn,
+	.app .auth-submit,
+	.app .register-submit,
+	.welcome-btn {
+		min-height: 50px;
+	}
+
+	.app .stat-item,
+	.app .mobile-top-chip {
+		padding: 0.45rem 0.65rem !important;
+	}
+}
+
+/* Short viewports: keep learning path scrollable, not clipped */
+@media (max-height: 700px) {
+	.app .header {
+		position: sticky;
+		top: 0;
+		z-index: 40;
+	}
+
+	.app .content-area {
+		padding-bottom: 5.5rem;
+	}
+}
+
+/* Reduce distracting motion; keep gentle feedback */
+@media (prefers-reduced-motion: reduce) {
+	.app .feature-card-modern,
+	.app .class-card,
+	.app .course-card-modern,
+	.app button {
+		transition: none !important;
+	}
+
+	.app .feature-card-modern:hover,
+	.app .class-card:hover,
+	.app .course-card-modern:hover {
+		transform: none;
+	}
+}
+
+/* Contrast helper for primary text on soft backgrounds */
+.app .welcome-title,
+.auth-card h2 {
+	color: var(--learn-ink) !important;
+	-webkit-text-fill-color: var(--learn-ink);
+	background: none !important;
+}
+
+/* Hero sits on a blue/green gradient — keep brand + tagline white */
+.app .hero-title-modern,
+.app .hero-description-modern {
+	color: #fff !important;
+	-webkit-text-fill-color: #fff !important;
+	background: none !important;
+}

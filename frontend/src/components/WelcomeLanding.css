@@ -1,0 +1,367 @@
+/* ALBLingo welcome page — layout inspired by friendly learning apps, ALBLingo brand */
+
+.welcome-landing {
+	min-height: 100vh;
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+	background: #ffffff;
+	color: var(--color-ink, #13293D);
+	font-family: var(--font-primary, "Source Sans 3", "Inter", system-ui, sans-serif);
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.welcome-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem 1.5rem;
+	max-width: 1120px;
+	width: 100%;
+	margin: 0 auto;
+	flex-shrink: 0;
+}
+
+.welcome-brand {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+}
+
+.welcome-brand-mark {
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	display: block;
+}
+
+.welcome-brand-name {
+	font-size: 1.45rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--color-primary, #1F6F8B);
+}
+
+.welcome-lang {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #777777;
+	user-select: none;
+}
+
+.welcome-lang-value {
+	color: var(--color-primary, #1F6F8B);
+}
+
+.welcome-main {
+	flex: 1;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	align-items: center;
+	gap: 2.5rem 3rem;
+	width: min(1040px, 100%);
+	margin: 0 auto;
+	padding: 1.5rem 1.5rem 3rem;
+}
+
+.welcome-visual {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.welcome-scene {
+	position: relative;
+	width: min(420px, 100%);
+	aspect-ratio: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.welcome-blob {
+	position: absolute;
+	border-radius: 50%;
+	filter: blur(2px);
+	opacity: 0.55;
+}
+
+.welcome-blob-a {
+	width: 72%;
+	height: 72%;
+	background: rgba(31, 111, 139, 0.12);
+	top: 14%;
+	left: 14%;
+}
+
+.welcome-blob-b {
+	width: 38%;
+	height: 38%;
+	background: rgba(91, 189, 108, 0.2);
+	top: 8%;
+	right: 6%;
+}
+
+.welcome-blob-c {
+	width: 28%;
+	height: 28%;
+	background: rgba(74, 159, 212, 0.22);
+	bottom: 10%;
+	left: 8%;
+}
+
+.welcome-mascot {
+	position: relative;
+	z-index: 2;
+	width: 104px;
+	height: 104px;
+	border-radius: 24px;
+	background: transparent;
+	box-shadow:
+		0 12px 28px rgba(31, 111, 139, 0.22),
+		0 3px 0 rgba(24, 90, 113, 0.28);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	animation: welcome-float 4.5s ease-in-out infinite;
+	overflow: hidden;
+}
+
+.welcome-mascot-logo {
+	width: 64px !important;
+	height: 64px !important;
+	border-radius: 16px;
+	background: transparent;
+	padding: 0;
+	box-sizing: border-box;
+	object-fit: cover;
+	box-shadow: none;
+}
+
+.welcome-mascot-badge {
+	display: none;
+}
+
+.welcome-float {
+	position: absolute;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 18px;
+	background: #fff;
+	box-shadow: 0 10px 24px rgba(19, 41, 61, 0.1);
+	animation: welcome-bob 3.6s ease-in-out infinite;
+}
+
+.welcome-float-book {
+	top: 12%;
+	left: 8%;
+	width: 56px;
+	height: 56px;
+	font-size: 1.5rem;
+	animation-delay: 0.2s;
+}
+
+.welcome-float-star {
+	top: 18%;
+	right: 10%;
+	width: 48px;
+	height: 48px;
+	font-size: 1.35rem;
+	animation-delay: 0.7s;
+}
+
+.welcome-float-pen {
+	bottom: 22%;
+	left: 4%;
+	width: 52px;
+	height: 52px;
+	font-size: 1.35rem;
+	animation-delay: 1.1s;
+}
+
+.welcome-float-abc {
+	bottom: 14%;
+	right: 8%;
+	min-width: 58px;
+	height: 48px;
+	padding: 0 10px;
+	font-size: 0.95rem;
+	font-weight: 800;
+	color: var(--color-primary, #1F6F8B);
+	animation-delay: 0.4s;
+}
+
+.welcome-float-heart {
+	top: 48%;
+	right: 0;
+	width: 44px;
+	height: 44px;
+	font-size: 1.15rem;
+	animation-delay: 1.4s;
+}
+
+.welcome-copy {
+	max-width: 420px;
+	justify-self: start;
+}
+
+.welcome-title {
+	margin: 0 0 0.75rem;
+	font-size: clamp(1.85rem, 3.4vw, 2.65rem);
+	font-weight: 800;
+	line-height: 1.15;
+	letter-spacing: -0.025em;
+	color: #3c3c3c;
+}
+
+.welcome-subtitle {
+	margin: 0 0 1.75rem;
+	font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+	line-height: 1.45;
+	color: #777777;
+	font-weight: 500;
+}
+
+.welcome-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+	width: 100%;
+	max-width: 360px;
+}
+
+.welcome-btn {
+	appearance: none;
+	width: 100%;
+	min-height: 52px;
+	padding: 0.9rem 1.25rem;
+	border-radius: 16px;
+	font-size: 0.95rem;
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: transform 0.12s ease, filter 0.12s ease, background 0.12s ease;
+	font-family: inherit;
+}
+
+.welcome-btn:active {
+	transform: translateY(2px);
+}
+
+.welcome-btn-primary {
+	color: #fff;
+	background: linear-gradient(135deg, #4A9FD4 0%, #3B8BBF 100%);
+	border: none;
+	border-bottom: 4px solid #2D7AA8;
+	box-shadow: 0 2px 0 rgba(45, 122, 168, 0.28);
+}
+
+.welcome-btn-primary:hover {
+	filter: brightness(1.05);
+	background: linear-gradient(135deg, #3B8BBF 0%, #2D7AA8 100%);
+}
+
+.welcome-btn-primary:active {
+	border-bottom-width: 2px;
+}
+
+.welcome-btn-secondary {
+	color: var(--color-primary, #1F6F8B);
+	background: #fff;
+	border: 2px solid #e5e5e5;
+	border-bottom: 4px solid #e5e5e5;
+}
+
+.welcome-btn-secondary:hover {
+	background: #f7fbfc;
+	border-color: #d7e8ef;
+	border-bottom-color: #d7e8ef;
+}
+
+.welcome-btn-secondary:active {
+	border-bottom-width: 2px;
+}
+
+@keyframes welcome-float {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-10px); }
+}
+
+@keyframes welcome-bob {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-6px); }
+}
+
+@media (max-width: 860px) {
+	.welcome-main {
+		grid-template-columns: 1fr;
+		justify-items: center;
+		text-align: center;
+		gap: 1.25rem;
+		padding-top: 0.5rem;
+	}
+
+	.welcome-copy {
+		justify-self: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.welcome-scene {
+		width: min(300px, 88vw);
+	}
+
+	.welcome-mascot {
+		width: 88px;
+		height: 88px;
+		border-radius: 20px;
+	}
+
+	.welcome-mascot-logo {
+		width: 56px !important;
+		height: 56px !important;
+	}
+
+	.welcome-actions {
+		max-width: 320px;
+	}
+
+	.welcome-header {
+		padding: 0.85rem 1rem;
+	}
+}
+
+@media (max-width: 420px) {
+	.welcome-lang-label {
+		display: none;
+	}
+
+	.welcome-brand-name {
+		font-size: 1.25rem;
+	}
+
+	.welcome-float-pen,
+	.welcome-float-heart {
+		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.welcome-mascot,
+	.welcome-float {
+		animation: none;
+	}
+}

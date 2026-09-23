@@ -1,0 +1,264 @@
+/* ALBLingo brand consistency — logo + shared UI chrome */
+
+.brand-logo {
+	display: block;
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	object-fit: contain;
+	flex-shrink: 0;
+	border-radius: 12px;
+}
+
+.brand-logo-sm {
+	width: 32px;
+	height: 32px;
+	border-radius: 9px;
+}
+
+.brand-logo-md {
+	width: 40px;
+	height: 40px;
+	border-radius: 11px;
+}
+
+.brand-logo-lg {
+	width: 48px;
+	height: 48px;
+	border-radius: 14px;
+}
+
+.brand-mark {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.65rem;
+	min-width: 0;
+}
+
+.brand-mark-name {
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--color-primary, #1F6F8B);
+	line-height: 1.1;
+	white-space: nowrap;
+}
+
+/* Feature cards: geometric brand icons (no emoji) */
+.feature-icon-modern {
+	width: 48px;
+	height: 48px;
+	border-radius: 14px;
+	background: var(--color-primary-light, rgba(31, 111, 139, 0.12));
+	position: relative;
+	font-size: 0 !important;
+	line-height: 0 !important;
+	color: transparent !important;
+}
+
+.feature-icon-modern::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	margin: auto;
+	width: 18px;
+	height: 18px;
+	border: 2.5px solid var(--color-primary, #1F6F8B);
+	border-radius: 5px;
+	box-sizing: border-box;
+}
+
+.feature-icon-modern.icon-audio::before {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--color-primary, #1F6F8B);
+	border: none;
+	box-shadow: 10px 0 0 -2px var(--color-primary), 16px 0 0 -4px var(--color-primary);
+	left: -6px;
+}
+
+.feature-icon-modern.icon-chart::before {
+	width: 20px;
+	height: 16px;
+	border: none;
+	border-radius: 0;
+	background:
+		linear-gradient(var(--color-primary), var(--color-primary)) 0 100% / 4px 8px no-repeat,
+		linear-gradient(var(--color-primary), var(--color-primary)) 8px 100% / 4px 12px no-repeat,
+		linear-gradient(var(--color-primary), var(--color-primary)) 16px 100% / 4px 16px no-repeat;
+}
+
+.feature-icon-modern.icon-trophy::before {
+	width: 14px;
+	height: 14px;
+	border-radius: 3px 3px 8px 8px;
+	background: var(--color-primary, #1F6F8B);
+	border: none;
+}
+
+.feature-icon-modern.icon-ai::before {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: var(--color-primary, #1F6F8B);
+	border: none;
+	box-shadow: inset 0 0 0 3px #fff;
+}
+
+.feature-icon-modern.icon-rank::before {
+	width: 0;
+	height: 0;
+	border: none;
+	border-left: 9px solid transparent;
+	border-right: 9px solid transparent;
+	border-bottom: 16px solid var(--color-primary, #1F6F8B);
+	background: transparent;
+	border-radius: 0;
+}
+
+/* Welcome hero: logo instead of flag emoji */
+.welcome-brand-hero,
+.welcome-brand-hero {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 0.75rem;
+}
+
+.welcome-brand-hero .brand-logo,
+.welcome-brand-hero .brand-logo {
+	width: 72px;
+	height: 72px;
+	border-radius: 18px;
+	box-shadow: 0 10px 28px rgba(31, 111, 139, 0.22);
+}
+
+/* Hide legacy emoji hero if still present */
+.welcome-emoji-modern {
+	display: none !important;
+}
+
+/* Header brand */
+.header-logo.brand-mark h1,
+.header-logo .brand-mark-name {
+	margin: 0;
+	font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+	color: var(--color-primary, #1F6F8B);
+	background: none;
+	-webkit-text-fill-color: currentColor;
+	text-shadow: none;
+}
+
+.header-emoji {
+	display: none !important;
+}
+
+/* Admin brand row */
+.admin-header-brand {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+}
+
+.admin-header-brand .brand-logo {
+	width: 36px;
+	height: 36px;
+	border-radius: 10px;
+}
+
+/* Footer brand */
+.footer-brand {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	margin-bottom: 0.5rem;
+}
+
+.footer-brand .brand-logo {
+	width: 32px;
+	height: 32px;
+	border-radius: 9px;
+}
+
+.footer-brand h4 {
+	margin: 0;
+}
+
+/* Shared button / card polish (brand tokens) */
+.app .nav-btn.active,
+.app .auth-tab.active {
+	background: var(--color-primary, #1F6F8B) !important;
+	border-color: var(--color-primary, #1F6F8B) !important;
+	color: #fff !important;
+}
+
+.app .profile-btn,
+.app .leaderboard-btn {
+	border-radius: 14px;
+}
+
+.app .feature-card-modern,
+.app .class-card,
+.app .course-card-modern,
+.app .exercise-card-modern {
+	border-radius: 18px;
+	border: 1px solid var(--color-border, #e2e8f0);
+	box-shadow: 0 8px 24px rgba(19, 41, 61, 0.06);
+}
+
+.app .auth-submit,
+.app .register-submit,
+.app .submit-btn-modern {
+	background: linear-gradient(135deg, var(--color-brand-sky, #4A9FD4), var(--color-primary, #1F6F8B)) !important;
+	color: #fff !important;
+}
+
+@media (max-width: 480px) {
+	.welcome-brand-hero .brand-logo {
+		width: 56px;
+		height: 56px;
+		border-radius: 14px;
+	}
+
+	.header-logo.brand-mark h1 {
+		font-size: 1.1rem;
+	}
+}
+
+.mobile-bottom-nav .mobile-tab {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.2rem;
+	min-height: 56px;
+	color: #5a7384;
+}
+
+.mobile-bottom-nav .mobile-tab-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	color: inherit;
+	line-height: 0;
+}
+
+.mobile-bottom-nav .mobile-tab-icon svg {
+	display: block;
+	width: 22px;
+	height: 22px;
+}
+
+.mobile-bottom-nav .mobile-tab-label {
+	font-size: 0.72rem;
+	font-weight: 700;
+}
+
+.mobile-bottom-nav .mobile-tab.active {
+	color: var(--color-primary, #1F6F8B);
+}
+
+.mobile-bottom-nav .mobile-tab.active .mobile-tab-icon {
+	color: var(--color-primary, #1F6F8B);
+}

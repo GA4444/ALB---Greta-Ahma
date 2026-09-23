@@ -1,3 +1,4 @@
+import BrandLogo from './components/BrandLogo'
 import React, { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import {
 	getAdminStats,
@@ -851,30 +852,33 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			<Suspense fallback={chartFallback}>
 			<div className="admin-header">
 				<div className="admin-header-brand">
-					<span className="admin-header-eyebrow">AlbLingo</span>
-					<h1>Paneli i Administratorit</h1>
+					<BrandLogo size={36} className="brand-logo-sm" decorative />
+					<div>
+						<span className="admin-header-eyebrow">AlbLingo</span>
+						<h1>Paneli i Administratorit</h1>
+					</div>
 				</div>
 				<button className="admin-logout-btn" onClick={onLogout}>Dil</button>
 			</div>
 
 			<div className="admin-tabs">
 				<button className={activeTab === 'stats' ? 'active' : ''} onClick={() => setActiveTab('stats')}>
-					📊 Statistika
+					Statistika
 				</button>
 				<button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
-					👥 Përdoruesit
+					Përdoruesit
 				</button>
 				<button className={activeTab === 'classes' ? 'active' : ''} onClick={() => setActiveTab('classes')}>
-					🏫 Klasat
+					Klasat
 				</button>
 				<button className={activeTab === 'levels' ? 'active' : ''} onClick={() => setActiveTab('levels')}>
-					📚 Nivelet
+					Nivelet
 				</button>
 				<button className={activeTab === 'exercises' ? 'active' : ''} onClick={() => setActiveTab('exercises')}>
-					✏️ Ushtrimet
+					Ushtrimet
 				</button>
 				<button className={activeTab === 'corpus' ? 'active' : ''} onClick={() => setActiveTab('corpus')}>
-					📖 Korpusi
+					Korpusi
 				</button>
 				<button className={activeTab === 'research' ? 'active' : ''} onClick={() => setActiveTab('research')}>
 					🤖 Sistemi AI

@@ -6,13 +6,17 @@
 :root {
   /* ========== PLATFORM COLORS ========== */
   
-  /* Primary - Deep teal ink (education, calm, professional) */
+  /* Primary - brand blue (logo + UI) */
   --color-primary: #1F6F8B;
   --color-primary-hover: #185A71;
   --color-primary-light: rgba(31, 111, 139, 0.1);
   --color-primary-lighter: rgba(31, 111, 139, 0.05);
-  --color-accent: #C0392B;
+  --color-brand-sky: #4A9FD4;
   --color-ink: #13293D;
+  --color-accent-soft: #EF6461;
+
+  /* Accent - soft flag red (sparingly: badges, highlights) */
+  --color-accent: #E41E20;
   
   /* Success - Green */
   --color-success: #5BBD6C;

@@ -67,9 +67,39 @@ def get_category_status(user_id: str, db: Session = Depends(get_db)):
 	return status_data
 
 
+@router.get("/progress/{user_id}/totals")
+def get_user_totals(user_id: str, db: Session = Depends(get_db)):
+	"""Lightweight totals for header/stats — avoids the heavy full overview query."""
+	total_points, total_stars = (
+		db.query(
+			func.coalesce(func.sum(models.Progress.points), 0),
+			func.coalesce(func.sum(models.Progress.stars), 0),
+		)
+		.filter(models.Progress.user_id == user_id)
+		.one()
+	)
+	return {
+		"user_id": user_id,
+		"total_points": int(total_points or 0),
+		"total_stars": int(total_stars or 0),
+	}
+
+
 @router.get("/progress/{user_id}/overview", response_model=schemas.UserProgressOut)
 def get_user_overview(user_id: str, db: Session = Depends(get_db)):
 	"""Get comprehensive overview of user progress across all courses"""
+	# Aggregate totals in SQL (fast path for header stats too)
+	total_points, total_stars = (
+		db.query(
+			func.coalesce(func.sum(models.Progress.points), 0),
+			func.coalesce(func.sum(models.Progress.stars), 0),
+		)
+		.filter(models.Progress.user_id == user_id)
+		.one()
+	)
+	total_points = int(total_points or 0)
+	total_stars = int(total_stars or 0)
+
 	# Get all courses
 	courses = db.query(models.Course).order_by(models.Course.order_index).all()
 	
@@ -79,10 +109,6 @@ def get_user_overview(user_id: str, db: Session = Depends(get_db)):
 		.filter(models.Progress.user_id == user_id)
 		.all()
 	)
-	
-	# Calculate total points and stars
-	total_points = sum(p.points for p in user_progress)
-	total_stars = sum(p.stars for p in user_progress)
 	
 	course_progress_list = []
 	

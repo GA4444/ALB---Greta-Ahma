@@ -21,37 +21,61 @@
 
   /* ===== Compact top bar ===== */
   .app .header {
+    display: grid !important;
+    grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+    grid-template-areas:
+      "brand stats"
+      "curr curr";
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 8px;
     position: sticky;
     top: 0;
     z-index: 40;
-    padding: 10px 12px 8px;
+    padding: 10px 12px;
     background: rgba(255, 255, 255, 0.96);
     border-bottom: 1px solid rgba(26, 47, 61, 0.08);
     box-shadow: 0 4px 16px rgba(31, 111, 139, 0.06);
+    min-height: 0 !important;
   }
 
   .app .header-content {
+    grid-area: brand;
+    display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: space-between;
-    gap: 8px !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    min-width: 0;
   }
 
   .app .header-main {
+    display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     gap: 8px !important;
     width: auto !important;
-    flex: 1;
+    flex: 0 1 auto !important;
     min-width: 0;
   }
 
   .app .header-logo {
     justify-content: flex-start !important;
+    gap: 8px !important;
   }
 
   .app .header-logo h1 {
-    font-size: 1.25rem !important;
+    font-size: 1.15rem !important;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 380px) {
+    .app .header-logo h1 {
+      display: none;
+    }
   }
 
   .app .header-navigation,
@@ -62,50 +86,100 @@
   }
 
   .mobile-top-strip {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    margin-top: 8px;
-    padding-bottom: 2px;
+    grid-area: stats;
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
-  .mobile-top-strip::-webkit-scrollbar {
-    display: none;
+  .mobile-top-strip-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    width: 100%;
   }
 
   .mobile-top-chip {
-    flex: 0 0 auto;
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
-    gap: 4px;
-    min-height: 34px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid rgba(43, 139, 184, 0.2);
-    background: #f3fafd;
+    justify-content: center;
+    gap: 5px;
+    min-height: 40px;
+    width: 100% !important;
+    min-width: 0;
+    margin: 0;
+    padding: 6px 8px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(31, 111, 139, 0.16) !important;
+    background: #f3fafd !important;
+    color: #1f6f8b !important;
+    font-size: 0.88rem;
+    box-sizing: border-box;
+  }
+
+  .mobile-top-chip-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
     color: #1f6f8b;
-    font-size: 0.82rem;
+    line-height: 0;
+  }
+
+  .mobile-top-chip-icon svg {
+    display: block;
+    width: 16px;
+    height: 16px;
   }
 
   .mobile-top-chip strong {
-    font-weight: 700;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: #1f6f8b;
   }
 
   .mobile-top-chip-wide {
-    max-width: 160px;
+    width: 100% !important;
+    max-width: none !important;
+    justify-content: flex-start;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  /* Pull curriculum chip to full header width under logo + stats */
+  .mobile-top-strip:has(.mobile-top-chip-wide) {
+    display: contents !important;
+  }
+
+  .mobile-top-strip:has(.mobile-top-chip-wide) .mobile-top-strip-row {
+    grid-area: stats;
+  }
+
+  .mobile-top-strip:has(.mobile-top-chip-wide) .mobile-top-chip-wide {
+    grid-area: curr;
   }
 
   .mobile-top-chip-wide strong {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 110px;
+    max-width: none !important;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
   }
 
   button.mobile-top-chip {
     cursor: pointer;
+    font-family: inherit;
   }
 
   /* ===== Bottom tab bar ===== */
@@ -146,8 +220,19 @@
   }
 
   .mobile-tab-icon {
-    font-size: 1.25rem;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    line-height: 0;
+    color: inherit;
+  }
+
+  .mobile-tab-icon svg {
+    display: block;
+    width: 22px;
+    height: 22px;
   }
 
   .mobile-tab-label {
@@ -155,13 +240,24 @@
     font-weight: 700;
   }
 
-  /* ===== Hide desktop chrome clutter ===== */
+  /* ===== Hide desktop chrome clutter (keep learning tools visible) ===== */
   .app .footer {
     display: none !important;
   }
 
   .app .features-section-modern {
-    display: none !important;
+    display: block !important;
+    margin-top: 8px !important;
+  }
+
+  .app .features-grid-modern {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .app .feature-card-modern {
+    padding: 14px 16px !important;
   }
 
   /* ===== Single column app layout ===== */
@@ -187,8 +283,28 @@
     box-shadow: 0 8px 20px rgba(31, 111, 139, 0.08) !important;
   }
 
+  /* Keep AI / gamification / OCR tools reachable on phones */
   .app .sidebar-section + .sidebar-section {
-    display: none !important; /* hide AI stats clutter on phone */
+    display: block !important;
+    margin-top: 10px;
+  }
+
+  .app .sidebar .ocr-launch-card,
+  .app .sidebar-section.child-ai-sidebar-section,
+  .app .gamification-compact,
+  .app .ai-stats-compact {
+    display: block !important;
+  }
+
+  .app .sidebar .ocr-launch-card {
+    margin-top: 10px;
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .app .ocr-launch-button {
+    width: 100% !important;
+    min-height: 48px !important;
   }
 
   .app .sidebar-section-header.compact h3 {
@@ -242,6 +358,23 @@
   }
 
   .app .ai-practice-sidebar {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+    margin-top: 12px;
+  }
+
+  /* Modals must sit above the bottom tab bar */
+  .app .profile-overlay,
+  .app .ocr-modal-overlay {
+    z-index: 1200 !important;
+  }
+
+  body:has(.profile-overlay) .mobile-bottom-nav,
+  body:has(.ocr-modal-overlay) .mobile-bottom-nav,
+  .app:has(.profile-overlay) .mobile-bottom-nav,
+  .app:has(.ocr-modal-overlay) .mobile-bottom-nav {
     display: none !important;
   }
 
@@ -386,7 +519,11 @@
   }
 
   .app .message {
-    display: none !important;
+    display: block !important;
+    margin: 8px 0 12px !important;
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    font-size: 0.95rem !important;
   }
 
   /* Auth full-bleed friendly */

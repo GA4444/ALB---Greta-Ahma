@@ -2,16 +2,22 @@
 import { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import type { ChangeEvent } from 'react'
 import type { CourseOut, LevelOut, ExerciseOut, ProgressOut, ClassData, AIPracticeExercise, AICoachResponse, UserAchievementsResponse, StreakData, DailyChallenge, SRSStatsResponse } from './api'
-import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, login, register, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, getAdminStats, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument, generatePedagogicalFeedback, getAdaptiveNextItem } from './api'
+import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, fetchUserTotals, login, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, getAdminStats, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument, generatePedagogicalFeedback, getAdaptiveNextItem } from './api'
 import type { CorpusDocument } from './api'
 import { AppFooter, AppHeader } from './components/AppChrome'
 import LazyErrorBoundary from './components/LazyErrorBoundary'
+import WelcomeLanding from './components/WelcomeLanding'
+import BrandLogo from './components/BrandLogo'
+import { IconBook, IconCalendar, IconFlame, IconSparkle, IconStar, IconTrophy } from './components/ProgressIcons'
+import RegisterForm from './components/RegisterForm'
 import { useModalAccessibility } from './hooks/useModalAccessibility'
 import './App.css'
 import './mobile-refinements.css'
 import './professional-polish.css'
 import './professional-pro.css'
 import './mobile-app.css'
+import './brand-consistency.css'
+import './child-learning-ui.css'
 
 const AdminDashboard = lazy(() => import('./AdminDashboard'))
 const AdvancedAIPractice = lazy(() => import('./AdvancedAIPractice'))
@@ -180,6 +186,7 @@ function App() {
     const [message, setMessage] = useState<string>('')
     const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false)
     const [showAuth, setShowAuth] = useState(false)
+    const [showWelcome, setShowWelcome] = useState(true)
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
@@ -301,17 +308,6 @@ function App() {
     const corpusModalRef = useModalAccessibility(showCorpusBrowse, () => {
         setShowCorpusBrowse(false)
         setSelectedCorpusDoc(null)
-    })
-
-    // Enhanced user registration state
-    const [registrationData, setRegistrationData] = useState({
-        firstName: '',
-        lastName: '',
-        username: '',
-        email: '',
-        age: '',
-        password: '',
-        confirmPassword: ''
     })
 
     // Audio features state
@@ -485,16 +481,25 @@ function App() {
     const fetchUserStats = async () => {
         if (userId) {
             try {
-                const overview = await fetchUserOverview(userId)
-                if (overview) {
-                    setUserStats({
-                        totalPoints: overview.total_points,
-                        totalStars: overview.total_stars,
-                        streakDays: Math.floor(overview.total_points / 50), // Calculate streak based on points
-                        level: Math.floor(overview.total_points / 100) + 1,
-                        experience: overview.total_points % 100,
+                const [totals, streak] = await Promise.all([
+                    fetchUserTotals(userId),
+                    getUserStreak(userId).catch((e) => {
+                        console.error('Streak error:', e)
+                        return null
+                    }),
+                ])
+                if (streak !== null) {
+                    setUserStreak(streak)
+                }
+                if (totals) {
+                    setUserStats(prev => ({
+                        totalPoints: totals.total_points,
+                        totalStars: totals.total_stars,
+                        streakDays: streak !== null ? (streak.current_streak || 0) : prev.streakDays,
+                        level: Math.floor(totals.total_points / 100) + 1,
+                        experience: totals.total_points % 100,
                         nextLevelExp: 100
-                    })
+                    }))
                     // Set user profile data - use localStorage for user info
                     const storedUsername = localStorage.getItem('username') || ''
                     setUserProfile({
@@ -940,6 +945,9 @@ function App() {
 
     const handleLogout = () => {
         setUserId(null)
+        setIsAdmin(false)
+        setShowWelcome(true)
+        setShowAuth(false)
         setSelectedClass(null)
         setSelectedCourse(null)
         setSelectedLevel(null)
@@ -964,6 +972,7 @@ function App() {
         
         // Clear localStorage
         localStorage.removeItem('user_id')
+        localStorage.removeItem('is_admin')
         localStorage.removeItem('username')
         localStorage.removeItem('full_name')
     }
@@ -1262,19 +1271,52 @@ function App() {
         setMessage('💡 Këshillë: Dëgjoni me kujdes zërin dhe përpiquni ta imitoni atë! 🎵')
     }
 
-    // If not logged in, show authentication
+    // If not logged in, show welcome then authentication
     const shouldShowAuth = !userId || userId === 'null' || userId === 'undefined' || (typeof userId === 'string' && userId.trim() === '')
     
+    // Entry page before login/register (frontend-only gate)
+    if (shouldShowAuth && showWelcome) {
+        return (
+            <WelcomeLanding
+                onRegister={() => {
+                    setShowAuth(true)
+                    setShowWelcome(false)
+                }}
+                onLogin={() => {
+                    setShowAuth(false)
+                    setShowWelcome(false)
+                }}
+            />
+        )
+    }
+
     // Always show auth form if no valid userId
     if (shouldShowAuth) {
+        const goToWelcome = () => {
+            setShowWelcome(true)
+            setMessage('')
+        }
+
         return (
             <div className="app auth-app">
                 <div className="auth-container">
                     <div className="auth-card">
+                        <button
+                            type="button"
+                            className="auth-back-link"
+                            onClick={goToWelcome}
+                        >
+                            ← Kthehu
+                        </button>
                         <div className="auth-header">
-                            <div className="auth-logo">🇦🇱</div>
-                            <h2>Mirësevini në AlbLingo!</h2>
-                            <p>Mëso të shkruash shqip. Zgjidh klasën dhe fillo!</p>
+                            <div className="auth-logo">
+                                <BrandLogo size={48} className="brand-logo-lg" />
+                            </div>
+                            <h2>Mirë se erdhe në ALBLingo</h2>
+                            <p>Mëso drejtshkrimin në mënyrë argëtuese</p>
+                            <div className="auth-lang-badge" aria-label="Gjuha e faqes">
+                                Gjuha e faqes: Shqip
+                            </div>
                         </div>
 
                         <div className="auth-tabs">
@@ -1297,14 +1339,14 @@ function App() {
                             <div className="auth-form">
                                 <input
                                     className="auth-input"
-                                    placeholder="Username"
+                                    placeholder="Emri i përdoruesit"
                                     autoComplete="username"
                                     value={auth.username}
                                     onChange={(e) => setAuth({ ...auth, username: e.target.value })}
                                 />
                                 <input
                                     className="auth-input"
-                                    placeholder="Fjalëkalimi *"
+                                    placeholder="Fjalëkalimi"
                                     type="password"
                                     autoComplete="current-password"
                                     value={auth.password}
@@ -1317,7 +1359,7 @@ function App() {
                                         const username = auth.username?.trim()
                                         const password = auth.password
                                         if (!username || !password) {
-                                            setMessage('Shkruaj username dhe fjalëkalimin për të hyrë. 🙂')
+                                            setMessage('Shkruaj emrin e përdoruesit dhe fjalëkalimin për të hyrë. 🙂')
                                             return
                                         }
                                         try {
@@ -1331,7 +1373,7 @@ function App() {
                                             const status = e?.response?.status
                                             const detail = e?.response?.data?.detail || e?.message
                                             if (status === 401) {
-                                                setMessage('Hmm… username ose fjalëkalimi nuk është i saktë. Kontrollo edhe një herë! 🙂')
+                                                setMessage('Hmm… emri i përdoruesit ose fjalëkalimi nuk është i saktë. Kontrollo edhe një herë! 🙂')
                                             } else if (e?.code === 'ECONNREFUSED' || e?.code === 'ECONNABORTED' || e?.message?.includes('timeout') || e?.message?.includes('Network') || !e?.response) {
                                                 setMessage('Po pret pak… provo përsëri pas një çasti. ⏳')
                                             } else {
@@ -1342,143 +1384,23 @@ function App() {
                                 >
                                     Hyr
                                 </button>
+                                <p className="auth-switch-hint">
+                                    Nuk ke llogari?{' '}
+                                    <button type="button" className="auth-switch-link" onClick={() => setShowAuth(true)}>
+                                        Regjistrohu
+                                    </button>
+                                </p>
                             </div>
                         ) : (
-                            // Enhanced Registration Form
-                            <div className="auth-form enhanced-registration">
-                                <div className="form-row">
-                                    <input
-                                        className="auth-input"
-                                        placeholder="Emri *"
-                                        autoComplete="given-name"
-                                        value={registrationData.firstName}
-                                        onChange={(e) => setRegistrationData({...registrationData, firstName: e.target.value})}
-                                    />
-                                    <input
-                                        className="auth-input"
-                                        placeholder="Mbiemri *"
-                                        autoComplete="family-name"
-                                        value={registrationData.lastName}
-                                        onChange={(e) => setRegistrationData({...registrationData, lastName: e.target.value})}
-                                    />
-                                </div>
-
-                                <div className="form-row single-column">
-                                    <input
-                                        className="auth-input"
-                                        placeholder="Username *"
-                                        autoComplete="username"
-                                        value={registrationData.username}
-                                        onChange={(e) => setRegistrationData({...registrationData, username: e.target.value.replace(/\s/g, '')})}
-                                    />
-                                    {registrationData.username.length > 0 && (
-                                        <p className="auth-hint">Shkruaje bashkë, pa hapësira. Me këtë emër do të hysh herën tjetër! 🌟</p>
-                                    )}
-                                </div>
-
-                                <div className="form-row single-column">
-                                    <input
-                                        className="auth-input"
-                                        type="email"
-                                        placeholder="Email *"
-                                        autoComplete="email"
-                                        value={registrationData.email}
-                                        onChange={(e) => setRegistrationData({...registrationData, email: e.target.value})}
-                                    />
-                                </div>
-
-                                <div className="form-row single-column">
-                                    <input
-                                        className="auth-input"
-                                        type="number"
-                                        placeholder="Mosha (opsionale)"
-                                        value={registrationData.age}
-                                        onChange={(e) => setRegistrationData({...registrationData, age: e.target.value})}
-                                    />
-                                </div>
-
-                                <div className="form-row single-column">
-                                    <input
-                                        className="auth-input"
-                                        type="password"
-                                        placeholder="Fjalëkalimi *"
-                                        autoComplete="new-password"
-                                        value={registrationData.password}
-                                        onChange={(e) => setRegistrationData({...registrationData, password: e.target.value})}
-                                    />
-                                </div>
-
-                                <div className="form-row single-column">
-                                    <input
-                                        className="auth-input"
-                                        type="password"
-                                        placeholder="Konfirmo fjalëkalimin *"
-                                        autoComplete="new-password"
-                                        value={registrationData.confirmPassword}
-                                        onChange={(e) => setRegistrationData({...registrationData, confirmPassword: e.target.value})}
-                                    />
-                                </div>
-
-                                <button
-                                    className="auth-submit"
-                                    onClick={async () => {
-                                        const firstName = registrationData.firstName.trim()
-                                        const lastName = registrationData.lastName.trim()
-                                        const username = registrationData.username.trim()
-                                        const email = registrationData.email.trim()
-                                        if (!firstName || !lastName) {
-                                            setMessage('Shkruaj emrin dhe mbiemrin tënd. 🙂')
-                                            return
-                                        }
-                                        if (!username || username.length < 3) {
-                                            setMessage('Username duhet të ketë të paktën 3 shkronja. 🙂')
-                                            return
-                                        }
-                                        if (!email || !registrationData.password) {
-                                            setMessage('Plotëso emailin dhe fjalëkalimin. 🙂')
-                                            return
-                                        }
-                                        if (registrationData.password !== registrationData.confirmPassword) {
-                                            setMessage('Fjalëkalimet nuk janë të njëjta. Kontrollo edhe një herë! 🙂')
-                                            return
-                                        }
-                                        
-                                        try {
-                                            await register(
-                                                firstName,
-                                                lastName,
-                                                username,
-                                                email,
-                                                registrationData.password,
-                                                registrationData.age ? parseInt(registrationData.age) : undefined
-                                            )
-                                            setMessage('Bravo! Llogaria u krijua. Tani hyr me username-in tënd. 🌟')
-                                            setShowAuth(false)
-                                            setAuth({ username, password: '' })
-                                            setRegistrationData({
-                                                firstName: '',
-                                                lastName: '',
-                                                username: '',
-                                                email: '',
-                                                age: '',
-                                                password: '',
-                                                confirmPassword: ''
-                                            })
-                                        } catch (e: any) {
-                                            const detail = e.response?.data?.detail
-                                            if (typeof detail === 'string' && /username|zënë|already/i.test(detail)) {
-                                                setMessage('Ky username është i zënë. Provo një tjetër! 🙂')
-                                            } else if (typeof detail === 'string' && /email/i.test(detail)) {
-                                                setMessage('Ky email përdoret tashmë. Provo një tjetër ose hyr në llogari. 🙂')
-                                            } else {
-                                                setMessage(detail || 'Diçka nuk shkoi mirë. Provo përsëri! 🙂')
-                                            }
-                                        }
-                                    }}
-                                >
-                                    Regjistrohu
-                                </button>
-                            </div>
+                            <RegisterForm
+                                onSuccess={(username) => {
+                                    setMessage('Bravo! Llogaria u krijua. Tani hyr me emrin e përdoruesit. 🌟')
+                                    setShowAuth(false)
+                                    setAuth({ username, password: '' })
+                                }}
+                                onSwitchToLogin={() => setShowAuth(false)}
+                                onMessage={setMessage}
+                            />
                         )}
                         {message && <AppToast message={message} />}
                     </div>
@@ -1500,6 +1422,8 @@ function App() {
                                 onLogout={() => {
                                     setUserId(null)
                                     setIsAdmin(false)
+                                    setShowWelcome(true)
+                                    setShowAuth(false)
                                     localStorage.removeItem('user_id')
                                     localStorage.removeItem('is_admin')
                                     localStorage.removeItem('username')
@@ -1533,6 +1457,8 @@ function App() {
                 onBackToCourses={() => handleCourseClick(null)}
                 onLogout={handleLogout}
                 onShowProfile={handleShowProfile}
+                profileOpen={showProfile}
+                leaderboardOpen={showLeaderboard}
                 onShowLeaderboard={async () => {
                     setShowLeaderboard(true)
                     try {
@@ -1675,7 +1601,7 @@ function App() {
             </LazyErrorBoundary>
 
                 {showProfile && (
-                    <div className="profile-overlay" onClick={() => setShowProfile(false)}>
+                    <div className="profile-overlay" onClick={() => { setShowProfile(false); setIsEditingProfile(false) }}>
                         <div
                             ref={profileModalRef}
                             className="profile-card enhanced-profile-card"
@@ -1687,7 +1613,7 @@ function App() {
                         >
                             <div className="profile-header">
                                 <div className="profile-title" id="profile-modal-title">👤 Profili im</div>
-                                <button className="profile-close" aria-label="Mbyll profilin" onClick={() => setShowProfile(false)}>×</button>
+                                <button className="profile-close" aria-label="Mbyll profilin" onClick={() => { setShowProfile(false); setIsEditingProfile(false) }}>×</button>
                             </div>
                             
                             <div className="profile-content-enhanced">
@@ -1838,13 +1764,13 @@ function App() {
                                                     type="text"
                                                     value={profileFormData.first_name}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, first_name: e.target.value })}
+                                                    className="profile-field-input"
                                                     style={{
                                                         padding: '0.5rem',
                                                         border: '1px solid #ddd',
                                                         borderRadius: '6px',
                                                         fontSize: '0.95rem',
-                                                        width: '100%',
-                                                        maxWidth: '300px'
+                                                        width: '100%'
                                                     }}
                                                     placeholder="Emri"
                                                 />
@@ -1859,13 +1785,13 @@ function App() {
                                                     type="text"
                                                     value={profileFormData.last_name}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, last_name: e.target.value })}
+                                                    className="profile-field-input"
                                                     style={{
                                                         padding: '0.5rem',
                                                         border: '1px solid #ddd',
                                                         borderRadius: '6px',
                                                         fontSize: '0.95rem',
-                                                        width: '100%',
-                                                        maxWidth: '300px'
+                                                        width: '100%'
                                                     }}
                                                     placeholder="Mbiemri"
                                                 />
@@ -1884,13 +1810,13 @@ function App() {
                                                     type="email"
                                                     value={profileFormData.email}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, email: e.target.value })}
+                                                    className="profile-field-input"
                                                     style={{
                                                         padding: '0.5rem',
                                                         border: '1px solid #ddd',
                                                         borderRadius: '6px',
                                                         fontSize: '0.95rem',
-                                                        width: '100%',
-                                                        maxWidth: '300px'
+                                                        width: '100%'
                                                     }}
                                                     placeholder="Email"
                                                 />
@@ -1907,13 +1833,13 @@ function App() {
                                                     max="18"
                                                     value={profileFormData.age}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, age: e.target.value })}
+                                                    className="profile-field-input"
                                                     style={{
                                                         padding: '0.5rem',
                                                         border: '1px solid #ddd',
                                                         borderRadius: '6px',
                                                         fontSize: '0.95rem',
-                                                        width: '100%',
-                                                        maxWidth: '100px'
+                                                        width: '100%'
                                                     }}
                                                     placeholder="Mosha"
                                                 />
@@ -1928,13 +1854,13 @@ function App() {
                                                     type="date"
                                                     value={profileFormData.date_of_birth}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, date_of_birth: e.target.value })}
+                                                    className="profile-field-input"
                                                     style={{
                                                         padding: '0.5rem',
                                                         border: '1px solid #ddd',
                                                         borderRadius: '6px',
                                                         fontSize: '0.95rem',
-                                                        width: '100%',
-                                                        maxWidth: '200px'
+                                                        width: '100%'
                                                     }}
                                                 />
                                             ) : (
@@ -1952,13 +1878,13 @@ function App() {
                                                     type="text"
                                                     value={profileFormData.address}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, address: e.target.value })}
+                                                    className="profile-field-input"
                                                     style={{
                                                         padding: '0.5rem',
                                                         border: '1px solid #ddd',
                                                         borderRadius: '6px',
                                                         fontSize: '0.95rem',
-                                                        width: '100%',
-                                                        maxWidth: '300px'
+                                                        width: '100%'
                                                     }}
                                                     placeholder="Adresa"
                                                 />
@@ -1973,13 +1899,13 @@ function App() {
                                                     type="tel"
                                                     value={profileFormData.phone_number}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, phone_number: e.target.value })}
+                                                    className="profile-field-input"
                                                     style={{
                                                         padding: '0.5rem',
                                                         border: '1px solid #ddd',
                                                         borderRadius: '6px',
                                                         fontSize: '0.95rem',
-                                                        width: '100%',
-                                                        maxWidth: '200px'
+                                                        width: '100%'
                                                     }}
                                                     placeholder="+355..."
                                                 />
@@ -2007,28 +1933,28 @@ function App() {
                                     <h3 className="profile-section-title">📊 Statistikat</h3>
                                     <div className="profile-stats-enhanced">
                                         <div className="profile-stat-card">
-                                            <div className="stat-icon-large">⭐</div>
+                                            <div className="stat-icon-large" aria-hidden="true"><IconStar size={28} /></div>
                                             <div className="stat-content">
                                                 <div className="stat-label">Niveli</div>
                                                 <div className="stat-value-large">{userStats.level}</div>
                                             </div>
                                         </div>
                                         <div className="profile-stat-card">
-                                            <div className="stat-icon-large">🏆</div>
+                                            <div className="stat-icon-large" aria-hidden="true"><IconTrophy size={28} /></div>
                                             <div className="stat-content">
                                                 <div className="stat-label">Pikë Totale</div>
                                                 <div className="stat-value-large">{userStats.totalPoints.toLocaleString()}</div>
                                             </div>
                                         </div>
                                         <div className="profile-stat-card">
-                                            <div className="stat-icon-large">🔥</div>
+                                            <div className="stat-icon-large" aria-hidden="true"><IconFlame size={28} /></div>
                                             <div className="stat-content">
                                                 <div className="stat-label">Varg Ditësh</div>
                                                 <div className="stat-value-large">{userStats.streakDays}</div>
                                             </div>
                                         </div>
                                         <div className="profile-stat-card">
-                                            <div className="stat-icon-large">💫</div>
+                                            <div className="stat-icon-large" aria-hidden="true"><IconSparkle size={28} /></div>
                                             <div className="stat-content">
                                                 <div className="stat-label">Yje</div>
                                                 <div className="stat-value-large">{userStats.totalStars}</div>
@@ -2081,7 +2007,7 @@ function App() {
                                         <h3 className="profile-section-title">🔥 Varg Ditësh</h3>
                                         <div className="profile-stats-enhanced">
                                             <div className="profile-stat-card" style={{ background: 'var(--bg-tertiary)' }}>
-                                                <div className="stat-icon-large">🔥</div>
+                                                <div className="stat-icon-large" aria-hidden="true"><IconFlame size={28} /></div>
                                                 <div className="stat-content">
                                                     <div className="stat-label">Vargu Aktual</div>
                                                     <div className="stat-value-large">{userStreak.current_streak}</div>
@@ -2089,7 +2015,7 @@ function App() {
                                                 </div>
                                             </div>
                                             <div className="profile-stat-card" style={{ background: 'var(--bg-tertiary)' }}>
-                                                <div className="stat-icon-large">⭐</div>
+                                                <div className="stat-icon-large" aria-hidden="true"><IconStar size={28} /></div>
                                                 <div className="stat-content">
                                                     <div className="stat-label">Vargu Më i Gjatë</div>
                                                     <div className="stat-value-large">{userStreak.longest_streak}</div>
@@ -2098,7 +2024,7 @@ function App() {
                                             </div>
                                             {userStreak.last_activity_date && (
                                                 <div className="profile-stat-card" style={{ background: 'var(--bg-tertiary)' }}>
-                                                    <div className="stat-icon-large">📅</div>
+                                                    <div className="stat-icon-large" aria-hidden="true"><IconCalendar size={28} /></div>
                                                     <div className="stat-content">
                                                         <div className="stat-label">Aktiviteti i Fundit</div>
                                                         <div className="stat-value-large" style={{ fontSize: '1rem' }}>
@@ -2222,14 +2148,14 @@ function App() {
                                     </div>
                                     <div className="level-stats-summary">
                                         <div className="stat-summary-item">
-                                            <span className="stat-icon-large">🏆</span>
+                                            <span className="stat-icon-large" aria-hidden="true"><IconTrophy size={28} /></span>
                                             <div>
                                                 <div className="stat-value-large">{userStats.totalPoints}</div>
                                                 <div className="stat-label-small">Pikë totale</div>
                                             </div>
                                         </div>
                                         <div className="stat-summary-item">
-                                            <span className="stat-icon-large">📚</span>
+                                            <span className="stat-icon-large" aria-hidden="true"><IconBook size={28} /></span>
                                             <div>
                                                 <div className="stat-value-large">{userStats.experience}/{userStats.nextLevelExp}</div>
                                                 <div className="stat-label-small">Për nivelin tjetër</div>
@@ -2997,8 +2923,9 @@ function MainContent({
                         {/* Hero Section */}
                         <div className="hero-section-modern">
                             <div className="hero-content-modern">
-                                <div className="hero-badge-modern">Për fëmijë</div>
-                                <div className="welcome-emoji-modern">🇦🇱</div>
+                                <div className="welcome-brand-hero" aria-hidden="true">
+                                    <BrandLogo size={72} decorative />
+                                </div>
                                 <h1 className="hero-title-modern">AlbLingo</h1>
                                 <p className="hero-description-modern">
                                     Mëso të shkruash shqip. Zgjidh klasën dhe fillo!
@@ -3027,42 +2954,42 @@ function MainContent({
                         {/* Learning Features Section */}
                         <div className="features-section-modern">
                             <div className="section-header-modern">
-                                <h3 className="section-title-modern">🌟 Veçoritë e Platformës</h3>
+                                <h3 className="section-title-modern">Veçoritë e Platformës</h3>
                                 <p className="section-subtitle-modern">Teknologji moderne për mësim efektiv</p>
                             </div>
                             
                             <div className="features-grid-modern">
                                 <div className="feature-card-modern">
                                     <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern">🎧</div>
+                                        <div className="feature-icon-modern icon-audio" aria-hidden="true"></div>
                                     </div>
                                     <h4 className="feature-title-modern">Audio Interaktiv</h4>
                                     <p className="feature-description-modern">Dëgjoni dhe përsëritni me cilësi të lartë audio</p>
                                 </div>
                                 <div className="feature-card-modern">
                                     <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern">📊</div>
+                                        <div className="feature-icon-modern icon-chart" aria-hidden="true"></div>
                                     </div>
                                     <h4 className="feature-title-modern">Progres i Detajuar</h4>
                                     <p className="feature-description-modern">Ndiqni përparimin tuaj me statistika të hollësishme</p>
                                 </div>
                                 <div className="feature-card-modern">
                                     <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern">🏆</div>
+                                        <div className="feature-icon-modern icon-trophy" aria-hidden="true"></div>
                                     </div>
                                     <h4 className="feature-title-modern">Sistem Pikësh</h4>
                                     <p className="feature-description-modern">Fitoni pikë, yje dhe nivele për të qenë të motivuar</p>
                                 </div>
                                 <div className="feature-card-modern">
                                     <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern">🤖</div>
+                                        <div className="feature-icon-modern icon-ai" aria-hidden="true"></div>
                                     </div>
                                     <h4 className="feature-title-modern">AI i Personalizuar</h4>
                                     <p className="feature-description-modern">Rekomandime inteligjente bazuar në progresin tuaj</p>
                                 </div>
                                 <div className="feature-card-modern">
                                     <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern">📈</div>
+                                        <div className="feature-icon-modern icon-rank" aria-hidden="true"></div>
                                     </div>
                                     <h4 className="feature-title-modern">{LEADERBOARD_TITLE}</h4>
                                     <p className="feature-description-modern">Krahasoni rezultatet me përdorues të tjerë</p>

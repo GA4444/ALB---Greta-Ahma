@@ -4,16 +4,19 @@
  */
 
 :root {
-  --kid-ink: #1a2f3d;
-  --kid-sky: #2b8bb8;
-  --kid-sky-deep: #1f6f8b;
-  --kid-leaf: #2f9e6b;
-  --kid-sun: #f0a202;
-  --kid-coral: #e85d4c;
-  --kid-paper: #f7fbff;
-  --kid-line: rgba(26, 47, 61, 0.12);
+  /* Align kid theme with ALBLingo brand tokens */
+  --kid-ink: var(--color-ink, #13293D);
+  --kid-sky: var(--color-brand-sky, #4A9FD4);
+  --kid-sky-deep: var(--color-primary, #1F6F8B);
+  --kid-leaf: var(--color-success, #5BBD6C);
+  --kid-sun: var(--color-warning, #F4A261);
+  --kid-coral: var(--color-accent-soft, #EF6461);
+  --kid-paper: var(--color-background, #f8fafc);
+  --kid-line: var(--color-border, #e2e8f0);
   --kid-shadow: 0 12px 28px rgba(31, 111, 139, 0.12);
   --kid-touch: 48px;
+  --kid-radius: 18px;
+  --kid-radius-sm: 14px;
 }
 
 body,
@@ -195,14 +198,7 @@ h1, h2, h3,
 }
 
 .hero-badge-modern {
-  display: inline-flex !important;
-  padding: 8px 14px !important;
-  border-radius: 999px !important;
-  background: rgba(255, 255, 255, 0.16) !important;
-  border: 1px solid rgba(255, 255, 255, 0.28) !important;
-  color: #fff !important;
-  font-size: 0.85rem !important;
-  font-weight: 700 !important;
+  display: none !important;
 }
 
 .welcome-emoji-modern {
@@ -233,21 +229,22 @@ h1, h2, h3,
 }
 
 .hero-stat-modern {
-  background: rgba(255, 255, 255, 0.14) !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(31, 111, 139, 0.14) !important;
   border-radius: 16px !important;
   padding: 14px 10px !important;
+  box-shadow: 0 6px 18px rgba(31, 111, 139, 0.08);
 }
 
 .stat-number-modern {
-  color: #fff !important;
+  color: var(--color-primary, #1F6F8B) !important;
   font-family: var(--font-display);
   font-size: 1.6rem !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
 }
 
 .stat-label-modern {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: #4d6270 !important;
   font-size: 0.88rem !important;
   font-weight: 600 !important;
 }
@@ -492,12 +489,12 @@ h1, h2, h3,
   max-width: min(520px, calc(100vw - 40px));
   padding: 16px 22px 16px 16px;
   border-radius: 16px;
-  border: none;
-  background: #3c3c3c;
-  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #2f2f2f !important;
+  color: #ffffff !important;
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.28),
-    0 2px 6px rgba(0, 0, 0, 0.18);
+    0 10px 28px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2);
   font-family: var(--font-primary, "Source Sans 3", sans-serif);
   font-size: 1.05rem;
   font-weight: 700;

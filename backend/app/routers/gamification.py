@@ -189,51 +189,64 @@ def check_and_award_achievements(db: Session, user_id: str):
 # STREAKS
 # ============================================================================
 
+def _user_id_int(user_id) -> Optional[int]:
+	try:
+		return int(user_id)
+	except (TypeError, ValueError):
+		return None
+
+
 @router.get("/gamification/streak/{user_id}")
 def get_user_streak(user_id: str, db: Session = Depends(get_db)):
 	"""Get user's current and longest streak"""
-	user = db.query(models.User).filter(models.User.id == user_id).first()
+	uid = _user_id_int(user_id)
+	if uid is None:
+		raise HTTPException(status_code=400, detail="Invalid user id")
+	user = db.query(models.User).filter(models.User.id == uid).first()
 	if not user:
 		raise HTTPException(status_code=404, detail="User not found")
-	
+
 	return {
-		"current_streak": user.current_streak,
-		"longest_streak": user.longest_streak,
+		"current_streak": user.current_streak or 0,
+		"longest_streak": user.longest_streak or 0,
 		"last_activity_date": user.last_activity_date.isoformat() if user.last_activity_date else None,
 	}
 
 
 def update_user_streak(db: Session, user_id: str, award_achievements: bool = True):
 	"""Update user's streak after an activity. Call this after submitting an exercise."""
-	user = db.query(models.User).filter(models.User.id == user_id).first()
+	uid = _user_id_int(user_id)
+	if uid is None:
+		return
+	user = db.query(models.User).filter(models.User.id == uid).first()
 	if not user:
 		return
-	
+
 	today = datetime.utcnow().date()
 	last_activity = user.last_activity_date.date() if user.last_activity_date else None
-	
+
 	if last_activity is None:
 		# First activity ever
 		user.current_streak = 1
-		user.longest_streak = 1
+		user.longest_streak = max(user.longest_streak or 0, 1)
 	elif last_activity == today:
 		# Already active today, no change
 		pass
 	elif last_activity == today - timedelta(days=1):
 		# Active yesterday, increment streak
-		user.current_streak += 1
-		if user.current_streak > user.longest_streak:
+		user.current_streak = (user.current_streak or 0) + 1
+		if user.current_streak > (user.longest_streak or 0):
 			user.longest_streak = user.current_streak
 	else:
 		# Streak broken (missed one or more days)
 		user.current_streak = 1
-	
+
 	user.last_activity_date = datetime.utcnow()
 	db.commit()
-	
+
 	# Check for streak achievements (optional; submit path awards once in background)
 	if award_achievements:
-		check_and_award_achievements(db, user_id)
+		check_and_award_achievements(db, str(uid))
 
 
 # ============================================================================

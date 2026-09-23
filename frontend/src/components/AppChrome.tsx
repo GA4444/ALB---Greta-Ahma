@@ -1,3 +1,6 @@
+import BrandLogo from './BrandLogo'
+import { IconBook, IconFlame, IconStar, IconTrophy } from './ProgressIcons'
+
 const LEADERBOARD_TITLE = 'Vendi yt në renditje'
 
 interface AppHeaderProps {
@@ -17,6 +20,8 @@ interface AppHeaderProps {
 	onShowProfile: () => void
 	onShowLeaderboard: () => void
 	onShowLevelInfo: () => void
+	profileOpen?: boolean
+	leaderboardOpen?: boolean
 }
 
 export function AppHeader({
@@ -30,6 +35,8 @@ export function AppHeader({
 	onShowProfile,
 	onShowLeaderboard,
 	onShowLevelInfo,
+	profileOpen = false,
+	leaderboardOpen = false,
 }: AppHeaderProps) {
 	const progress = userStats.nextLevelExp
 		? Math.min(100, Math.max(0, (userStats.experience / userStats.nextLevelExp) * 100))
@@ -40,8 +47,8 @@ export function AppHeader({
 			<header className="header">
 				<div className="header-content">
 					<div className="header-main">
-						<div className="header-logo">
-							<span className="header-emoji" aria-hidden="true">🇦🇱</span>
+						<div className="header-logo brand-mark">
+							<BrandLogo size={40} className="brand-logo-md" decorative />
 							<h1>AlbLingo</h1>
 						</div>
 						<nav className="header-navigation" aria-label="Navigimi kryesor">
@@ -49,7 +56,7 @@ export function AppHeader({
 								className={`nav-btn ${!selectedClass ? 'active' : ''}`}
 								onClick={onBackToClasses}
 							>
-								🏠 Shtëpia
+								Shtëpia
 							</button>
 							{selectedClass && (
 								<button className="nav-btn" onClick={onBackToClasses}>
@@ -80,7 +87,7 @@ export function AppHeader({
 							<div className="user-stats">
 								{curriculumLabel && (
 									<div className="stat-item curriculum-stat" title="Ku je tani">
-										<span className="stat-icon">📚</span>
+										<span className="stat-icon" aria-hidden="true"><IconBook size={16} /></span>
 										<span className="stat-value">{curriculumLabel}</span>
 									</div>
 								)}
@@ -90,51 +97,53 @@ export function AppHeader({
 									onClick={onShowLevelInfo}
 									title="Pikët e tua"
 								>
-									<span className="stat-icon">⭐</span>
+									<span className="stat-icon" aria-hidden="true"><IconStar size={16} /></span>
 									<span className="stat-value">XP {userStats.level}</span>
 								</button>
 								<div className="stat-item">
-									<span className="stat-icon">🏆</span>
+									<span className="stat-icon" aria-hidden="true"><IconTrophy size={16} /></span>
 									<span className="stat-value">{userStats.totalPoints} pikë</span>
 								</div>
 								<div className="stat-item">
-									<span className="stat-icon">🔥</span>
+									<span className="stat-icon" aria-hidden="true"><IconFlame size={16} /></span>
 									<span className="stat-value">{userStats.streakDays} ditë</span>
 								</div>
 							</div>
 						</div>
 
 						<div className="header-actions">
-							<button className="profile-btn" onClick={onShowProfile}>👤 Unë</button>
+							<button className="profile-btn" onClick={onShowProfile}>Unë</button>
 							<button
 								className="leaderboard-btn"
 								onClick={onShowLeaderboard}
 								title={LEADERBOARD_TITLE}
 							>
-								🏆 {LEADERBOARD_TITLE}
+								{LEADERBOARD_TITLE}
 							</button>
 							<button className="logout-btn" onClick={onLogout}>Dil</button>
 						</div>
 					</div>
 				</div>
 
-				{/* Compact mobile top strip (Duolingo-like) */}
+				{/* Compact mobile top strip — fills header width beside logo on phones */}
 				<div className="mobile-top-strip" aria-label="Progresi">
-					<button type="button" className="mobile-top-chip" onClick={onShowLevelInfo}>
-						<span>⭐</span>
-						<strong>{userStats.level}</strong>
-					</button>
-					<div className="mobile-top-chip">
-						<span>🏆</span>
-						<strong>{userStats.totalPoints}</strong>
-					</div>
-					<div className="mobile-top-chip">
-						<span>🔥</span>
-						<strong>{userStats.streakDays}</strong>
+					<div className="mobile-top-strip-row">
+						<button type="button" className="mobile-top-chip" onClick={onShowLevelInfo} title="Niveli">
+							<span className="mobile-top-chip-icon" aria-hidden="true"><IconStar /></span>
+							<strong>{userStats.level}</strong>
+						</button>
+						<div className="mobile-top-chip" title="Pikët">
+							<span className="mobile-top-chip-icon" aria-hidden="true"><IconTrophy /></span>
+							<strong>{userStats.totalPoints}</strong>
+						</div>
+						<div className="mobile-top-chip" title="Seria">
+							<span className="mobile-top-chip-icon" aria-hidden="true"><IconFlame /></span>
+							<strong>{userStats.streakDays}</strong>
+						</div>
 					</div>
 					{curriculumLabel && (
 						<div className="mobile-top-chip mobile-top-chip-wide">
-							<span>📚</span>
+							<span className="mobile-top-chip-icon" aria-hidden="true"><IconBook /></span>
 							<strong>{curriculumLabel}</strong>
 						</div>
 					)}
@@ -147,23 +156,42 @@ export function AppHeader({
 					className={`mobile-tab ${!selectedClass ? 'active' : ''}`}
 					onClick={onBackToClasses}
 				>
-					<span className="mobile-tab-icon">🏠</span>
+					<span className="mobile-tab-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M3 10.5 12 3l9 7.5" />
+							<path d="M5 9.5V21h14V9.5" />
+							<path d="M9 21v-7h6v7" />
+						</svg>
+					</span>
 					<span className="mobile-tab-label">Shtëpia</span>
 				</button>
 				<button
 					type="button"
-					className="mobile-tab"
+					className={`mobile-tab ${leaderboardOpen ? 'active' : ''}`}
 					onClick={onShowLeaderboard}
 				>
-					<span className="mobile-tab-icon">🏆</span>
+					<span className="mobile-tab-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M8 21h8" />
+							<path d="M12 17v4" />
+							<path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" />
+							<path d="M7 6H4a2 2 0 0 0 2 4" />
+							<path d="M17 6h3a2 2 0 0 1-2 4" />
+						</svg>
+					</span>
 					<span className="mobile-tab-label">Renditja</span>
 				</button>
 				<button
 					type="button"
-					className="mobile-tab"
+					className={`mobile-tab ${profileOpen ? 'active' : ''}`}
 					onClick={onShowProfile}
 				>
-					<span className="mobile-tab-icon">👤</span>
+					<span className="mobile-tab-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<circle cx="12" cy="8" r="4" />
+							<path d="M4 21a8 8 0 0 1 16 0" />
+						</svg>
+					</span>
 					<span className="mobile-tab-label">Unë</span>
 				</button>
 				<button
@@ -171,7 +199,13 @@ export function AppHeader({
 					className="mobile-tab"
 					onClick={onLogout}
 				>
-					<span className="mobile-tab-icon">🚪</span>
+					<span className="mobile-tab-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+							<path d="M16 17l5-5-5-5" />
+							<path d="M21 12H9" />
+						</svg>
+					</span>
 					<span className="mobile-tab-label">Dil</span>
 				</button>
 			</nav>
@@ -184,11 +218,14 @@ export function AppFooter() {
 		<footer className="footer">
 			<div className="footer-content">
 				<div className="footer-section">
-					<h4>🇦🇱 AlbLingo</h4>
+					<div className="footer-brand">
+						<BrandLogo size={32} className="brand-logo-sm" decorative />
+						<h4>AlbLingo</h4>
+					</div>
 					<p>Platforma e mësimit të gjuhës shqipe për fëmijë</p>
 				</div>
 				<div className="footer-section">
-					<h4>📚 Burimet</h4>
+					<h4>Burimet</h4>
 					<ul>
 						<li>Klasat</li>
 						<li>Kurset</li>
@@ -197,7 +234,7 @@ export function AppFooter() {
 					</ul>
 				</div>
 				<div className="footer-section">
-					<h4>🎯 Objektivat</h4>
+					<h4>Objektivat</h4>
 					<ul>
 						<li>Mësimi i gjuhës</li>
 						<li>Përmirësimi i shkrimit</li>
@@ -206,7 +243,7 @@ export function AppFooter() {
 					</ul>
 				</div>
 				<div className="footer-section">
-					<h4>📞 Kontakti</h4>
+					<h4>Kontakti</h4>
 					<p>info@alblingo.al</p>
 					<p>+355 XX XXX XXX</p>
 				</div>
