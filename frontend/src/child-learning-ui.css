@@ -2806,32 +2806,42 @@
 		padding: 0 !important;
 	}
 
-	/* Hero: denser landing card */
+	/* Hero: centered landing card */
 	.app .hero-section-modern {
 		padding: 16px 14px 14px !important;
-		margin: 0 !important;
+		margin: 0 auto !important;
+		width: 100% !important;
 		border-radius: 16px !important;
 		text-align: center !important;
+		display: flex !important;
+		justify-content: center !important;
 	}
 
 	.app .hero-content-modern {
 		max-width: 100% !important;
+		margin: 0 auto !important;
+		width: 100% !important;
+		text-align: center !important;
 	}
 
 	.app .welcome-brand-hero {
 		margin: 0 auto 6px !important;
+		display: flex !important;
+		justify-content: center !important;
 	}
 
 	.app .welcome-brand-hero .brand-logo,
 	.app .welcome-brand-hero img {
 		width: 44px !important;
 		height: 44px !important;
+		margin: 0 auto !important;
 	}
 
 	.app .hero-title-modern {
 		font-size: 1.45rem !important;
-		margin: 0 0 4px !important;
+		margin: 0 auto 4px !important;
 		letter-spacing: -0.03em !important;
+		text-align: center !important;
 	}
 
 	.app .hero-description-modern {
@@ -2840,6 +2850,7 @@
 		margin: 0 auto 10px !important;
 		max-width: 20rem !important;
 		opacity: 0.95;
+		text-align: center !important;
 	}
 
 	.app .hero-stats-modern {
@@ -2848,12 +2859,14 @@
 		gap: 6px !important;
 		max-width: 100% !important;
 		margin: 0 auto !important;
+		justify-content: center !important;
 	}
 
 	.app .hero-stat-modern {
 		padding: 8px 4px !important;
 		border-radius: 10px !important;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+		text-align: center !important;
 	}
 
 	.app .hero-stat-modern:hover {
