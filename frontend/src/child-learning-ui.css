@@ -2376,6 +2376,12 @@
 	flex: 0 1 auto !important;
 }
 
+/* Keep path sidebar width and content gap aligned so they don't collide. */
+.app .main-content:has(.alblingo-world) {
+	grid-template-columns: 248px minmax(0, 1fr) !important;
+	column-gap: 28px !important;
+}
+
 .app .main-content > .sidebar,
 .app .main-content > .sidebar.sidebar-compact {
 	grid-area: sidebar !important;
@@ -2385,6 +2391,11 @@
 	align-self: start !important;
 	position: sticky !important;
 	top: 16px !important;
+}
+
+.app .main-content > .sidebar.sidebar-compact:has(.alblingo-world) {
+	width: 248px !important;
+	max-width: 248px !important;
 }
 
 .app .main-content > .content-area {
@@ -4334,11 +4345,6 @@
 
 /* Desktop sidebar: slightly roomier world panel */
 @media (min-width: 901px) {
-	.app .main-content > .sidebar.sidebar-compact:has(.alblingo-world) {
-		width: 248px !important;
-		max-width: 248px !important;
-	}
-
 	.app .alblingo-world {
 		padding: 2px;
 		border-radius: 14px;
