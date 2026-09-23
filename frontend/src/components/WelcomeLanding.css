@@ -34,9 +34,9 @@
 }
 
 .welcome-brand-mark {
-	width: 0.72em;
-	height: 0.72em;
-	border-radius: 0.18em;
+	width: 0.45em;
+	height: 0.45em;
+	border-radius: 0.12em;
 	display: block;
 	flex-shrink: 0;
 }
