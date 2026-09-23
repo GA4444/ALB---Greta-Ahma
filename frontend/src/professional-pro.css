@@ -642,6 +642,15 @@ h1, h2, h3,
   font-family: var(--font-display);
 }
 
+.app .footer-brand.brand-mark h4 {
+  font-family: var(--font-display);
+  font-size: 1.05rem !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1 !important;
+  color: var(--learn-deep, #1F6F8B) !important;
+}
+
 .app .footer-section:not(.footer-section--brand) > h4 {
   position: relative;
   padding-bottom: 0.45rem;

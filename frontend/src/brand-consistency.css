@@ -175,26 +175,36 @@
 	min-width: 0;
 }
 
-/* Footer brand */
+/* Footer brand — same line / scale as header brand-mark */
 .footer-brand {
 	display: flex;
 	align-items: center;
-	gap: 0.7rem;
+	gap: 8px;
 	margin-bottom: 0.65rem;
 }
 
+.footer-brand.brand-mark .brand-logo,
+.footer-brand.brand-mark .brand-logo-sm,
+.footer-brand.brand-mark img,
 .footer-brand .brand-logo {
-	width: 36px;
-	height: 36px;
-	border-radius: 10px;
+	width: 28px !important;
+	height: 28px !important;
+	border-radius: 8px !important;
 	flex-shrink: 0;
-	box-shadow: 0 2px 8px rgba(31, 111, 139, 0.14);
+	box-shadow: none;
 }
 
-.footer-brand h4 {
+.footer-brand h4,
+.app .footer-brand.brand-mark h4 {
 	margin: 0;
-	font-weight: 800;
-	letter-spacing: -0.01em;
+	font-weight: 750;
+	font-size: 1.05rem;
+	letter-spacing: -0.02em;
+	line-height: 1;
+	color: var(--color-primary, #1F6F8B);
+	background: none;
+	-webkit-text-fill-color: currentColor;
+	text-shadow: none;
 }
 
 .app .footer-tagline {

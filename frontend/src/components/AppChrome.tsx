@@ -221,8 +221,8 @@ export function AppFooter() {
 			<div className="footer-shell">
 				<div className="footer-content">
 					<div className="footer-section footer-section--brand">
-						<div className="footer-brand">
-							<BrandLogo size={36} className="brand-logo-sm" decorative />
+						<div className="footer-brand brand-mark">
+							<BrandLogo size={28} className="brand-logo-sm" decorative />
 							<h4>AlbLingo</h4>
 						</div>
 						<p className="footer-tagline">
