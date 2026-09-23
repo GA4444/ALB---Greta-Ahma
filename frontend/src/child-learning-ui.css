@@ -605,3 +605,174 @@
 	content: none !important;
 	display: none !important;
 }
+
+/* Level picker: cleaner header + compact cards (organization only) */
+.app .level-picker-header {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 14px;
+	margin-bottom: 18px;
+}
+
+.app .level-picker-intro {
+	display: grid;
+	grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+	gap: 16px 20px;
+	align-items: end;
+}
+
+.app .level-picker .class-title {
+	margin: 0 0 6px;
+	font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+	font-weight: 800;
+	color: var(--learn-ink, #13293D);
+	background: none;
+	-webkit-text-fill-color: currentColor;
+}
+
+.app .level-picker .class-subtitle {
+	margin: 0;
+	color: #5a7384;
+	font-weight: 600;
+}
+
+.app .level-picker .class-overall-progress {
+	padding: 12px 14px;
+	border-radius: 14px;
+	border: 1px solid rgba(31, 111, 139, 0.14);
+	background: #f7fbfe;
+}
+
+.app .level-picker-grid {
+	display: grid !important;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: 12px !important;
+}
+
+.app .level-picker-card.course-card-modern {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+	text-align: left;
+	padding: 14px 14px 12px !important;
+	border-radius: 16px !important;
+	border: 1px solid rgba(31, 111, 139, 0.14) !important;
+	background: #fff !important;
+	box-shadow: 0 4px 14px rgba(19, 41, 61, 0.05) !important;
+	cursor: pointer;
+	font: inherit;
+	color: inherit;
+	min-height: 0 !important;
+}
+
+.app .level-picker-card:disabled,
+.app .level-picker-card.locked {
+	cursor: not-allowed;
+	opacity: 0.72;
+}
+
+.app .level-picker-card .course-card-top {
+	display: grid;
+	grid-template-columns: auto auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 8px;
+}
+
+.app .level-picker-card .course-number-badge {
+	min-width: 34px;
+	justify-self: start;
+	font-size: 0.78rem;
+	font-weight: 800;
+	color: #1f6f8b;
+	background: rgba(31, 111, 139, 0.08);
+	border-radius: 999px;
+	padding: 4px 8px;
+	text-align: center;
+}
+
+.app .level-picker-card .course-icon-modern {
+	font-size: 1.15rem;
+	line-height: 1;
+	margin: 0;
+	width: auto;
+	height: auto;
+	background: none;
+}
+
+.app .level-picker-card .course-name-modern {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 800;
+	line-height: 1.25;
+	min-width: 0;
+}
+
+.app .level-picker-card .status-badge {
+	justify-self: end;
+	white-space: nowrap;
+	margin: 0;
+	padding: 4px 8px;
+	font-size: 0.72rem;
+	border-radius: 999px;
+}
+
+.app .level-picker-card .course-progress-modern {
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+}
+
+.app .level-picker-card .progress-header-modern {
+	margin-bottom: 4px;
+}
+
+.app .level-picker-card .progress-details-modern {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 12px;
+	margin-top: 8px;
+}
+
+.app .level-picker-card .progress-stat-item {
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: 0;
+	font-size: 0.8rem;
+	color: #5a7384;
+}
+
+.app .level-picker-card .course-start-prompt {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: #1f6f8b;
+}
+
+@media (max-width: 720px) {
+	.app .level-picker-intro {
+		grid-template-columns: 1fr;
+	}
+
+	.app .level-picker-card .course-card-top {
+		grid-template-columns: auto auto minmax(0, 1fr);
+		grid-template-areas:
+			"num icon name"
+			"status status status";
+	}
+
+	.app .level-picker-card .course-number-badge { grid-area: num; }
+	.app .level-picker-card .course-icon-modern { grid-area: icon; }
+	.app .level-picker-card .course-name-modern { grid-area: name; }
+	.app .level-picker-card .status-badge {
+		grid-area: status;
+		justify-self: start;
+		margin-top: 2px;
+	}
+}

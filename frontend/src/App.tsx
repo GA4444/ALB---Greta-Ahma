@@ -2998,19 +2998,18 @@ function MainContent({
                         </div>
                     </div>
                 ) : !selectedCourse ? (
-                    <div className="course-selection">
-                        <div className="course-selection-header">
-                            <button className="back-button-modern" onClick={() => onClassClick(null)}>
-                                <span className="back-icon">←</span>
+                    <section className="course-selection level-picker" aria-labelledby="class-levels-heading">
+                        <header className="course-selection-header level-picker-header">
+                            <button type="button" className="back-button-modern" onClick={() => onClassClick(null)}>
+                                <span className="back-icon" aria-hidden="true">←</span>
                                 <span>Kthehu te Klasat</span>
                             </button>
-                            <div className="class-header-info">
+                            <div className="class-header-info level-picker-intro">
                                 <div className="class-title-section">
-                                    <div className="class-badge-large">{selectedClass.name}</div>
-                                    <h2 className="class-title">{selectedClass.name}</h2>
+                                    <h2 id="class-levels-heading" className="class-title">{selectedClass.name}</h2>
                                     <p className="class-subtitle">Zgjidh një nivel dhe fillo</p>
                                 </div>
-                                <div className="class-overall-progress">
+                                <div className="class-overall-progress" aria-label="Progresi i Përgjithshëm">
                                     <div className="overall-progress-label">
                                         <span>Progresi i Përgjithshëm</span>
                                         <span className="progress-percentage">
@@ -3019,7 +3018,7 @@ function MainContent({
                                                 : 0}%
                                         </span>
                                     </div>
-                                    <div className="overall-progress-bar">
+                                    <div className="overall-progress-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={classCourses.length > 0 ? Math.round((classCourses.filter(c => c.progress?.is_completed).length / classCourses.length) * 100) : 0}>
                                         <div 
                                             className="overall-progress-fill" 
                                             style={{ 
@@ -3034,19 +3033,16 @@ function MainContent({
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </header>
                         
-                        {/* Show courses for the selected class */}
-                        <div className="course-preview-grid-modern">
+                        <div className="course-preview-grid-modern level-picker-grid" role="list">
                             {isLoading && classCourses.length === 0 ? (
-                                // Skeleton loading for courses
                                 <div className="skeleton-grid">
                                     {[1, 2, 3, 4, 5, 6].map((i) => (
                                         <div key={`skeleton-course-${i}`} className="skeleton-card">
-                                            <div className="skeleton skeleton-circle" style={{width: '80px', height: '80px', margin: '0 auto 12px'}}></div>
-                                            <div className="skeleton skeleton-title" style={{margin: '0 auto 12px'}}></div>
-                                            <div className="skeleton skeleton-text medium" style={{margin: '0 auto 8px'}}></div>
-                                            <div className="skeleton skeleton-button" style={{margin: '12px auto 0'}}></div>
+                                            <div className="skeleton skeleton-circle" style={{width: '48px', height: '48px', marginBottom: '10px'}}></div>
+                                            <div className="skeleton skeleton-title" style={{marginBottom: '10px'}}></div>
+                                            <div className="skeleton skeleton-text medium"></div>
                                         </div>
                                     ))}
                                 </div>
@@ -3055,102 +3051,94 @@ function MainContent({
                                     ? Math.min(100, (course.progress.completed_exercises / Math.max(1, course.progress.total_exercises)) * 100)
                                     : 0
                                 const isCompleted = course.progress?.is_completed || false
+                                const categoryIcon =
+                                    (course.category === 'listen_write' && '🎧') ||
+                                    (course.category === 'word_from_description' && '🧩') ||
+                                    (course.category === 'synonyms_antonyms' && '🔁') ||
+                                    (course.category === 'albanian_or_loanword' && '🇦🇱') ||
+                                    (course.category === 'missing_letter' && '🔠') ||
+                                    (course.category === 'wrong_letter' && '❌') ||
+                                    (course.category === 'build_word' && '🧱') ||
+                                    (course.category === 'number_to_word' && '🔢') ||
+                                    (course.category === 'phrases' && '💬') ||
+                                    (course.category === 'spelling_punctuation' && '📝') ||
+                                    (course.category === 'abstract_concrete' && '🧠') ||
+                                    (course.category === 'build_sentence' && '✍️') ||
+                                    (course.category === 'vocabulary' && '📚') ||
+                                    (course.category === 'spelling' && '✍️') ||
+                                    (course.category === 'grammar' && '🔤') ||
+                                    (course.category === 'numbers' && '🔢') ||
+                                    (course.category === 'punctuation' && '📝') ||
+                                    '📘'
                                 
                                 return (
-                                    <div
+                                    <button
+                                        type="button"
                                         key={course.id}
-                                        className={`course-card-modern ${course.enabled ? 'unlocked' : 'locked'} ${isCompleted ? 'completed' : ''}`}
+                                        role="listitem"
+                                        className={`course-card-modern level-picker-card ${course.enabled ? 'unlocked' : 'locked'} ${isCompleted ? 'completed' : ''}`}
                                         onClick={() => course.enabled && onCourseClick(course)}
+                                        disabled={!course.enabled}
+                                        aria-label={`${course.name}, ${isCompleted ? 'I përfunduar' : course.enabled ? 'I hapur' : 'I mbyllur'}`}
                                     >
-                                        <div className="course-card-header">
-                                            <div className="course-number-badge">#{index + 1}</div>
-                                            <div className="course-icon-wrapper">
-                                                <div className="course-icon-modern">
-                                                    {course.category === 'listen_write' && '🎧'}
-                                                    {course.category === 'word_from_description' && '🧩'}
-                                                    {course.category === 'synonyms_antonyms' && '🔁'}
-                                                    {course.category === 'albanian_or_loanword' && '🇦🇱'}
-                                                    {course.category === 'missing_letter' && '🔠'}
-                                                    {course.category === 'wrong_letter' && '❌'}
-                                                    {course.category === 'build_word' && '🧱'}
-                                                    {course.category === 'number_to_word' && '🔢'}
-                                                    {course.category === 'phrases' && '💬'}
-                                                    {course.category === 'spelling_punctuation' && '📝'}
-                                                    {course.category === 'abstract_concrete' && '🧠'}
-                                                    {course.category === 'build_sentence' && '✍️'}
-                                                    {course.category === 'vocabulary' && '📚'}
-                                                    {course.category === 'spelling' && '✍️'}
-                                                    {course.category === 'grammar' && '🔤'}
-                                                    {course.category === 'numbers' && '🔢'}
-                                                    {course.category === 'punctuation' && '📝'}
-                                                </div>
-                                                {isCompleted && (
-                                                    <div className="completed-checkmark">✓</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="course-card-body">
+                                        <div className="course-card-top">
+                                            <span className="course-number-badge">#{index + 1}</span>
+                                            <span className="course-icon-modern" aria-hidden="true">{categoryIcon}</span>
                                             <h4 className="course-name-modern">{course.name}</h4>
-                                            
-                                            {course.progress && (
-                                                <div className="course-progress-modern">
-                                                    <div className="progress-header-modern">
-                                                        <span className="progress-label">Progresi</span>
-                                                        <span className="progress-percent">{Math.round(progressPercent)}%</span>
-                                                    </div>
-                                                    <div className="progress-bar-modern">
-                                                        <div 
-                                                            className="progress-fill-modern" 
-                                                            style={{ width: `${progressPercent}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    <div className="progress-details-modern">
-                                                        <div className="progress-stat-item">
-                                                            <span className="stat-icon-small">📝</span>
-                                                            <span>{course.progress.completed_exercises}/{course.progress.total_exercises} ushtrime</span>
-                                                        </div>
-                                                        {course.progress.accuracy_percentage > 0 && (
-                                                            <div className="progress-stat-item">
-                                                                <span className="stat-icon-small">🎯</span>
-                                                                <span>{course.progress.accuracy_percentage.toFixed(0)}% saktësi</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-                                            
-                                            {!course.progress && course.enabled && (
-                                                <div className="course-start-prompt">
-                                                    <span className="start-icon">▶</span>
-                                                    <span>Kliko për të filluar</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        
-                                        <div className="course-card-footer">
                                             {isCompleted ? (
-                                                <div className="status-badge completed-badge">
-                                                    <span>🏆</span>
+                                                <span className="status-badge completed-badge">
+                                                    <span aria-hidden="true">🏆</span>
                                                     <span>I përfunduar</span>
-                                                </div>
+                                                </span>
                                             ) : course.enabled ? (
-                                                <div className="status-badge active-badge">
-                                                    <span>✅</span>
+                                                <span className="status-badge active-badge">
+                                                    <span aria-hidden="true">✅</span>
                                                     <span>I hapur</span>
-                                                </div>
+                                                </span>
                                             ) : (
-                                                <div className="status-badge locked-badge">
-                                                    <span>🔒</span>
+                                                <span className="status-badge locked-badge">
+                                                    <span aria-hidden="true">🔒</span>
                                                     <span>I mbyllur</span>
-                                                </div>
+                                                </span>
                                             )}
                                         </div>
-                                    </div>
+
+                                        {course.progress ? (
+                                            <div className="course-progress-modern">
+                                                <div className="progress-header-modern">
+                                                    <span className="progress-label">Progresi</span>
+                                                    <span className="progress-percent">{Math.round(progressPercent)}%</span>
+                                                </div>
+                                                <div className="progress-bar-modern">
+                                                    <div 
+                                                        className="progress-fill-modern" 
+                                                        style={{ width: `${progressPercent}%` }}
+                                                    ></div>
+                                                </div>
+                                                <div className="progress-details-modern">
+                                                    <div className="progress-stat-item">
+                                                        <span className="stat-icon-small" aria-hidden="true">📝</span>
+                                                        <span>{course.progress.completed_exercises}/{course.progress.total_exercises} ushtrime</span>
+                                                    </div>
+                                                    {course.progress.accuracy_percentage > 0 && (
+                                                        <div className="progress-stat-item">
+                                                            <span className="stat-icon-small" aria-hidden="true">🎯</span>
+                                                            <span>{course.progress.accuracy_percentage.toFixed(0)}% saktësi</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : course.enabled ? (
+                                            <div className="course-start-prompt">
+                                                <span className="start-icon" aria-hidden="true">▶</span>
+                                                <span>Kliko për të filluar</span>
+                                            </div>
+                                        ) : null}
+                                    </button>
                                 )
                             })}
                         </div>
-                    </div>
+                    </section>
                 ) : !selectedLevel ? (
                     <div className="level-selection-modern">
                         <div className="level-selection-header">
