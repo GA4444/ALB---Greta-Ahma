@@ -2615,35 +2615,69 @@ function MainContent({
                     </div>
                 </div>
 
-                {/* Compact AI Stats */}
-                {userId && aiRecommendations && (
-                    <div className="sidebar-section">
+                {/* Compact progress: streak + AI insights in one place */}
+                {userId && (userStreak || aiRecommendations) && (
+                    <div className="sidebar-section sidebar-section-progress">
                         <div className="sidebar-section-header compact">
                             <h3>Progresi yt</h3>
-                            <button type="button" className="toggle-btn-compact" onClick={onToggleAIInsights} aria-expanded={showAIInsights}>
-                                {showAIInsights ? '−' : '+'}
+                            <button
+                                type="button"
+                                className="toggle-btn-compact"
+                                onClick={() => setShowGamification(!showGamification)}
+                                aria-expanded={showGamification}
+                            >
+                                {showGamification ? '−' : '+'}
                             </button>
                         </div>
-                        {showAIInsights && (
-                            <div className="ai-stats-compact">
-                                <div className="stat-row-compact">
-                                    <span className="stat-label-compact">Saktësia</span>
-                                    <span className="stat-value-compact">{Math.round(aiRecommendations.accuracy * 100)}%</span>
+                        <div className="progress-panel-compact">
+                            {userStreak && (
+                                <div className="streak-compact">
+                                    <span className="streak-num">{userStreak.current_streak}</span>
+                                    <span className="streak-txt">ditë</span>
                                 </div>
-                                {adaptiveDifficulty && (
-                                    <div className="stat-row-compact">
-                                        <span className="stat-label-compact">Nivel</span>
-                                        <span className="stat-value-compact">{adaptiveDifficulty.multiplier}x</span>
-                                    </div>
-                                )}
-                                {aiCoach && (
-                                    <div className="stat-row-compact">
-                                        <span className="stat-label-compact">Tentativa</span>
-                                        <span className="stat-value-compact">{aiCoach.total_attempts_analyzed}</span>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                            )}
+                            {showGamification && (
+                                <div className="progress-panel-details">
+                                    {aiRecommendations && (
+                                        <div className="ai-stats-compact">
+                                            <div className="stat-row-compact">
+                                                <span className="stat-label-compact">Saktësia</span>
+                                                <span className="stat-value-compact">{Math.round(aiRecommendations.accuracy * 100)}%</span>
+                                            </div>
+                                            {adaptiveDifficulty && (
+                                                <div className="stat-row-compact">
+                                                    <span className="stat-label-compact">Nivel</span>
+                                                    <span className="stat-value-compact">{adaptiveDifficulty.multiplier}x</span>
+                                                </div>
+                                            )}
+                                            {aiCoach && (
+                                                <div className="stat-row-compact">
+                                                    <span className="stat-label-compact">Tentativa</span>
+                                                    <span className="stat-value-compact">{aiCoach.total_attempts_analyzed}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {dailyChallenge && dailyChallenge.user_progress && (
+                                        <div className="challenge-compact">
+                                            <div className="challenge-label">Sfida</div>
+                                            <div className="challenge-bar-compact">
+                                                <div
+                                                    className="challenge-fill-compact"
+                                                    style={{ width: `${Math.min(100, (dailyChallenge.user_progress.current_value / (dailyChallenge.target_value || 1)) * 100)}%` }}
+                                                ></div>
+                                            </div>
+                                            <span className="challenge-count">{dailyChallenge.user_progress.current_value}/{dailyChallenge.target_value}</span>
+                                        </div>
+                                    )}
+                                    {userAchievements && userAchievements.total_achievements > 0 && (
+                                        <div className="achievements-compact">
+                                            <span>{userAchievements.total_achievements} arritje</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -2664,45 +2698,6 @@ function MainContent({
                                 <div className="child-ai-side-status muted">
                                     Vazhdo ushtrimin dhe sistemi mëson nga progresi yt.
                                 </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Compact Gamification */}
-                {userId && userStreak && (
-                    <div className="sidebar-section">
-                        <div className="sidebar-section-header compact">
-                            <h3>Progresi</h3>
-                            <button type="button" className="toggle-btn-compact" onClick={() => setShowGamification(!showGamification)} aria-expanded={showGamification}>
-                                {showGamification ? '−' : '+'}
-                            </button>
-                        </div>
-                        <div className="gamification-compact">
-                            <div className="streak-compact">
-                                <span className="streak-num">{userStreak.current_streak}</span>
-                                <span className="streak-txt">ditë</span>
-                            </div>
-                            {showGamification && (
-                                <>
-                                    {dailyChallenge && dailyChallenge.user_progress && (
-                                        <div className="challenge-compact">
-                                            <div className="challenge-label">Sfida</div>
-                                            <div className="challenge-bar-compact">
-                                                <div 
-                                                    className="challenge-fill-compact"
-                                                    style={{ width: `${Math.min(100, (dailyChallenge.user_progress.current_value / (dailyChallenge.target_value || 1)) * 100)}%` }}
-                                                ></div>
-                                            </div>
-                                            <span className="challenge-count">{dailyChallenge.user_progress.current_value}/{dailyChallenge.target_value}</span>
-                                        </div>
-                                    )}
-                                    {userAchievements && userAchievements.total_achievements > 0 && (
-                                        <div className="achievements-compact">
-                                            <span>{userAchievements.total_achievements} arritje</span>
-                                        </div>
-                                    )}
-                                </>
                             )}
                         </div>
                     </div>

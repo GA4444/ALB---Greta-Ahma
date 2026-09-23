@@ -1616,6 +1616,31 @@
 	background: #f8fafc;
 }
 
+.app .sidebar-compact .progress-panel-compact {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 8px 10px;
+	border: 1px solid rgba(31, 111, 139, 0.1);
+	border-radius: 10px;
+	background: #f8fafc;
+}
+
+.app .sidebar-compact .progress-panel-details {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding-top: 8px;
+	border-top: 1px solid rgba(31, 111, 139, 0.1);
+}
+
+.app .sidebar-compact .progress-panel-details .ai-stats-compact {
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+}
+
 .app .sidebar-compact .stat-row-compact {
 	display: flex;
 	align-items: center;
