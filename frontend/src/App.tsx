@@ -1673,44 +1673,28 @@ function App() {
 
                                 {/* Personal Information */}
                                 <div className="profile-section-enhanced">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <div className="profile-section-toolbar">
                                         <h3 className="profile-section-title">📋 Informacione Personale</h3>
                                         {!isEditingProfile ? (
-                                            <button 
+                                            <button
+                                                type="button"
                                                 className="profile-edit-btn"
                                                 onClick={() => setIsEditingProfile(true)}
-                                                style={{ 
-                                                    padding: '0.5rem 1rem', 
-                                                    background: 'var(--color-primary)', 
-                                                    color: 'white', 
-                                                    border: 'none', 
-                                                    borderRadius: '8px', 
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.9rem'
-                                                }}
                                             >
                                                 ✏️ Edito
                                             </button>
                                         ) : (
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                <button 
+                                            <div className="profile-edit-actions">
+                                                <button
+                                                    type="button"
                                                     className="profile-save-btn"
                                                     onClick={handleSaveProfile}
                                                     disabled={profileLoading}
-                                                    style={{ 
-                                                        padding: '0.5rem 1rem', 
-                                                        background: 'var(--color-success)', 
-                                                        color: 'white', 
-                                                        border: 'none', 
-                                                        borderRadius: '8px', 
-                                                        cursor: profileLoading ? 'not-allowed' : 'pointer',
-                                                        fontSize: '0.9rem',
-                                                        opacity: profileLoading ? 0.6 : 1
-                                                    }}
                                                 >
                                                     {profileLoading ? 'Duke ruajtur...' : '💾 Ruaj'}
                                                 </button>
-                                                <button 
+                                                <button
+                                                    type="button"
                                                     className="profile-cancel-btn"
                                                     onClick={() => {
                                                         setIsEditingProfile(false)
@@ -1721,22 +1705,13 @@ function App() {
                                                                 last_name: userProfile.last_name || '',
                                                                 email: userProfile.email || '',
                                                                 age: userProfile.age?.toString() || '',
-                                                                date_of_birth: userProfile.date_of_birth 
+                                                                date_of_birth: userProfile.date_of_birth
                                                                     ? new Date(userProfile.date_of_birth).toISOString().split('T')[0]
                                                                     : '',
                                                                 address: userProfile.address || '',
                                                                 phone_number: userProfile.phone_number || ''
                                                             })
                                                         }
-                                                    }}
-                                                    style={{ 
-                                                        padding: '0.5rem 1rem', 
-                                                        background: 'var(--color-accent)', 
-                                                        color: 'white', 
-                                                        border: 'none', 
-                                                        borderRadius: '8px', 
-                                                        cursor: 'pointer',
-                                                        fontSize: '0.9rem'
                                                     }}
                                                 >
                                                     ❌ Anulo
@@ -1745,14 +1720,7 @@ function App() {
                                         )}
                                     </div>
                                     {profileError && (
-                                        <div style={{ 
-                                            padding: '0.75rem', 
-                                            background: '#fee', 
-                                            color: '#c33', 
-                                            borderRadius: '8px', 
-                                            marginBottom: '1rem',
-                                            fontSize: '0.9rem'
-                                        }}>
+                                        <div className="profile-error-banner">
                                             {profileError}
                                         </div>
                                     )}
@@ -1765,13 +1733,6 @@ function App() {
                                                     value={profileFormData.first_name}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, first_name: e.target.value })}
                                                     className="profile-field-input"
-                                                    style={{
-                                                        padding: '0.5rem',
-                                                        border: '1px solid #ddd',
-                                                        borderRadius: '6px',
-                                                        fontSize: '0.95rem',
-                                                        width: '100%'
-                                                    }}
                                                     placeholder="Emri"
                                                 />
                                             ) : (
@@ -1786,13 +1747,6 @@ function App() {
                                                     value={profileFormData.last_name}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, last_name: e.target.value })}
                                                     className="profile-field-input"
-                                                    style={{
-                                                        padding: '0.5rem',
-                                                        border: '1px solid #ddd',
-                                                        borderRadius: '6px',
-                                                        fontSize: '0.95rem',
-                                                        width: '100%'
-                                                    }}
                                                     placeholder="Mbiemri"
                                                 />
                                             ) : (
@@ -1811,13 +1765,6 @@ function App() {
                                                     value={profileFormData.email}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, email: e.target.value })}
                                                     className="profile-field-input"
-                                                    style={{
-                                                        padding: '0.5rem',
-                                                        border: '1px solid #ddd',
-                                                        borderRadius: '6px',
-                                                        fontSize: '0.95rem',
-                                                        width: '100%'
-                                                    }}
                                                     placeholder="Email"
                                                 />
                                             ) : (
@@ -1834,13 +1781,6 @@ function App() {
                                                     value={profileFormData.age}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, age: e.target.value })}
                                                     className="profile-field-input"
-                                                    style={{
-                                                        padding: '0.5rem',
-                                                        border: '1px solid #ddd',
-                                                        borderRadius: '6px',
-                                                        fontSize: '0.95rem',
-                                                        width: '100%'
-                                                    }}
                                                     placeholder="Mosha"
                                                 />
                                             ) : (
@@ -1855,17 +1795,10 @@ function App() {
                                                     value={profileFormData.date_of_birth}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, date_of_birth: e.target.value })}
                                                     className="profile-field-input"
-                                                    style={{
-                                                        padding: '0.5rem',
-                                                        border: '1px solid #ddd',
-                                                        borderRadius: '6px',
-                                                        fontSize: '0.95rem',
-                                                        width: '100%'
-                                                    }}
                                                 />
                                             ) : (
                                                 <span className="info-value">
-                                                    {userProfile?.date_of_birth 
+                                                    {userProfile?.date_of_birth
                                                         ? new Date(userProfile.date_of_birth).toLocaleDateString('sq-AL')
                                                         : 'Nuk është vendosur'}
                                                 </span>
@@ -1879,13 +1812,6 @@ function App() {
                                                     value={profileFormData.address}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, address: e.target.value })}
                                                     className="profile-field-input"
-                                                    style={{
-                                                        padding: '0.5rem',
-                                                        border: '1px solid #ddd',
-                                                        borderRadius: '6px',
-                                                        fontSize: '0.95rem',
-                                                        width: '100%'
-                                                    }}
                                                     placeholder="Adresa"
                                                 />
                                             ) : (
@@ -1900,13 +1826,6 @@ function App() {
                                                     value={profileFormData.phone_number}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, phone_number: e.target.value })}
                                                     className="profile-field-input"
-                                                    style={{
-                                                        padding: '0.5rem',
-                                                        border: '1px solid #ddd',
-                                                        borderRadius: '6px',
-                                                        fontSize: '0.95rem',
-                                                        width: '100%'
-                                                    }}
                                                     placeholder="+355..."
                                                 />
                                             ) : (
@@ -2006,7 +1925,7 @@ function App() {
                                     <div className="profile-section-enhanced">
                                         <h3 className="profile-section-title">🔥 Varg Ditësh</h3>
                                         <div className="profile-stats-enhanced">
-                                            <div className="profile-stat-card" style={{ background: 'var(--bg-tertiary)' }}>
+                                            <div className="profile-stat-card profile-stat-card-muted">
                                                 <div className="stat-icon-large" aria-hidden="true"><IconFlame size={28} /></div>
                                                 <div className="stat-content">
                                                     <div className="stat-label">Vargu Aktual</div>
@@ -2014,7 +1933,7 @@ function App() {
                                                     <div className="stat-sub-label">ditë</div>
                                                 </div>
                                             </div>
-                                            <div className="profile-stat-card" style={{ background: 'var(--bg-tertiary)' }}>
+                                            <div className="profile-stat-card profile-stat-card-muted">
                                                 <div className="stat-icon-large" aria-hidden="true"><IconStar size={28} /></div>
                                                 <div className="stat-content">
                                                     <div className="stat-label">Vargu Më i Gjatë</div>
@@ -2023,11 +1942,11 @@ function App() {
                                                 </div>
                                             </div>
                                             {userStreak.last_activity_date && (
-                                                <div className="profile-stat-card" style={{ background: 'var(--bg-tertiary)' }}>
+                                                <div className="profile-stat-card profile-stat-card-muted">
                                                     <div className="stat-icon-large" aria-hidden="true"><IconCalendar size={28} /></div>
                                                     <div className="stat-content">
                                                         <div className="stat-label">Aktiviteti i Fundit</div>
-                                                        <div className="stat-value-large" style={{ fontSize: '1rem' }}>
+                                                        <div className="stat-value-large stat-value-date">
                                                             {new Date(userStreak.last_activity_date).toLocaleDateString('sq-AL')}
                                                         </div>
                                                     </div>
@@ -2035,15 +1954,9 @@ function App() {
                                             )}
                                         </div>
                                         {userStreak.current_streak > 0 && (
-                                            <div style={{ 
-                                                marginTop: '1rem', 
-                                                padding: '1rem', 
-                                                background: 'var(--bg-tertiary)', 
-                                                borderRadius: '12px',
-                                                textAlign: 'center'
-                                            }}>
-                                                <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
-                                                    🎉 Vazhdo të praktikosh çdo ditë për të mbajtur vargun tënd! 
+                                            <div className="profile-streak-tip">
+                                                <p>
+                                                    🎉 Vazhdo të praktikosh çdo ditë për të mbajtur vargun tënd!
                                                     {userStreak.current_streak >= 7 && ' Ju tashmë keni një varg të fortë!'}
                                                 </p>
                                             </div>

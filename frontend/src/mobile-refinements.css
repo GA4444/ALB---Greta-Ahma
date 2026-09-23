@@ -127,7 +127,7 @@
   }
 
   /* Profile edit / save actions — full-width, tappable */
-  .profile-section-enhanced > div:first-child {
+  .profile-section-toolbar {
     flex-wrap: wrap !important;
     gap: 10px !important;
   }
