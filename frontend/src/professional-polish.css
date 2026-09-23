@@ -329,17 +329,19 @@
   box-shadow: none;
 }
 
-/* Main shell: measured spacing and centered on the page. */
+/* Main shell: same axis as header brand. */
 .app .main {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
+  padding: 0 18px;
+  box-sizing: border-box;
 }
 
 .app .main-content {
-  width: min(calc(100% - 160px), 980px);
-  max-width: 980px;
+  width: 100%;
+  max-width: 1320px;
   margin-left: auto;
   margin-right: auto;
   padding: 18px 0 30px;
@@ -929,8 +931,8 @@
 }
 
 .app .main-content {
-  width: min(calc(100% - 160px), 980px);
-  max-width: 980px;
+  width: 100%;
+  max-width: 1320px;
   margin-left: auto;
   margin-right: auto;
   padding: 16px 0 28px;
@@ -1177,8 +1179,8 @@
     display: grid !important;
     grid-template-columns: 200px minmax(0, 1fr);
     align-items: start;
-    width: min(calc(100% - 160px), 980px);
-    max-width: 980px;
+    width: 100%;
+    max-width: 1320px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -1232,8 +1234,8 @@
 
 @media (min-width: 1367px) and (max-width: 1440px) {
   .app .main-content {
-    width: min(calc(100% - 160px), 980px);
-    max-width: 980px;
+    width: 100%;
+    max-width: 1320px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -1291,8 +1293,8 @@
 
 @media (min-width: 769px) and (max-width: 1100px) {
   .app .main-content {
-    width: min(calc(100% - 96px), 900px);
-    max-width: 900px;
+    width: 100%;
+    max-width: 1320px;
     margin-left: auto;
     margin-right: auto;
     gap: 12px;
