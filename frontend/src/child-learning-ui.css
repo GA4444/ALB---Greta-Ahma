@@ -2291,13 +2291,35 @@
 }
 
 .app .main-content {
+	display: grid !important;
+	grid-template-columns: 200px minmax(0, 1fr) !important;
+	grid-template-areas: "sidebar content" !important;
+	align-items: start !important;
+	column-gap: 14px !important;
+	row-gap: 0 !important;
 	width: min(100% - 24px, 1280px) !important;
 	max-width: 1280px !important;
 	margin: 0 auto !important;
 	padding: 12px 0 20px !important;
-	gap: 14px !important;
 	min-height: 0 !important;
-	align-items: start !important;
+}
+
+.app .main-content > .sidebar,
+.app .main-content > .sidebar.sidebar-compact {
+	grid-area: sidebar !important;
+	width: 200px !important;
+	max-width: 200px !important;
+	margin: 0 !important;
+	align-self: start !important;
+}
+
+.app .main-content > .content-area {
+	grid-area: content !important;
+	min-width: 0 !important;
+	width: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	align-self: start !important;
 }
 
 .app .sidebar.sidebar-compact {
@@ -2472,13 +2494,14 @@
 	.app .main-content {
 		display: grid !important;
 		grid-template-columns: 200px minmax(0, 1fr) !important;
-		gap: 14px !important;
+		grid-template-areas: "sidebar content" !important;
+		column-gap: 14px !important;
 	}
 
 	.app .sidebar,
 	.app .sidebar.sidebar-compact {
 		width: 200px !important;
-		flex: 0 0 200px !important;
+		flex: none !important;
 		max-width: 200px !important;
 	}
 
@@ -2491,15 +2514,18 @@
 	.app .main-content {
 		display: grid !important;
 		grid-template-columns: 180px minmax(0, 1fr) !important;
+		grid-template-areas: "sidebar content" !important;
 		width: min(100% - 20px, 1040px) !important;
-		gap: 12px !important;
+		column-gap: 12px !important;
 		padding: 10px 0 16px !important;
 	}
 
+	.app .main-content > .sidebar,
+	.app .main-content > .sidebar.sidebar-compact,
 	.app .sidebar,
 	.app .sidebar.sidebar-compact {
 		width: 180px !important;
-		flex: 0 0 180px !important;
+		flex: none !important;
 		max-width: 180px !important;
 		padding: 8px !important;
 	}
@@ -2517,6 +2543,8 @@
 	.app .main-content {
 		display: flex !important;
 		flex-direction: column !important;
+		grid-template-columns: none !important;
+		grid-template-areas: none !important;
 		width: 100% !important;
 		max-width: 100% !important;
 		margin: 0 !important;
@@ -2524,13 +2552,22 @@
 		gap: 10px !important;
 	}
 
+	.app .main-content > .sidebar,
+	.app .main-content > .sidebar.sidebar-compact,
 	.app .sidebar,
 	.app .sidebar.sidebar-compact {
+		grid-area: auto !important;
+		order: -1;
 		width: 100% !important;
 		max-width: 100% !important;
 		padding: 10px !important;
 		gap: 8px !important;
 		border-radius: 14px !important;
+	}
+
+	.app .main-content > .content-area {
+		grid-area: auto !important;
+		width: 100% !important;
 	}
 
 	.app .sidebar-compact .sidebar-section + .sidebar-section {

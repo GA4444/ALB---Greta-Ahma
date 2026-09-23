@@ -1161,16 +1161,16 @@
 
 @media (min-width: 1101px) {
   .app .main-content {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
+    display: grid !important;
+    grid-template-columns: 200px minmax(0, 1fr);
+    align-items: start;
     max-width: 1280px;
   }
 
   .app .sidebar {
-    width: 214px;
-    flex: 0 0 214px;
-    max-width: 214px;
+    width: 200px;
+    flex: none;
+    max-width: 200px;
   }
 
   .app .features-grid-modern {

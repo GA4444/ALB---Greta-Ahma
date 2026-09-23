@@ -271,7 +271,7 @@
     padding: 14px 16px !important;
   }
 
-  /* ===== Single column app layout ===== */
+  /* ===== Two-column until phones; then stack ===== */
   .app .main-content {
     display: flex !important;
     flex-direction: column !important;
