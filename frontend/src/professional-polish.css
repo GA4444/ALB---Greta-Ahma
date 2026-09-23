@@ -1175,11 +1175,27 @@
 }
 
 @media (max-width: 768px) {
-  .app .chatbot-float-btn,
   .chatbot-float-btn {
-    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
     right: max(14px, env(safe-area-inset-right, 0px)) !important;
-    z-index: 1400 !important;
+    z-index: 10050 !important;
+    pointer-events: auto !important;
+  }
+
+  .chatbot-float-btn.active {
+    bottom: auto !important;
+    top: max(12px, env(safe-area-inset-top, 0px)) !important;
+    z-index: 10060 !important;
+  }
+
+  .chatbot-modal-overlay {
+    z-index: 10040 !important;
+    pointer-events: auto !important;
+  }
+
+  .chatbot-floating-panel {
+    z-index: 10045 !important;
+    pointer-events: auto !important;
   }
 }
 

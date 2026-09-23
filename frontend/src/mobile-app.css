@@ -378,9 +378,16 @@
   body:has(.profile-overlay) .mobile-bottom-nav,
   body:has(.ocr-modal-overlay) .mobile-bottom-nav,
   body.chatbot-open .mobile-bottom-nav,
+  html.chatbot-open .mobile-bottom-nav,
   .app:has(.profile-overlay) .mobile-bottom-nav,
   .app:has(.ocr-modal-overlay) .mobile-bottom-nav {
     display: none !important;
+  }
+
+  body.chatbot-open .chatbot-float-btn,
+  html.chatbot-open .chatbot-float-btn {
+    pointer-events: auto !important;
+    visibility: visible !important;
   }
 
   /* ===== Home / hero ===== */

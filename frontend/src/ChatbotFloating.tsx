@@ -20,7 +20,20 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 
 	useEffect(() => {
 		document.body.classList.toggle('chatbot-open', isOpen)
-		return () => document.body.classList.remove('chatbot-open')
+		document.documentElement.classList.toggle('chatbot-open', isOpen)
+		return () => {
+			document.body.classList.remove('chatbot-open')
+			document.documentElement.classList.remove('chatbot-open')
+		}
+	}, [isOpen])
+
+	useEffect(() => {
+		if (!isOpen) return
+		const onKey = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') setIsOpen(false)
+		}
+		window.addEventListener('keydown', onKey)
+		return () => window.removeEventListener('keydown', onKey)
 	}, [isOpen])
 
 	const handleToggle = () => {

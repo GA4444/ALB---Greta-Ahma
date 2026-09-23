@@ -756,29 +756,42 @@
 /* Responsive */
 @media (max-width: 768px) {
 	.advanced-chatbot {
-		display: flex;
-		flex-direction: column;
-		min-height: 0;
-		height: 100%;
-		max-height: 100%;
-		border-radius: 18px 18px 0 0;
+		display: flex !important;
+		flex-direction: column !important;
+		min-height: 0 !important;
+		height: 100% !important;
+		max-height: 100% !important;
+		width: 100% !important;
+		border-radius: 18px 18px 0 0 !important;
+		overflow: hidden !important;
+		background: #fff !important;
 	}
 
 	.chatbot-header {
-		flex-shrink: 0;
+		flex-shrink: 0 !important;
 	}
 
 	.chatbot-messages {
-		min-height: 0;
-		flex: 1 1 auto;
-		overflow-y: auto;
+		min-height: 0 !important;
+		flex: 1 1 auto !important;
+		overflow-y: auto !important;
 		-webkit-overflow-scrolling: touch;
+		overscroll-behavior: contain;
 	}
 
 	.chatbot-input-area {
-		gap: 8px;
-		padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0px));
-		flex-shrink: 0;
+		display: flex !important;
+		flex-wrap: nowrap !important;
+		align-items: center !important;
+		gap: 8px !important;
+		padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+		flex-shrink: 0 !important;
+		width: 100% !important;
+		box-sizing: border-box !important;
+		background: #fff !important;
+		border-top: 1px solid #e2e8f0 !important;
+		position: relative !important;
+		z-index: 2 !important;
 	}
 
 	.chatbot-voice-btn,
@@ -788,6 +801,7 @@
 		min-width: 42px !important;
 		max-width: 42px !important;
 		flex: 0 0 42px !important;
+		pointer-events: auto !important;
 	}
 
 	.chatbot-input {
@@ -798,7 +812,8 @@
 		display: block !important;
 		visibility: visible !important;
 		opacity: 1 !important;
-		font-size: 16px;
+		pointer-events: auto !important;
+		font-size: 16px !important; /* prevent iOS zoom */
 	}
 
 	.settings-fields {

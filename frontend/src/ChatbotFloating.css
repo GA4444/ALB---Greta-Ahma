@@ -170,52 +170,88 @@ body:has(.ocr-modal-overlay) .chatbot-modal-overlay {
 /* Mobile: bottom sheet above tab bar; button always tappable */
 @media (max-width: 768px) {
 	.chatbot-float-btn {
-		bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-		right: max(14px, env(safe-area-inset-right, 0px));
-		width: 52px;
-		height: 52px;
-		font-size: 1.3rem;
-		z-index: 1400;
+		bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
+		right: max(14px, env(safe-area-inset-right, 0px)) !important;
+		width: 54px !important;
+		height: 54px !important;
+		font-size: 1.35rem !important;
+		z-index: 10050 !important;
+		pointer-events: auto !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+	}
+
+	.chatbot-float-btn.active {
+		/* Keep close control above the sheet */
+		bottom: auto !important;
+		top: max(12px, env(safe-area-inset-top, 0px)) !important;
+		right: max(12px, env(safe-area-inset-right, 0px)) !important;
+		z-index: 10060 !important;
 	}
 
 	.chatbot-modal-overlay {
-		display: flex;
-		align-items: flex-end;
-		justify-content: center;
-		padding: 0;
-		background: rgba(15, 23, 42, 0.45);
+		display: flex !important;
+		align-items: flex-end !important;
+		justify-content: center !important;
+		padding: 0 !important;
+		inset: 0 !important;
+		background: rgba(15, 23, 42, 0.48) !important;
 		backdrop-filter: blur(3px);
 		-webkit-backdrop-filter: blur(3px);
-		pointer-events: auto;
+		pointer-events: auto !important;
 		cursor: pointer;
 		animation: chatbotOverlayIn 160ms ease-out;
-		overflow: hidden;
+		overflow: hidden !important;
+		z-index: 10040 !important;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	.chatbot-floating-panel {
-		position: relative;
-		inset: auto;
-		width: 100%;
-		max-width: 100%;
-		height: min(88dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 8px));
-		max-height: min(88dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 8px));
-		margin: 0;
-		border-radius: 18px 18px 0 0;
-		border: 1px solid #dbe4ec;
-		border-bottom: 0;
-		box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.22);
-		z-index: 1395;
+		position: relative !important;
+		inset: auto !important;
+		bottom: auto !important;
+		right: auto !important;
+		left: auto !important;
+		top: auto !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		height: min(86dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 12px)) !important;
+		max-height: min(86dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 12px)) !important;
+		min-height: 320px !important;
+		margin: 0 !important;
+		border-radius: 18px 18px 0 0 !important;
+		border: 1px solid #dbe4ec !important;
+		border-bottom: 0 !important;
+		box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.22) !important;
+		z-index: 10045 !important;
 		cursor: default;
+		pointer-events: auto !important;
 		animation: chatbotPanelIn 220ms ease-out;
+		display: flex !important;
+		flex-direction: column !important;
+		overflow: hidden !important;
+		overscroll-behavior: contain;
+	}
+
+	.chatbot-floating-panel > * {
+		flex: 1 1 auto !important;
+		min-height: 0 !important;
+		height: 100% !important;
+		max-height: 100% !important;
+		overflow: hidden !important;
 	}
 
 	body.chatbot-open {
-		overflow: hidden;
-		touch-action: none;
+		overflow: hidden !important;
+		/* Do NOT set touch-action: none — it breaks inputs on iOS */
+		overscroll-behavior: none;
 	}
 
-	body.chatbot-open .mobile-bottom-nav {
+	body.chatbot-open .mobile-bottom-nav,
+	html.chatbot-open .mobile-bottom-nav {
 		display: none !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
 	}
 
 	@keyframes chatbotOverlayIn {
