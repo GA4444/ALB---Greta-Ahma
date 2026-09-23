@@ -2768,8 +2768,8 @@
 		width: 100% !important;
 		max-width: 100% !important;
 		margin: 0 !important;
-		padding: 12px 14px calc(88px + env(safe-area-inset-bottom, 0px)) !important;
-		gap: 14px !important;
+		padding: 8px 12px calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+		gap: 8px !important;
 		box-sizing: border-box !important;
 	}
 
@@ -2802,15 +2802,15 @@
 	}
 
 	.app .welcome-screen-modern {
-		gap: 14px !important;
+		gap: 8px !important;
 		padding: 0 !important;
 	}
 
-	/* Hero: full-width mobile landing card */
+	/* Hero: denser landing card */
 	.app .hero-section-modern {
-		padding: 28px 18px 22px !important;
+		padding: 16px 14px 14px !important;
 		margin: 0 !important;
-		border-radius: 20px !important;
+		border-radius: 16px !important;
 		text-align: center !important;
 	}
 
@@ -2819,41 +2819,41 @@
 	}
 
 	.app .welcome-brand-hero {
-		margin: 0 auto 12px !important;
+		margin: 0 auto 6px !important;
 	}
 
 	.app .welcome-brand-hero .brand-logo,
 	.app .welcome-brand-hero img {
-		width: 56px !important;
-		height: 56px !important;
+		width: 44px !important;
+		height: 44px !important;
 	}
 
 	.app .hero-title-modern {
-		font-size: 1.75rem !important;
-		margin: 0 0 8px !important;
+		font-size: 1.45rem !important;
+		margin: 0 0 4px !important;
 		letter-spacing: -0.03em !important;
 	}
 
 	.app .hero-description-modern {
-		font-size: 0.95rem !important;
-		line-height: 1.45 !important;
-		margin: 0 auto 18px !important;
+		font-size: 0.88rem !important;
+		line-height: 1.35 !important;
+		margin: 0 auto 10px !important;
 		max-width: 20rem !important;
 		opacity: 0.95;
 	}
 
 	.app .hero-stats-modern {
 		display: grid !important;
-		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-		gap: 8px !important;
+		grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+		gap: 6px !important;
 		max-width: 100% !important;
 		margin: 0 auto !important;
 	}
 
 	.app .hero-stat-modern {
-		padding: 12px 8px !important;
-		border-radius: 14px !important;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+		padding: 8px 4px !important;
+		border-radius: 10px !important;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
 	}
 
 	.app .hero-stat-modern:hover {
@@ -2861,12 +2861,12 @@
 	}
 
 	.app .stat-number-modern {
-		font-size: 1.25rem !important;
-		margin-bottom: 2px !important;
+		font-size: 1.05rem !important;
+		margin-bottom: 1px !important;
 	}
 
 	.app .stat-label-modern {
-		font-size: 0.72rem !important;
+		font-size: 0.65rem !important;
 	}
 
 	/* Classes: primary action card with 2-col tap targets */
@@ -2880,22 +2880,22 @@
 		width: 100% !important;
 		max-width: 100% !important;
 		margin: 0 !important;
-		padding: 14px !important;
-		gap: 12px !important;
-		border-radius: 18px !important;
+		padding: 10px !important;
+		gap: 8px !important;
+		border-radius: 14px !important;
 		background: #fff !important;
 		border: 1px solid rgba(31, 111, 139, 0.1) !important;
 		box-shadow: 0 6px 20px rgba(19, 41, 61, 0.06) !important;
 	}
 
 	.app .sidebar-section-header.compact {
-		margin-bottom: 10px !important;
+		margin-bottom: 6px !important;
 		padding-bottom: 0 !important;
 		border-bottom: 0 !important;
 	}
 
 	.app .sidebar-section-header.compact h3 {
-		font-size: 1rem !important;
+		font-size: 0.92rem !important;
 		font-weight: 800 !important;
 		color: #13293d !important;
 	}
@@ -2907,7 +2907,7 @@
 	.app .class-list-compact {
 		display: grid !important;
 		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-		gap: 8px !important;
+		gap: 6px !important;
 		overflow: visible !important;
 		padding: 0 !important;
 		flex-direction: unset !important;
@@ -2917,9 +2917,9 @@
 		flex: none !important;
 		min-width: 0 !important;
 		width: 100% !important;
-		min-height: 52px !important;
-		padding: 10px 12px !important;
-		border-radius: 14px !important;
+		min-height: 44px !important;
+		padding: 7px 9px !important;
+		border-radius: 10px !important;
 		border: 1px solid rgba(31, 111, 139, 0.12) !important;
 		background: #f7fbfe !important;
 		box-sizing: border-box !important;
@@ -2952,68 +2952,68 @@
 
 	.app .sidebar-compact .sidebar-section + .sidebar-section {
 		margin-top: 0 !important;
-		padding-top: 10px !important;
+		padding-top: 8px !important;
 		border-top: 1px solid rgba(31, 111, 139, 0.08) !important;
 	}
 
 	.app .progress-panel-compact {
-		padding: 8px 0 0 !important;
+		padding: 4px 0 0 !important;
 	}
 
 	.app .sidebar .ocr-launch-card {
 		margin: 0 !important;
-		padding: 12px !important;
-		gap: 8px !important;
-		border-radius: 14px !important;
+		padding: 10px !important;
+		gap: 6px !important;
+		border-radius: 12px !important;
 		background: #f7fbfe !important;
 		border: 1px solid rgba(31, 111, 139, 0.1) !important;
 	}
 
 	.app .sidebar .ocr-launch-copy h3 {
-		font-size: 0.92rem !important;
-		margin: 0 0 4px !important;
+		font-size: 0.88rem !important;
+		margin: 0 0 2px !important;
 		font-weight: 800 !important;
 	}
 
 	.app .sidebar .ocr-launch-copy p {
-		font-size: 0.78rem !important;
-		line-height: 1.4 !important;
+		font-size: 0.74rem !important;
+		line-height: 1.3 !important;
 		margin: 0 !important;
 		color: #5a7384 !important;
 	}
 
 	.app .sidebar .ocr-launch-button {
-		min-height: 44px !important;
+		min-height: 38px !important;
 		width: 100% !important;
-		padding: 10px 12px !important;
-		font-size: 0.88rem !important;
-		border-radius: 12px !important;
+		padding: 8px 10px !important;
+		font-size: 0.84rem !important;
+		border-radius: 10px !important;
 		font-weight: 700 !important;
 	}
 
-	/* Features: clean section card + list */
+	/* Features: denser section */
 	.app .features-section-modern {
 		margin: 0 !important;
-		padding: 16px 14px !important;
+		padding: 12px 10px !important;
 		border: 1px solid rgba(31, 111, 139, 0.1) !important;
-		border-radius: 18px !important;
+		border-radius: 14px !important;
 		background: #fff !important;
-		box-shadow: 0 6px 20px rgba(19, 41, 61, 0.05) !important;
+		box-shadow: 0 4px 14px rgba(19, 41, 61, 0.04) !important;
 	}
 
 	.app .section-header-modern {
-		margin: 0 0 12px !important;
+		margin: 0 0 8px !important;
 		text-align: left !important;
 		padding: 0 !important;
 	}
 
 	.app .section-title-modern {
-		font-size: 1.08rem !important;
-		margin: 0 0 4px !important;
+		font-size: 1rem !important;
+		margin: 0 0 2px !important;
 	}
 
 	.app .section-subtitle-modern {
-		font-size: 0.82rem !important;
+		font-size: 0.78rem !important;
 		margin: 0 !important;
 	}
 
@@ -3021,7 +3021,7 @@
 		display: flex !important;
 		flex-direction: column !important;
 		grid-template-columns: none !important;
-		gap: 8px !important;
+		gap: 6px !important;
 		width: 100% !important;
 	}
 
@@ -3030,22 +3030,22 @@
 	.app .features-grid-modern > .features-row-2 {
 		display: grid !important;
 		grid-template-columns: 1fr !important;
-		gap: 8px !important;
+		gap: 6px !important;
 		width: 100% !important;
 	}
 
 	.app .feature-card-modern {
 		min-height: 0 !important;
-		padding: 12px !important;
+		padding: 8px 10px !important;
 		display: grid !important;
-		grid-template-columns: 42px minmax(0, 1fr) !important;
+		grid-template-columns: 36px minmax(0, 1fr) !important;
 		grid-template-areas: none !important;
 		flex-direction: unset !important;
 		align-items: center !important;
-		column-gap: 12px !important;
-		row-gap: 2px !important;
+		column-gap: 10px !important;
+		row-gap: 0 !important;
 		text-align: left !important;
-		border-radius: 14px !important;
+		border-radius: 12px !important;
 		border: 1px solid rgba(31, 111, 139, 0.1) !important;
 		background: #f8fafc !important;
 		box-shadow: none !important;
@@ -3059,22 +3059,22 @@
 	.app .feature-icon-wrapper {
 		grid-row: 1 / span 2 !important;
 		margin: 0 !important;
-		width: 42px !important;
-		height: 42px !important;
-		border-radius: 12px !important;
+		width: 36px !important;
+		height: 36px !important;
+		border-radius: 10px !important;
 	}
 
 	.app .feature-title-modern {
 		margin: 0 !important;
-		font-size: 0.92rem !important;
+		font-size: 0.86rem !important;
 		text-align: left !important;
 		font-weight: 800 !important;
 	}
 
 	.app .feature-description-modern {
 		margin: 0 !important;
-		font-size: 0.78rem !important;
-		line-height: 1.35 !important;
+		font-size: 0.72rem !important;
+		line-height: 1.3 !important;
 		text-align: left !important;
 		color: #5a7384 !important;
 	}
@@ -3082,20 +3082,24 @@
 
 @media (max-width: 420px) {
 	.app .main-content {
-		padding: 10px 12px calc(88px + env(safe-area-inset-bottom, 0px)) !important;
-		gap: 12px !important;
+		padding: 6px 10px calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+		gap: 6px !important;
 	}
 
 	.app .hero-section-modern {
-		padding: 22px 14px 18px !important;
+		padding: 14px 12px 12px !important;
 	}
 
 	.app .hero-title-modern {
-		font-size: 1.55rem !important;
+		font-size: 1.35rem !important;
+	}
+
+	.app .hero-stats-modern {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 	}
 
 	.app .class-item-compact {
-		min-height: 48px !important;
-		padding: 8px 10px !important;
+		min-height: 42px !important;
+		padding: 6px 8px !important;
 	}
 }
