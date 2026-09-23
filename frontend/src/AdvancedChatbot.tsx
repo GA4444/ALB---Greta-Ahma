@@ -369,9 +369,7 @@ export default function AdvancedChatbot({ userId, onClose, context }: AdvancedCh
 					<div className="chatbot-avatar-large">🤖</div>
 					<div>
 						<h3>Bashkëbiseduesi AI {useLLM && <span className="llm-badge">✨ LLM</span>}</h3>
-						<p className="chatbot-subtitle">
-							{context ? '📍 I përshtatur me kontekstin' : 'Pyetni çdo gjë për platformën'}
-						</p>
+						<p className="chatbot-subtitle">Pyetni çdo gjë për platformën</p>
 					</div>
 				</div>
 				<div className="header-right">
