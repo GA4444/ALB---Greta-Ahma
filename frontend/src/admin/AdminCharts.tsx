@@ -80,7 +80,7 @@ function ChartCard({ title, children, half = false }: {
 	return (
 		<div className={`chart-card${half ? ' chart-card-half' : ''}`}>
 			<h3 className="chart-title">{title}</h3>
-			{children}
+			<div className="chart-body">{children}</div>
 		</div>
 	)
 }
@@ -110,78 +110,84 @@ function StatsCharts({ stats, timeRange }: Pick<AdminChartsProps, 'stats' | 'tim
 	]
 
 	return (
-		<div className="charts-container">
-			<ChartCard title="📊 Përmbledhje e Përgjithshme">
-				<ResponsiveContainer width="100%" height={300}>
-					<BarChart data={summary} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-						<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-						<XAxis dataKey="name" tick={axisTick} />
-						<YAxis tick={axisTick} />
-						<StandardTooltip />
-						<Bar dataKey="value" radius={[8, 8, 0, 0]} />
-					</BarChart>
-				</ResponsiveContainer>
-			</ChartCard>
+		<div className="charts-container admin-charts">
+			<section className="charts-section" aria-label="Përmbledhje">
+				<div className="charts-grid charts-grid--full">
+					<ChartCard title="📊 Përmbledhje e Përgjithshme">
+						<ResponsiveContainer width="100%" height="100%">
+							<BarChart data={summary} margin={{ top: 16, right: 16, left: 8, bottom: 8 }}>
+								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+								<XAxis dataKey="name" tick={axisTick} />
+								<YAxis tick={axisTick} />
+								<StandardTooltip />
+								<Bar dataKey="value" radius={[8, 8, 0, 0]} />
+							</BarChart>
+						</ResponsiveContainer>
+					</ChartCard>
+				</div>
 
-			<div className="charts-row">
-				<ChartCard title="🥧 Shpërndarja e Përmbajtjes" half>
-					<ResponsiveContainer width="100%" height={300}>
-						<PieChart>
-							<Pie
-								data={content}
-								cx="50%"
-								cy="50%"
-								labelLine={false}
-								label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
-								outerRadius={80}
-								dataKey="value"
-							>
-								{content.map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
-							</Pie>
-							<StandardTooltip />
-						</PieChart>
-					</ResponsiveContainer>
-				</ChartCard>
+				<div className="charts-row">
+					<ChartCard title="🥧 Shpërndarja e Përmbajtjes" half>
+						<ResponsiveContainer width="100%" height="100%">
+							<PieChart>
+								<Pie
+									data={content}
+									cx="50%"
+									cy="50%"
+									labelLine={false}
+									label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+									outerRadius={80}
+									dataKey="value"
+								>
+									{content.map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
+								</Pie>
+								<StandardTooltip />
+							</PieChart>
+						</ResponsiveContainer>
+					</ChartCard>
 
-				<ChartCard title="📈 Aktiviteti i Përdoruesve" half>
-					<ResponsiveContainer width="100%" height={300}>
-						<BarChart data={[
-							{ name: 'Totali', përdorues: stats.total_users, përpjekje: Math.round(stats.total_attempts / 100) },
-							{ name: 'Aktivë', përdorues: Math.round(stats.total_users * 0.7), përpjekje: Math.round(stats.total_attempts / 100 * 0.8) },
-							{ name: 'Jo-aktivë', përdorues: Math.round(stats.total_users * 0.3), përpjekje: Math.round(stats.total_attempts / 100 * 0.2) },
-						]}>
-							<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-							<XAxis dataKey="name" tick={axisTick} />
-							<YAxis tick={axisTick} />
-							<StandardTooltip />
-							<Legend />
-							<Bar dataKey="përdorues" fill={colors[0]} radius={[8, 8, 0, 0]} />
-							<Bar dataKey="përpjekje" fill={colors[1]} radius={[8, 8, 0, 0]} />
-						</BarChart>
-					</ResponsiveContainer>
-				</ChartCard>
-			</div>
+					<ChartCard title="📈 Aktiviteti i Përdoruesve" half>
+						<ResponsiveContainer width="100%" height="100%">
+							<BarChart data={[
+								{ name: 'Totali', përdorues: stats.total_users, përpjekje: Math.round(stats.total_attempts / 100) },
+								{ name: 'Aktivë', përdorues: Math.round(stats.total_users * 0.7), përpjekje: Math.round(stats.total_attempts / 100 * 0.8) },
+								{ name: 'Jo-aktivë', përdorues: Math.round(stats.total_users * 0.3), përpjekje: Math.round(stats.total_attempts / 100 * 0.2) },
+							]} margin={{ top: 16, right: 16, left: 8, bottom: 8 }}>
+								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+								<XAxis dataKey="name" tick={axisTick} />
+								<YAxis tick={axisTick} />
+								<StandardTooltip />
+								<Legend />
+								<Bar dataKey="përdorues" fill={colors[0]} radius={[8, 8, 0, 0]} />
+								<Bar dataKey="përpjekje" fill={colors[1]} radius={[8, 8, 0, 0]} />
+							</BarChart>
+						</ResponsiveContainer>
+					</ChartCard>
+				</div>
 
-			<ChartCard title="📉 Trend Statistikash">
-				<ResponsiveContainer width="100%" height={300}>
-					<LineChart data={trend}>
-						<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-						<XAxis dataKey="muaj" tick={axisTick} />
-						<YAxis tick={axisTick} />
-						<StandardTooltip />
-						<Legend />
-						<Line type="monotone" dataKey="përdorues" stroke={colors[0]} strokeWidth={3} dot={{ fill: colors[0], r: 5 }} />
-						<Line type="monotone" dataKey="ushtrime" stroke={colors[1]} strokeWidth={3} dot={{ fill: colors[1], r: 5 }} />
-					</LineChart>
-				</ResponsiveContainer>
-			</ChartCard>
+				<div className="charts-grid charts-grid--full">
+					<ChartCard title="📉 Trend Statistikash">
+						<ResponsiveContainer width="100%" height="100%">
+							<LineChart data={trend} margin={{ top: 16, right: 16, left: 8, bottom: 8 }}>
+								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+								<XAxis dataKey="muaj" tick={axisTick} />
+								<YAxis tick={axisTick} />
+								<StandardTooltip />
+								<Legend />
+								<Line type="monotone" dataKey="përdorues" stroke={colors[0]} strokeWidth={3} dot={{ fill: colors[0], r: 5 }} />
+								<Line type="monotone" dataKey="ushtrime" stroke={colors[1]} strokeWidth={3} dot={{ fill: colors[1], r: 5 }} />
+							</LineChart>
+						</ResponsiveContainer>
+					</ChartCard>
+				</div>
+			</section>
 
-			<div className="scientific-section">
+			<section className="scientific-section">
 				<h2 className="section-title">🔬 Analiza Shkencore</h2>
 				{timeRange === 'weekly' && <WeeklyCharts stats={stats} />}
 				{timeRange === 'monthly' && <MonthlyCharts stats={stats} />}
 				{timeRange === 'yearly' && <YearlyCharts stats={stats} />}
-			</div>
+			</section>
 		</div>
 	)
 }
@@ -201,7 +207,7 @@ function WeeklyCharts({ stats }: { stats: AdminStats }) {
 	return (
 		<>
 			<ChartCard title="📅 Statistika Javore - Aktiviteti Ditor">
-				<ResponsiveContainer width="100%" height={350}>
+				<ResponsiveContainer width="100%" height="100%">
 					<ComposedChart data={daily}>
 						<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="ditë" tick={axisTick} />
 						<YAxis yAxisId="left" tick={axisTick} /><YAxis yAxisId="right" orientation="right" tick={axisTick} />
@@ -214,12 +220,12 @@ function WeeklyCharts({ stats }: { stats: AdminStats }) {
 			</ChartCard>
 			<div className="charts-row">
 				<ChartCard title="🕐 Orët më të Frekuentuara (Javore)" half>
-					<ResponsiveContainer width="100%" height={300}>
+					<ResponsiveContainer width="100%" height="100%">
 						<BarChart data={hours}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="orë" tick={axisTick} /><YAxis tick={axisTick} /><StandardTooltip /><Bar dataKey="aktivitet" fill={colors[4]} radius={[8, 8, 0, 0]} /></BarChart>
 					</ResponsiveContainer>
 				</ChartCard>
 				<ChartCard title="🎯 Performanca Javore sipas Kategorisë" half>
-					<ResponsiveContainer width="100%" height={300}>
+					<ResponsiveContainer width="100%" height="100%">
 						<RadarChart data={[['Vocabulary',85],['Grammar',78],['Writing',92],['Reading',88],['Listening',75]].map(([kategori,pikë]) => ({ kategori, pikë }))}>
 							<PolarGrid /><PolarAngleAxis dataKey="kategori" tick={axisTick} /><PolarRadiusAxis /><Radar name="Performanca %" dataKey="pikë" stroke={colors[0]} fill={colors[0]} fillOpacity={0.6} /><StandardTooltip />
 						</RadarChart>
@@ -242,7 +248,7 @@ function MonthlyCharts({ stats }: { stats: AdminStats }) {
 	return (
 		<>
 			<ChartCard title="📆 Statistika Mujore - Trend 12 Muaj">
-				<ResponsiveContainer width="100%" height={350}>
+				<ResponsiveContainer width="100%" height="100%">
 					<AreaChart data={monthly}>
 						<CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="muaj" tick={axisTick} /><YAxis tick={axisTick} /><StandardTooltip /><Legend />
 						<Area type="monotone" dataKey="përdorues" stroke={colors[0]} fill={colors[0]} fillOpacity={0.35} />
@@ -252,12 +258,12 @@ function MonthlyCharts({ stats }: { stats: AdminStats }) {
 			</ChartCard>
 			<div className="charts-row">
 				<ChartCard title="📊 Retention Rate Mujore" half>
-					<ResponsiveContainer width="100%" height={300}>
+					<ResponsiveContainer width="100%" height="100%">
 						<LineChart data={retention}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="muaj" /><YAxis yAxisId="left" /><YAxis yAxisId="right" orientation="right" /><StandardTooltip /><Legend /><Line yAxisId="left" dataKey="retention" stroke={colors[1]} strokeWidth={3} /><Line yAxisId="right" dataKey="newUsers" stroke={colors[0]} strokeWidth={3} /></LineChart>
 					</ResponsiveContainer>
 				</ChartCard>
 				<ChartCard title="🎓 Përparimi Mesatar Mujor" half>
-					<ResponsiveContainer width="100%" height={300}>
+					<ResponsiveContainer width="100%" height="100%">
 						<ComposedChart data={[
 							{ nivel: 'Fillestar', përdorues: Math.round(stats.total_users * .35), mesatare: 65 },
 							{ nivel: 'Mesatar', përdorues: Math.round(stats.total_users * .40), mesatare: 78 },
@@ -268,7 +274,7 @@ function MonthlyCharts({ stats }: { stats: AdminStats }) {
 				</ChartCard>
 			</div>
 			<ChartCard title="📈 Nota e angazhimit & Koha e kaluar (minutë/sesion)">
-				<ResponsiveContainer width="100%" height={300}>
+				<ResponsiveContainer width="100%" height="100%">
 					<ComposedChart data={monthly.map((item, index) => ({ ...item, kohëMinuta: 12 + index * 2, përfundim: 72 + Math.round(index * 2.25) }))}>
 						<CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="muaj" /><YAxis yAxisId="left" /><YAxis yAxisId="right" orientation="right" /><StandardTooltip /><Legend />
 						<Area yAxisId="left" dataKey="engagement" fill={colors[0]} stroke={colors[0]} fillOpacity={0.3} /><Bar yAxisId="right" dataKey="kohëMinuta" fill={colors[1]} /><Line yAxisId="left" dataKey="përfundim" stroke={colors[3]} strokeWidth={3} />
@@ -290,29 +296,29 @@ function YearlyCharts({ stats }: { stats: AdminStats }) {
 	return (
 		<>
 			<ChartCard title="📅 Statistika Vjetore - Krahasim 5 Vjet">
-				<ResponsiveContainer width="100%" height={350}>
+				<ResponsiveContainer width="100%" height="100%">
 					<BarChart data={yearly}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="vit" /><YAxis /><StandardTooltip /><Legend /><Bar dataKey="përdorues" fill={colors[0]} /><Bar dataKey="ushtrime" fill={colors[1]} /></BarChart>
 				</ResponsiveContainer>
 			</ChartCard>
 			<div className="charts-row">
 				<ChartCard title="📊 Rritja Vjetore (%)" half>
-					<ResponsiveContainer width="100%" height={300}>
+					<ResponsiveContainer width="100%" height="100%">
 						<LineChart data={[[2021,0,0],[2022,133,100],[2023,71,63],[2024,42,31],[2025,18,18]].map(([vit,a,b]) => ({ vit, rritjaPërdorues:a, rritjaUshtrime:b }))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="vit" /><YAxis /><StandardTooltip /><Legend /><Line dataKey="rritjaPërdorues" stroke={colors[0]} strokeWidth={3} /><Line dataKey="rritjaUshtrime" stroke={colors[1]} strokeWidth={3} /></LineChart>
 					</ResponsiveContainer>
 				</ChartCard>
 				<ChartCard title="🎯 Arritjet Vjetore" half>
-					<ResponsiveContainer width="100%" height={300}>
+					<ResponsiveContainer width="100%" height="100%">
 						<BarChart data={[{kategori:'Certifikata','2023':150,'2024':320,'2025':580},{kategori:'Kurse Përfunduar','2023':450,'2024':890,'2025':1450},{kategori:'Nivele Kaluar','2023':2100,'2024':4200,'2025':6800}]}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="kategori" /><YAxis /><StandardTooltip /><Legend /><Bar dataKey="2023" fill={colors[4]} /><Bar dataKey="2024" fill={colors[3]} /><Bar dataKey="2025" fill={colors[1]} /></BarChart>
 					</ResponsiveContainer>
 				</ChartCard>
 			</div>
 			<ChartCard title="🌍 Shpërndarja Demografike Vjetore">
-				<ResponsiveContainer width="100%" height={300}>
+				<ResponsiveContainer width="100%" height="100%">
 					<ComposedChart data={['6-8 vjeç','9-11 vjeç','12-14 vjeç','15-17 vjeç','18+ vjeç'].map((grup,index) => ({ grup, përdorues: Math.round(stats.total_users * [.25,.35,.25,.10,.05][index]), engagement:[85,88,90,87,92][index], suksesRate:[78,82,86,88,91][index] }))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="grup" /><YAxis yAxisId="left" /><YAxis yAxisId="right" orientation="right" /><StandardTooltip /><Legend /><Bar yAxisId="left" dataKey="përdorues" fill={colors[0]} /><Line yAxisId="right" dataKey="engagement" stroke={colors[1]} /><Line yAxisId="right" dataKey="suksesRate" stroke={colors[3]} /></ComposedChart>
 				</ResponsiveContainer>
 			</ChartCard>
 			<ChartCard title="📚 Performanca e Platformës - Metriks Kyçe (KPIs)">
-				<ResponsiveContainer width="100%" height={300}>
+				<ResponsiveContainer width="100%" height="100%">
 					<RadarChart data={[['Kënaqësia e përdoruesit',92],['Learning Effectiveness',88],['Content Quality',95],['Platform Stability',97],['Rikthimi i përdoruesve',89],['Engagement Rate',85]].map(([metrik,pikë]) => ({ metrik, pikë }))}><PolarGrid /><PolarAngleAxis dataKey="metrik" /><PolarRadiusAxis domain={[0,100]} /><Radar dataKey="pikë" stroke={colors[0]} fill={colors[0]} fillOpacity={0.6} /><StandardTooltip /><Legend /></RadarChart>
 				</ResponsiveContainer>
 			</ChartCard>
