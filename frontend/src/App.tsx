@@ -8,6 +8,7 @@ import { AppFooter, AppHeader } from './components/AppChrome'
 import LazyErrorBoundary from './components/LazyErrorBoundary'
 import WelcomeLanding from './components/WelcomeLanding'
 import BrandLogo from './components/BrandLogo'
+import PageLoading from './components/PageLoading'
 import { IconBook, IconCalendar, IconFlame, IconSparkle, IconStar, IconTrophy } from './components/ProgressIcons'
 import RegisterForm from './components/RegisterForm'
 import { useModalAccessibility } from './hooks/useModalAccessibility'
@@ -1434,17 +1435,10 @@ function App() {
                 return (
                     <LazyErrorBoundary label="panelit të administratorit">
                         <Suspense fallback={
-                            <div className="route-loading page-loading" role="status" aria-live="polite" aria-busy="true">
-                                <div className="page-loading-progress" aria-hidden="true">
-                                    <span className="page-loading-progress-bar"></span>
-                                </div>
-                                <div className="page-loading-inner">
-                                    <div className="page-loading-mark" aria-hidden="true"><BrandLogo size={52} decorative /></div>
-                                    <p className="page-loading-brand">AlbLingo</p>
-                                    <p className="page-loading-title">Duke ngarkuar</p>
-                                    <p className="page-loading-subtitle">Paneli i administratorit</p>
-                                </div>
-                            </div>
+                            <PageLoading
+                                className="route-loading"
+                                subtitle="Paneli i administratorit"
+                            />
                         }>
                             <AdminDashboard
                                 userId={adminUserId}
@@ -2916,19 +2910,7 @@ function MainContent({
             {/* Main Content Area */}
             <div className="content-area">
                 {isLoading ? (
-                    <div className="loading page-loading" role="status" aria-live="polite" aria-busy="true">
-                        <div className="page-loading-progress" aria-hidden="true">
-                            <span className="page-loading-progress-bar"></span>
-                        </div>
-                        <div className="page-loading-inner">
-                            <div className="page-loading-mark" aria-hidden="true">
-                                <BrandLogo size={52} decorative />
-                            </div>
-                            <p className="page-loading-brand">AlbLingo</p>
-                            <p className="page-loading-title">Duke ngarkuar</p>
-                            <p className="page-loading-subtitle">Po përgatitim platformën për ju</p>
-                        </div>
-                    </div>
+                    <PageLoading />
                 ) : !selectedClass ? (
                     <div className="welcome-screen-modern">
                         {/* Hero Section */}

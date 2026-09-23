@@ -1,4 +1,5 @@
 import BrandLogo from './components/BrandLogo'
+import PageLoading from './components/PageLoading'
 import React, { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import {
 	getAdminStats,
@@ -90,9 +91,7 @@ const Legend = lazy(() => import('./admin/AdminCharts').then(module => ({ defaul
 const ResponsiveContainer = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.ResponsiveContainer })))
 
 const chartFallback = (
-	<div className="admin-loading" role="status" aria-live="polite">
-		Duke ngarkuar grafikët...
-	</div>
+	<PageLoading inline title="Duke ngarkuar grafikët..." subtitle="" showProgress={false} />
 )
 
 interface AdminDashboardProps {
@@ -895,7 +894,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 					</div>
 				)}
 				{loading ? (
-					<div className="admin-loading">Duke ngarkuar...</div>
+					<PageLoading className="admin-page-loading" />
 				) : (
 					<>
 					{activeTab === 'stats' && stats && (
@@ -1878,7 +1877,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<div className="corpus-linguistic-section">
 										<h2>Analiza Linguistike e Korpusit</h2>
 										{corpusAnalysisLoading ? (
-											<div className="admin-loading">Duke analizuar korpusin...</div>
+											<PageLoading inline title="Duke analizuar korpusin..." subtitle="" showProgress={false} />
 										) : corpusStats && corpusStats.total_documents === 0 ? (
 											renderCorpusEmptyState('Nuk ka tekst për analizë linguistike')
 										) : linguisticMetrics && !linguisticMetrics.empty ? (
@@ -2216,7 +2215,9 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												</div>
 											)
 										) : (
-											<div className="admin-loading">Duke kontrolluar integritetin...</div>
+											<div className="admin-loading-wrap">
+												<PageLoading inline title="Duke kontrolluar integritetin..." subtitle="" showProgress={false} />
+											</div>
 										)}
 									</div>
 								)}
