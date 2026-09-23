@@ -2470,7 +2470,7 @@ function MainContent({
     }
     
     return (
-        <div className={`main-content ${selectedLevel ? 'with-ai-panel' : ''}`}>
+        <div className={`main-content ${selectedLevel ? 'with-ai-panel' : ''} ${!selectedClass ? 'main-content--home' : ''}`}>
             {/* Compact Left Sidebar - Navigation Only */}
             <aside className="sidebar sidebar-compact">
                 <div className="sidebar-section sidebar-section-classes">
