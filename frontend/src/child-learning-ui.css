@@ -2867,9 +2867,28 @@
 		padding: 0 !important;
 		min-height: auto !important;
 		height: auto !important;
+		max-height: none !important;
 		overflow: visible !important;
 		visibility: visible !important;
 		opacity: 1 !important;
+		position: relative !important;
+		z-index: 1 !important;
+	}
+
+	/* Kill entrance animations that can leave level/exercise cards at opacity:0 on mobile */
+	.app .main-content--class-view .course-preview-grid-modern > *,
+	.app .main-content--class-view .level-picker-grid > *,
+	.app .main-content--class-view .level-grid-modern > *,
+	.app .main-content--class-view .level-picker-card,
+	.app .main-content--class-view .level-card-modern,
+	.app .main-content--class-view .exercise-container-modern,
+	.app .main-content--class-view .exercise-card-modern,
+	.app .main-content--class-view .skeleton-card {
+		animation: none !important;
+		transition: none !important;
+		opacity: 1 !important;
+		transform: none !important;
+		visibility: visible !important;
 	}
 
 	.app .main-content--class-view .level-picker-header {

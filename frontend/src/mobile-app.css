@@ -321,18 +321,53 @@
     visibility: visible !important;
     opacity: 1 !important;
     height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .app .main-content--class-view .exercise-container-modern {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .app .main-content--class-view .course-preview-grid-modern > *,
   .app .main-content--class-view .level-picker-card,
-  .app .main-content--class-view .level-grid-modern > * {
+  .app .main-content--class-view .level-grid-modern > *,
+  .app .main-content--class-view .level-card-modern,
+  .app .main-content--class-view .exercise-card-modern {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
     visibility: visible !important;
     display: flex !important;
+    flex-direction: column !important;
     min-height: 88px !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .app .main-content--class-view .exercise-workspace,
+  .app .main-content--class-view .exercise-area-modern {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   /* Keep AI / gamification / OCR tools reachable on phones */

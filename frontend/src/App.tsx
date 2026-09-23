@@ -188,6 +188,8 @@ function App() {
     const [showAuth, setShowAuth] = useState(false)
     const [showWelcome, setShowWelcome] = useState(true)
     const [isLoading, setIsLoading] = useState(true)
+    const [isLoadingClassCourses, setIsLoadingClassCourses] = useState(false)
+    const [isLoadingExercises, setIsLoadingExercises] = useState(false)
 
     useEffect(() => {
         if (!isAdmin || !userId) return
@@ -552,7 +554,9 @@ function App() {
         setCurrentExerciseIndex(0)
         setCourseLevels([])
         setClassCourses([])
-        setIsLoading(true)
+        // Keep the class view mounted on mobile (header stays visible) and only
+        // skeleton the levels list — do not flip the global page loader.
+        setIsLoadingClassCourses(true)
         
         try {
             // One request returns courses and their levels (no N+1 round-trips).
@@ -568,7 +572,7 @@ function App() {
             console.error('Error fetching class courses:', error)
             setClassCourses([])
         } finally {
-            setIsLoading(false)
+            setIsLoadingClassCourses(false)
         }
     }
 
@@ -592,6 +596,7 @@ function App() {
         setSelectedLevel(null)
         setExercises([])
         setCurrentExerciseIndex(0)
+        setIsLoadingExercises(true)
         
 		try {
 			// Prefer levels already loaded with the class courses payload.
@@ -613,6 +618,8 @@ function App() {
 		} catch (error) {
 			console.error('Error fetching course levels:', error)
 			setCourseLevels([])
+		} finally {
+			setIsLoadingExercises(false)
 		}
     }
 
@@ -622,16 +629,22 @@ function App() {
             setSelectedLevel(null)
             setExercises([])
             setCurrentExerciseIndex(0)
+            setIsLoadingExercises(false)
             return
         }
 
         setSelectedLevel(level)
+        setExercises([])
+        setIsLoadingExercises(true)
         try {
             const exercisesData = await getLevelExercises(level.id)
             setExercises(exercisesData)
             setCurrentExerciseIndex(0)
         } catch (error) {
             console.error('Error fetching exercises:', error)
+            setExercises([])
+        } finally {
+            setIsLoadingExercises(false)
         }
     }
 
@@ -1533,6 +1546,8 @@ function App() {
             <main className="main">
                 <MainContent
                     isLoading={isLoading}
+                    isLoadingClassCourses={isLoadingClassCourses}
+                    isLoadingExercises={isLoadingExercises}
                     classes={classes}
                     selectedClass={selectedClass}
                     selectedCourse={selectedCourse}
@@ -2284,6 +2299,8 @@ function App() {
 // Main Content Component
 function MainContent({
     isLoading,
+    isLoadingClassCourses,
+    isLoadingExercises,
     classes,
     selectedClass,
     selectedCourse,
@@ -2353,6 +2370,8 @@ function MainContent({
     handleSelectOCRFile
 }: {
     isLoading: boolean
+    isLoadingClassCourses: boolean
+    isLoadingExercises: boolean
     classes: ClassData[]
     selectedClass: ClassData | null
     selectedCourse: CourseOut | null
@@ -3038,7 +3057,7 @@ function MainContent({
                         </header>
                         
                         <div className="course-preview-grid-modern level-picker-grid" role="list">
-                            {isLoading && classCourses.length === 0 ? (
+                            {isLoadingClassCourses && classCourses.length === 0 ? (
                                 <div className="skeleton-grid">
                                     {[1, 2, 3, 4, 5, 6].map((i) => (
                                         <div key={`skeleton-course-${i}`} className="skeleton-card">
@@ -3123,7 +3142,7 @@ function MainContent({
                         
                         {/* Show levels for the selected course */}
                         <div className="level-grid-modern">
-                            {isLoading && courseLevels.length === 0 ? (
+                            {isLoadingExercises && courseLevels.length === 0 ? (
                                 // Skeleton loading for levels
                                 <>
                                     {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -3183,7 +3202,7 @@ function MainContent({
                             })}
                         </div>
                     </div>
-                ) : selectedLevel && exercises.length > 0 ? (
+                ) : selectedLevel ? (
                     <div className="exercise-area-modern exercise-workspace">
                         <header className="exercise-header-modern exercise-workspace-header">
                             <button type="button" className="back-button-modern" onClick={() => onLevelClick(null)}>
@@ -3208,7 +3227,17 @@ function MainContent({
                                 </p>
                             </div>
                         </header>
-                        
+
+                        {isLoadingExercises ? (
+                            <div className="loading page-loading page-loading--inline" role="status" aria-live="polite" aria-busy="true">
+                                <div className="page-loading-inner">
+                                    <div className="page-loading-spinner" aria-hidden="true"></div>
+                                    <p className="page-loading-title">Duke ngarkuar</p>
+                                    <p className="page-loading-subtitle">Po përgatitim platformën për ju</p>
+                                </div>
+                            </div>
+                        ) : exercises.length > 0 ? (
+                        <>
                         <div className="exercise-container-modern">
                             <div className="exercise-progress-modern">
                                 <div className="exercise-progress-header-modern">
@@ -3468,6 +3497,8 @@ function MainContent({
                                 </Suspense>
                             </LazyErrorBoundary>
                         )}
+                        </>
+                        ) : null}
                     </div>
                 ) : null}
             </div>

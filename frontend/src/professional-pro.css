@@ -653,6 +653,21 @@ h1, h2, h3,
   animation: kid-fade-up 420ms ease both;
 }
 
+@media (max-width: 768px) {
+  .class-grid-modern > *,
+  .course-preview-grid-modern > *,
+  .level-grid-modern > *,
+  .features-grid-modern > *,
+  .level-picker-grid > *,
+  .level-picker-card,
+  .level-card-modern {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
