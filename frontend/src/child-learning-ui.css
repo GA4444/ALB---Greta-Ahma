@@ -611,21 +611,34 @@
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: 14px;
-	margin-bottom: 18px;
+	gap: 12px;
+	margin-bottom: 20px;
 }
 
 .app .level-picker-intro {
 	display: grid;
-	grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-	gap: 16px 20px;
-	align-items: end;
+	grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+	gap: 16px 28px;
+	align-items: center;
+	padding: 16px 18px;
+	border: 1px solid rgba(31, 111, 139, 0.12);
+	border-radius: 16px;
+	background: #fff;
+	box-shadow: 0 4px 14px rgba(19, 41, 61, 0.04);
+}
+
+.app .level-picker .level-picker-title,
+.app .level-picker .class-title-section {
+	text-align: left;
+	margin: 0;
+	min-width: 0;
 }
 
 .app .level-picker .class-title {
-	margin: 0 0 6px;
-	font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+	margin: 0 0 4px;
+	font-size: clamp(1.4rem, 2.4vw, 1.8rem);
 	font-weight: 800;
+	line-height: 1.2;
 	color: var(--learn-ink, #13293D);
 	background: none;
 	-webkit-text-fill-color: currentColor;
@@ -634,14 +647,62 @@
 .app .level-picker .class-subtitle {
 	margin: 0;
 	color: #5a7384;
+	font-size: 0.95rem;
 	font-weight: 600;
+	line-height: 1.4;
 }
 
+.app .level-picker .level-picker-progress,
 .app .level-picker .class-overall-progress {
-	padding: 12px 14px;
-	border-radius: 14px;
-	border: 1px solid rgba(31, 111, 139, 0.14);
-	background: #f7fbfe;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+.app .level-picker .overall-progress-label {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 8px;
+}
+
+.app .level-picker .overall-progress-title {
+	font-size: 0.82rem;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	color: #5a7384;
+}
+
+.app .level-picker .progress-percentage {
+	font-size: 1.35rem;
+	font-weight: 800;
+	line-height: 1;
+	color: #1f6f8b;
+}
+
+.app .level-picker .overall-progress-bar {
+	height: 8px !important;
+	margin-bottom: 8px;
+	box-shadow: none;
+}
+
+.app .level-picker .overall-progress-fill {
+	box-shadow: none;
+	background: linear-gradient(90deg, #1f6f8b, #3d9bb5) !important;
+}
+
+.app .level-picker .overall-progress-stats {
+	text-align: left;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: #5a7384;
+	line-height: 1.35;
 }
 
 .app .level-picker-grid {
@@ -675,21 +736,9 @@
 
 .app .level-picker-card .course-card-top {
 	display: grid;
-	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-columns: minmax(0, 1fr) auto;
 	align-items: center;
 	gap: 10px;
-}
-
-.app .level-picker-card .course-number-badge {
-	min-width: 34px;
-	justify-self: start;
-	font-size: 0.78rem;
-	font-weight: 800;
-	color: #1f6f8b;
-	background: rgba(31, 111, 139, 0.08);
-	border-radius: 999px;
-	padding: 4px 8px;
-	text-align: center;
 }
 
 .app .level-picker-card .course-name-modern {
@@ -772,20 +821,424 @@
 @media (max-width: 720px) {
 	.app .level-picker-intro {
 		grid-template-columns: 1fr;
+		gap: 14px;
+		padding: 14px 14px 12px;
+	}
+
+	.app .level-picker .level-picker-progress,
+	.app .level-picker .class-overall-progress {
+		padding-top: 12px;
+		border-top: 1px solid rgba(31, 111, 139, 0.1);
 	}
 
 	.app .level-picker-card .course-card-top {
-		grid-template-columns: auto minmax(0, 1fr);
-		grid-template-areas:
-			"num name"
-			"status status";
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+}
+
+/* Exercise workspace: cleaner hierarchy (text/functionality unchanged) */
+.app .exercise-workspace {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	max-width: 920px;
+	margin: 0 auto;
+	padding: 0;
+}
+
+.app .exercise-workspace-header {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 12px;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+}
+
+.app .exercise-workspace-title,
+.app .exercise-workspace .exercise-title-section {
+	text-align: left;
+	margin: 0;
+	padding: 14px 16px;
+	border: 1px solid rgba(31, 111, 139, 0.12);
+	border-radius: 16px;
+	background: #fff;
+	box-shadow: 0 4px 14px rgba(19, 41, 61, 0.04);
+}
+
+.app .exercise-workspace .exercise-badge-modern {
+	display: inline-flex;
+	align-items: center;
+	margin: 0 0 8px;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: rgba(31, 111, 139, 0.1);
+	color: #1f6f8b;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .exercise-title-modern {
+	margin: 0 0 4px;
+	font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+	font-weight: 800;
+	line-height: 1.2;
+	color: var(--learn-ink, #13293D);
+	background: none;
+	-webkit-text-fill-color: currentColor;
+}
+
+.app .exercise-workspace .exercise-subtitle-modern {
+	margin: 0;
+	font-size: 0.92rem;
+	font-weight: 600;
+	color: #5a7384;
+	line-height: 1.4;
+}
+
+.app .exercise-workspace .exercise-container-modern {
+	max-width: none;
+	margin: 0;
+	padding: 16px;
+	gap: 14px;
+	border: 1px solid rgba(31, 111, 139, 0.12);
+	border-radius: 16px;
+	box-shadow: 0 4px 14px rgba(19, 41, 61, 0.04);
+	background: #fff;
+}
+
+.app .exercise-workspace .exercise-progress-modern {
+	margin: 0;
+	padding: 12px 14px;
+	border-radius: 12px;
+	border: 1px solid rgba(31, 111, 139, 0.1);
+	background: #f7fbfe;
+}
+
+.app .exercise-workspace .exercise-progress-header-modern {
+	margin-bottom: 8px;
+}
+
+.app .exercise-workspace .progress-label-exercise {
+	font-size: 0.82rem;
+	font-weight: 700;
+	color: #5a7384;
+}
+
+.app .exercise-workspace .progress-counter-exercise {
+	font-size: 0.95rem;
+	font-weight: 800;
+	color: #1f6f8b;
+}
+
+.app .exercise-workspace .exercise-progress-bar-modern {
+	height: 8px;
+	box-shadow: none;
+	background: #e7f1f6;
+}
+
+.app .exercise-workspace .exercise-progress-fill-modern {
+	background: linear-gradient(90deg, #1f6f8b, #3d9bb5);
+	box-shadow: none;
+}
+
+.app .exercise-workspace .exercise-card-modern {
+	border: 1px solid rgba(31, 111, 139, 0.12);
+	border-radius: 14px;
+	box-shadow: none;
+	overflow: hidden;
+}
+
+.app .exercise-workspace .exercise-card-header-modern {
+	justify-content: flex-end;
+	padding: 10px 14px;
+	background: #f8fafc;
+	border-bottom: 1px solid rgba(31, 111, 139, 0.08);
+}
+
+.app .exercise-workspace .exercise-points-badge-modern {
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: rgba(31, 111, 139, 0.1);
+	color: #1f6f8b;
+	font-size: 0.75rem;
+	font-weight: 700;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .exercise-content-modern {
+	padding: 16px 16px 12px;
+	gap: 14px;
+	background: #fff;
+}
+
+.app .exercise-workspace .exercise-prompt-modern {
+	margin: 0;
+	padding: 12px 14px;
+	border-radius: 12px;
+	border: 1px solid rgba(31, 111, 139, 0.1);
+	border-left: 3px solid #1f6f8b;
+	background: #f7fbfe;
+}
+
+.app .exercise-workspace .exercise-question {
+	font-size: 1.05rem;
+	font-weight: 700;
+	line-height: 1.45;
+	color: #13293d;
+}
+
+.app .exercise-workspace .dictation-helper-modern {
+	margin: 0;
+	padding: 12px 14px;
+	gap: 12px;
+	border-radius: 12px;
+	border: 1px solid rgba(31, 111, 139, 0.1);
+	background: #f8fafc;
+}
+
+.app .exercise-workspace .dictation-helper-text {
+	font-size: 0.9rem;
+	color: #334155;
+	line-height: 1.45;
+}
+
+.app .exercise-workspace .voice-controls-modern {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	justify-content: flex-start;
+}
+
+.app .exercise-workspace .voice-btn-modern {
+	min-height: 40px;
+	padding: 8px 14px;
+	border-radius: 10px;
+	font-size: 0.88rem;
+	font-weight: 700;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .voice-btn-modern.primary {
+	background: #1f6f8b;
+	border-color: #1f6f8b;
+	color: #fff;
+}
+
+.app .exercise-workspace .voice-btn-modern.primary:hover {
+	transform: none;
+	background: #185a71;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .voice-btn-modern.secondary {
+	background: #fff;
+	color: #1f6f8b;
+	border-color: rgba(31, 111, 139, 0.28);
+}
+
+.app .exercise-workspace .voice-btn-modern.secondary:hover {
+	transform: none;
+	background: rgba(31, 111, 139, 0.06);
+}
+
+.app .exercise-workspace .exercise-hint-modern {
+	margin: 0;
+	padding: 12px 14px;
+	border-radius: 12px;
+	border: 1px solid rgba(31, 111, 139, 0.12);
+	border-left: 3px solid #1f6f8b;
+	background: #f7fbfe;
+}
+
+.app .exercise-workspace .hint-content {
+	font-size: 0.9rem;
+	color: #334155;
+}
+
+.app .exercise-workspace .hint-content strong {
+	color: #1f6f8b;
+}
+
+.app .exercise-workspace .answer-input-modern {
+	margin: 0;
+}
+
+.app .exercise-workspace .answer-input-field {
+	padding: 12px 14px;
+	border: 1px solid rgba(31, 111, 139, 0.18);
+	border-radius: 12px;
+	box-shadow: none;
+	font-size: 0.95rem;
+}
+
+.app .exercise-workspace .answer-input-field:focus {
+	border-color: #1f6f8b;
+	box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.12);
+}
+
+.app .exercise-workspace .exercise-actions-modern {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 10px;
+	padding: 12px 14px 14px;
+	border-top: 1px solid rgba(31, 111, 139, 0.08);
+	background: #f8fafc;
+}
+
+.app .exercise-workspace .submit-btn-modern {
+	width: 100%;
+	min-height: 44px;
+	border-radius: 11px;
+	background: #1f6f8b;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .submit-btn-modern:hover {
+	transform: none;
+	background: #185a71;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .navigation-buttons-modern {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	justify-content: stretch;
+}
+
+.app .exercise-workspace .nav-btn-modern {
+	width: 100%;
+	min-height: 40px;
+	padding: 8px 12px;
+	border-radius: 10px;
+	border: 1px solid rgba(31, 111, 139, 0.18);
+	background: #fff;
+	font-size: 0.85rem;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .nav-btn-modern:hover:not(:disabled) {
+	transform: none;
+	border-color: #1f6f8b;
+	background: rgba(31, 111, 139, 0.04);
+}
+
+.app .exercise-workspace .hint-btn-modern {
+	width: 100%;
+	min-height: 40px;
+	justify-content: center;
+	border-radius: 10px;
+	border: 1px solid rgba(31, 111, 139, 0.16);
+	background: #fff;
+	color: #1f6f8b;
+	font-weight: 700;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .advanced-ai-practice,
+.app .exercise-workspace .ai-practice-panel {
+	margin: 0;
+	padding: 16px;
+	border: 1px solid rgba(31, 111, 139, 0.12);
+	border-radius: 16px;
+	box-shadow: 0 4px 14px rgba(19, 41, 61, 0.04);
+}
+
+.app .exercise-workspace .ai-practice-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 14px;
+	padding: 0 0 14px;
+	border-bottom: 1px solid rgba(31, 111, 139, 0.1);
+	border-radius: 0;
+	background: transparent;
+}
+
+.app .exercise-workspace .ai-practice-header h3 {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 800;
+	color: #13293d;
+}
+
+.app .exercise-workspace .ai-practice-header .subtitle {
+	margin: 4px 0 0;
+	font-size: 0.85rem;
+	color: #5a7384;
+	font-weight: 600;
+}
+
+.app .exercise-workspace .generate-btn-primary {
+	min-height: 40px;
+	padding: 8px 14px;
+	border-radius: 10px;
+	background: #1f6f8b;
+	font-size: 0.88rem;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .generate-btn-primary:hover:not(:disabled) {
+	transform: none;
+	background: #185a71;
+	box-shadow: none;
+}
+
+.app .exercise-workspace .empty-state {
+	text-align: left;
+	padding: 4px 0 0;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+}
+
+.app .exercise-workspace .empty-state h4 {
+	margin: 0 0 8px;
+	font-size: 1rem;
+	font-weight: 800;
+	color: #13293d;
+}
+
+.app .exercise-workspace .empty-state p {
+	margin: 0 0 12px;
+	font-size: 0.9rem;
+	line-height: 1.5;
+	color: #5a7384;
+}
+
+.app .exercise-workspace .benefits-list {
+	display: grid;
+	gap: 6px;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+.app .exercise-workspace .benefits-list li {
+	padding: 8px 10px;
+	border-radius: 10px;
+	background: #f7fbfe;
+	border: 1px solid rgba(31, 111, 139, 0.08);
+	font-size: 0.86rem;
+	font-weight: 600;
+	color: #334155;
+}
+
+@media (max-width: 720px) {
+	.app .exercise-workspace .ai-practice-header {
+		flex-direction: column;
+		align-items: stretch;
 	}
 
-	.app .level-picker-card .course-number-badge { grid-area: num; }
-	.app .level-picker-card .course-name-modern { grid-area: name; }
-	.app .level-picker-card .status-badge {
-		grid-area: status;
-		justify-self: start;
-		margin-top: 2px;
+	.app .exercise-workspace .generate-btn-primary {
+		width: 100%;
+		justify-content: center;
 	}
 }

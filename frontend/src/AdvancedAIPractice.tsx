@@ -137,29 +137,27 @@ export default function AdvancedAIPractice({ userId, levelId, onGenerateRequest 
 	}
 
 	return (
-		<div className="advanced-ai-practice">
+		<div className="advanced-ai-practice ai-practice-panel">
 			<div className="ai-practice-header">
 				<div className="header-left">
-					<div className="ai-avatar">🤖</div>
 					<div>
 						<h3>Ushtrime të Personalizuara me AI</h3>
 						<p className="subtitle">Bazuar 100% në performancën dhe gabimet e tua</p>
 					</div>
 				</div>
 				<button
+					type="button"
 					className="generate-btn-primary"
 					onClick={handleGenerate}
 					disabled={loading}
 				>
 					{loading ? (
 						<>
-							<span className="spinner"></span>
+							<span className="spinner" aria-hidden="true"></span>
 							Po analizoj...
 						</>
 					) : (
-						<>
-							✨ Gjenero Ushtrime
-						</>
+						<>✨ Gjenero Ushtrime</>
 					)}
 				</button>
 			</div>
@@ -379,7 +377,6 @@ export default function AdvancedAIPractice({ userId, levelId, onGenerateRequest 
 			{/* Empty State */}
 			{!loading && exercises.length === 0 && (
 				<div className="empty-state">
-					<div className="empty-icon">🎯</div>
 					<h4>Gati për Ushtrime të Personalizuara?</h4>
 					<p>
 						Kliko "Gjenero Ushtrime" dhe AI do të analizojë performancën tënde

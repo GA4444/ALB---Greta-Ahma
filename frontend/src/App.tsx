@@ -3005,26 +3005,32 @@ function MainContent({
                                 <span>Kthehu te Klasat</span>
                             </button>
                             <div className="class-header-info level-picker-intro">
-                                <div className="class-title-section">
+                                <div className="class-title-section level-picker-title">
                                     <h2 id="class-levels-heading" className="class-title">{selectedClass.name}</h2>
                                     <p className="class-subtitle">Zgjidh një nivel dhe fillo</p>
                                 </div>
-                                <div className="class-overall-progress" aria-label="Progresi i Përgjithshëm">
+                                <div className="class-overall-progress level-picker-progress" aria-label="Progresi i Përgjithshëm">
                                     <div className="overall-progress-label">
-                                        <span>Progresi i Përgjithshëm</span>
+                                        <span className="overall-progress-title">Progresi i Përgjithshëm</span>
                                         <span className="progress-percentage">
-                                            {classCourses.length > 0 
+                                            {classCourses.length > 0
                                                 ? Math.round((classCourses.filter(c => c.progress?.is_completed).length / classCourses.length) * 100)
                                                 : 0}%
                                         </span>
                                     </div>
-                                    <div className="overall-progress-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={classCourses.length > 0 ? Math.round((classCourses.filter(c => c.progress?.is_completed).length / classCourses.length) * 100) : 0}>
-                                        <div 
-                                            className="overall-progress-fill" 
-                                            style={{ 
-                                                width: `${classCourses.length > 0 
+                                    <div
+                                        className="overall-progress-bar"
+                                        role="progressbar"
+                                        aria-valuemin={0}
+                                        aria-valuemax={100}
+                                        aria-valuenow={classCourses.length > 0 ? Math.round((classCourses.filter(c => c.progress?.is_completed).length / classCourses.length) * 100) : 0}
+                                    >
+                                        <div
+                                            className="overall-progress-fill"
+                                            style={{
+                                                width: `${classCourses.length > 0
                                                     ? (classCourses.filter(c => c.progress?.is_completed).length / classCourses.length) * 100
-                                                    : 0}%` 
+                                                    : 0}%`
                                             }}
                                         ></div>
                                     </div>
@@ -3046,7 +3052,7 @@ function MainContent({
                                         </div>
                                     ))}
                                 </div>
-                            ) : classCourses.map((course, index) => {
+                            ) : classCourses.map((course) => {
                                 const progressPercent = course.progress 
                                     ? Math.min(100, (course.progress.completed_exercises / Math.max(1, course.progress.total_exercises)) * 100)
                                     : 0
@@ -3064,7 +3070,6 @@ function MainContent({
                                         aria-label={`${course.name}, ${statusLabel}`}
                                     >
                                         <div className="course-card-top">
-                                            <span className="course-number-badge">#{index + 1}</span>
                                             <h4 className="course-name-modern">{course.name}</h4>
                                             <span className={`status-badge ${isCompleted ? 'completed-badge' : course.enabled ? 'active-badge' : 'locked-badge'}`}>
                                                 {statusLabel}
@@ -3183,14 +3188,14 @@ function MainContent({
                         </div>
                     </div>
                 ) : selectedLevel && exercises.length > 0 ? (
-                    <div className="exercise-area-modern">
-                        <div className="exercise-header-modern">
-                            <button className="back-button-modern" onClick={() => onLevelClick(null)}>
-                                <span className="back-icon">←</span>
+                    <div className="exercise-area-modern exercise-workspace">
+                        <header className="exercise-header-modern exercise-workspace-header">
+                            <button type="button" className="back-button-modern" onClick={() => onLevelClick(null)}>
+                                <span className="back-icon" aria-hidden="true">←</span>
                                 <span>Kthehu te Nivelet</span>
                             </button>
-                            <div className="exercise-title-section">
-                                <div className="exercise-badge-modern">Ushtrimet</div>
+                            <div className="exercise-title-section exercise-workspace-title">
+                                <span className="exercise-badge-modern">Ushtrimet</span>
                                 <h2 className="exercise-title-modern">
                                     {selectedLevel && selectedClass && selectedCourse
                                         ? formatCurriculumLabel(selectedClass, selectedCourse, selectedLevel, classes)
@@ -3206,7 +3211,7 @@ function MainContent({
                                     })()}
                                 </p>
                             </div>
-                        </div>
+                        </header>
                         
                         <div className="exercise-container-modern">
                             <div className="exercise-progress-modern">
@@ -3226,9 +3231,6 @@ function MainContent({
 
                             <div className="exercise-card-modern">
                                 <div className="exercise-card-header-modern">
-                                    <div className="exercise-number-badge-modern">
-                                        #{currentExerciseIndex + 1}
-                                    </div>
                                     <div className="exercise-points-badge-modern">
                                         +{exercises[currentExerciseIndex].points} pikë
                                     </div>
@@ -3281,18 +3283,18 @@ function MainContent({
                                             </div>
                                             <div className="voice-controls-modern">
                                                 <button
+                                                    type="button"
                                                     className="voice-btn-modern primary"
                                                     onClick={() => playAudio(exercises[currentExerciseIndex].id)}
                                                 >
-                                                    <span className="voice-icon">🔊</span>
                                                     <span>Dëgjo</span>
                                                 </button>
                                                 <button
+                                                    type="button"
                                                     className="voice-btn-modern secondary"
                                                     onClick={() => startRecording()}
                                                     disabled={isRecording}
                                                 >
-                                                    <span className="voice-icon">🎤</span>
                                                     <span>{isRecording ? 'Duke regjistruar...' : 'Regjistro'}</span>
                                                 </button>
                                             </div>
@@ -3301,7 +3303,6 @@ function MainContent({
 
                                     {exercises[currentExerciseIndex].rule && (
                                         <div className="exercise-hint-modern">
-                                            <div className="hint-icon">💡</div>
                                             <div className="hint-content">
                                                 <strong>Këshillë:</strong> {exercises[currentExerciseIndex].rule}
                                             </div>
@@ -3351,7 +3352,6 @@ function MainContent({
                                     {childFeedback && (
                                         <div className="child-feedback-card">
                                             <div className="child-feedback-header">
-                                                <span>💡</span>
                                                 <strong>{childFeedback.child_message?.title || 'Ndihmë'}</strong>
                                             </div>
                                             {(childFeedback.child_message?.what_you_wrote || childFeedback.comparison?.student_to_correct) && (
@@ -3394,16 +3394,17 @@ function MainContent({
 
                                 <div className="exercise-actions-modern">
                                     <button
+                                        type="button"
                                         className="submit-btn-modern"
                                         onClick={handleSubmitAnswer}
                                         disabled={isSubmittingAnswer}
                                     >
                                         <span>{isSubmittingAnswer ? 'Po kontrolloj...' : 'Kontrollo'}</span>
-                                        <span className="submit-icon">✓</span>
                                     </button>
                                     
                                     <div className="navigation-buttons-modern">
                                         <button
+                                            type="button"
                                             className="nav-btn-modern prev"
                                             onClick={() => {
                                                 if (currentExerciseIndex > 0) {
@@ -3417,6 +3418,7 @@ function MainContent({
                                         </button>
                                         
                                         <button
+                                            type="button"
                                             className="nav-btn-modern next"
                                             onClick={() => {
                                                 if (currentExerciseIndex < exercises.length - 1) {
@@ -3432,6 +3434,7 @@ function MainContent({
 
                                     {exercises[currentExerciseIndex].category === 'listen_write' && (
                                         <button
+                                            type="button"
                                             className="hint-btn-modern"
                                             onClick={() => showPronunciationHint()}
                                         >
