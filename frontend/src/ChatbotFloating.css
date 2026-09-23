@@ -14,11 +14,13 @@
 	font-size: 1.5rem;
 	box-shadow: 0 4px 16px rgba(74, 159, 212, 0.3);
 	transition: all 0.2s;
-	z-index: 1210;
+	z-index: 1400;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	overflow: visible;
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
 }
 
 .chatbot-float-btn:hover {
@@ -71,12 +73,12 @@
 /*
   Overlay wraps the panel on all viewports.
   Desktop: transparent, non-blocking except the panel itself.
-  Mobile: dimmed backdrop; panel centered with margins.
+  Mobile: dimmed backdrop; panel as bottom sheet.
 */
 .chatbot-modal-overlay {
 	position: fixed;
 	inset: 0;
-	z-index: 1200;
+	z-index: 1390;
 	display: block;
 	margin: 0;
 	padding: 0;
@@ -91,7 +93,7 @@
 	right: 24px;
 	width: min(420px, calc(100vw - 48px));
 	height: min(620px, calc(100vh - 128px));
-	z-index: 1201;
+	z-index: 1395;
 	pointer-events: auto;
 	animation: panelFadeIn 0.3s ease-out;
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
@@ -99,6 +101,14 @@
 	overflow: hidden;
 	box-sizing: border-box;
 	background: #fff;
+	display: flex;
+	flex-direction: column;
+}
+
+.chatbot-floating-panel > * {
+	flex: 1 1 auto;
+	min-height: 0;
+	height: 100%;
 }
 
 .chatbot-panel-loading {
@@ -106,6 +116,7 @@
 	place-items: center;
 	width: 100%;
 	height: 100%;
+	min-height: 180px;
 	padding: 24px;
 	border: 1px solid #e2e8f0;
 	border-radius: 12px;
@@ -116,7 +127,9 @@
 }
 
 body:has(.profile-overlay) .chatbot-float-btn,
-body:has(.profile-overlay) .chatbot-modal-overlay {
+body:has(.profile-overlay) .chatbot-modal-overlay,
+body:has(.ocr-modal-overlay) .chatbot-float-btn,
+body:has(.ocr-modal-overlay) .chatbot-modal-overlay {
 	visibility: hidden;
 	pointer-events: none;
 }
@@ -154,50 +167,55 @@ body:has(.profile-overlay) .chatbot-modal-overlay {
 	}
 }
 
-/* Mobile: centered modal panel with margins */
+/* Mobile: bottom sheet above tab bar; button always tappable */
 @media (max-width: 768px) {
+	.chatbot-float-btn {
+		bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+		right: max(14px, env(safe-area-inset-right, 0px));
+		width: 52px;
+		height: 52px;
+		font-size: 1.3rem;
+		z-index: 1400;
+	}
+
 	.chatbot-modal-overlay {
-		display: grid;
-		place-items: center;
-		padding: max(12px, env(safe-area-inset-top, 0px))
-			max(12px, env(safe-area-inset-right, 0px))
-			max(12px, env(safe-area-inset-bottom, 0px))
-			max(12px, env(safe-area-inset-left, 0px));
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		padding: 0;
 		background: rgba(15, 23, 42, 0.45);
 		backdrop-filter: blur(3px);
 		-webkit-backdrop-filter: blur(3px);
 		pointer-events: auto;
 		cursor: pointer;
 		animation: chatbotOverlayIn 160ms ease-out;
-	}
-
-	.chatbot-float-btn {
-		bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-		right: 16px;
-		width: 48px;
-		height: 48px;
-		font-size: 1.25rem;
-		z-index: 1210;
+		overflow: hidden;
 	}
 
 	.chatbot-floating-panel {
 		position: relative;
 		inset: auto;
-		top: auto;
-		right: auto;
-		bottom: auto;
-		left: auto;
-		width: min(420px, calc(100vw - 24px));
-		max-width: min(420px, calc(100vw - 24px));
-		height: min(72dvh, calc(100dvh - 24px));
-		max-height: min(640px, calc(100dvh - 24px));
+		width: 100%;
+		max-width: 100%;
+		height: min(88dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 8px));
+		max-height: min(88dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 8px));
 		margin: 0;
-		border-radius: 16px;
+		border-radius: 18px 18px 0 0;
 		border: 1px solid #dbe4ec;
-		box-shadow: 0 18px 48px rgba(15, 23, 42, 0.28);
-		z-index: 1201;
+		border-bottom: 0;
+		box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.22);
+		z-index: 1395;
 		cursor: default;
 		animation: chatbotPanelIn 220ms ease-out;
+	}
+
+	body.chatbot-open {
+		overflow: hidden;
+		touch-action: none;
+	}
+
+	body.chatbot-open .mobile-bottom-nav {
+		display: none !important;
 	}
 
 	@keyframes chatbotOverlayIn {
@@ -208,11 +226,11 @@ body:has(.profile-overlay) .chatbot-modal-overlay {
 	@keyframes chatbotPanelIn {
 		from {
 			opacity: 0;
-			transform: translateY(12px) scale(0.98);
+			transform: translateY(24px);
 		}
 		to {
 			opacity: 1;
-			transform: translateY(0) scale(1);
+			transform: translateY(0);
 		}
 	}
 }

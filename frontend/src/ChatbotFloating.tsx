@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import LazyErrorBoundary from './components/LazyErrorBoundary'
 import './ChatbotFloating.css'
 
@@ -17,6 +18,11 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 	const [isOpen, setIsOpen] = useState(false)
 	const [hasUnread, setHasUnread] = useState(false)
 
+	useEffect(() => {
+		document.body.classList.toggle('chatbot-open', isOpen)
+		return () => document.body.classList.remove('chatbot-open')
+	}, [isOpen])
+
 	const handleToggle = () => {
 		setIsOpen((open) => {
 			if (!open) setHasUnread(false)
@@ -26,7 +32,7 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 
 	const handleClose = () => setIsOpen(false)
 
-	return (
+	const ui = (
 		<>
 			<button
 				type="button"
@@ -69,4 +75,7 @@ export default function ChatbotFloating({ userId, context }: ChatbotFloatingProp
 			)}
 		</>
 	)
+
+	if (typeof document === 'undefined') return null
+	return createPortal(ui, document.body)
 }

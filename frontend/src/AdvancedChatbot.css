@@ -756,21 +756,29 @@
 /* Responsive */
 @media (max-width: 768px) {
 	.advanced-chatbot {
+		display: flex;
+		flex-direction: column;
 		min-height: 0;
+		height: 100%;
 		max-height: 100%;
-		border-radius: 16px;
+		border-radius: 18px 18px 0 0;
+	}
+
+	.chatbot-header {
+		flex-shrink: 0;
 	}
 
 	.chatbot-messages {
 		min-height: 0;
-		flex: 1;
+		flex: 1 1 auto;
 		overflow-y: auto;
 		-webkit-overflow-scrolling: touch;
 	}
 
 	.chatbot-input-area {
 		gap: 8px;
-		padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+		padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0px));
+		flex-shrink: 0;
 	}
 
 	.chatbot-voice-btn,

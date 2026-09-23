@@ -387,6 +387,7 @@
 
   body:has(.profile-overlay) .mobile-bottom-nav,
   body:has(.ocr-modal-overlay) .mobile-bottom-nav,
+  body.chatbot-open .mobile-bottom-nav,
   .app:has(.profile-overlay) .mobile-bottom-nav,
   .app:has(.ocr-modal-overlay) .mobile-bottom-nav {
     display: none !important;

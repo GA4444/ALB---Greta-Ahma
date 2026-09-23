@@ -1131,26 +1131,31 @@
 
 .app .chatbot-float-btn {
   bottom: max(20px, env(safe-area-inset-bottom, 0px));
-  z-index: 1210;
+  z-index: 1400;
 }
 
 .app .chatbot-modal-overlay {
-  z-index: 1200;
+  z-index: 1390;
 }
 
 .app .chatbot-floating-panel {
-  z-index: 1201;
+  z-index: 1395;
 }
 
 .app:has(.profile-overlay) .chatbot-float-btn,
-.app:has(.profile-overlay) .chatbot-modal-overlay {
+.app:has(.profile-overlay) .chatbot-modal-overlay,
+.app:has(.ocr-modal-overlay) .chatbot-float-btn,
+.app:has(.ocr-modal-overlay) .chatbot-modal-overlay {
   visibility: hidden;
   pointer-events: none;
 }
 
 @media (max-width: 768px) {
-  .app .chatbot-float-btn {
-    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  .app .chatbot-float-btn,
+  .chatbot-float-btn {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    right: max(14px, env(safe-area-inset-right, 0px)) !important;
+    z-index: 1400 !important;
   }
 }
 
