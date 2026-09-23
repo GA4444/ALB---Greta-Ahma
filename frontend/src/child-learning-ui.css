@@ -4444,28 +4444,36 @@
 	}
 }
 
-/* Mobile: clean professional journey list (no zigzag) */
+/* Mobile: clean professional journey list — edge to edge */
 @media (max-width: 768px) {
 	.app .sidebar.sidebar-compact:has(.alblingo-world),
 	.app .main-content > .sidebar.sidebar-compact:has(.alblingo-world),
 	.app .main-content--home > .sidebar.sidebar-compact:has(.alblingo-world) {
-		padding: 12px !important;
+		width: calc(100% + 24px) !important;
+		max-width: none !important;
+		margin-left: -12px !important;
+		margin-right: -12px !important;
+		padding: 12px 0 14px !important;
 		gap: 12px !important;
-		border-radius: 16px !important;
+		border-radius: 0 !important;
 		background: #fff !important;
-		border: 1px solid rgba(31, 111, 139, 0.1) !important;
-		box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
+		border: 0 !important;
+		border-top: 1px solid rgba(31, 111, 139, 0.08) !important;
+		border-bottom: 1px solid rgba(31, 111, 139, 0.08) !important;
+		box-shadow: none !important;
+		box-sizing: border-box !important;
 	}
 
 	.app .alblingo-world {
 		margin: 0 !important;
 		padding: 0 !important;
 		background: transparent !important;
+		width: 100% !important;
 	}
 
 	.app .alblingo-world .sidebar-section-header.compact {
 		margin: 0 0 10px !important;
-		padding: 0 2px !important;
+		padding: 0 14px !important;
 	}
 
 	.app .alblingo-world .sidebar-section-header.compact h3 {
@@ -4490,10 +4498,11 @@
 		gap: 0 !important;
 		padding: 0 !important;
 		margin: 0 !important;
-		border: 1px solid rgba(31, 111, 139, 0.1) !important;
-		border-radius: 14px !important;
-		background: #f8fafc !important;
+		border: 0 !important;
+		border-radius: 0 !important;
+		background: #fff !important;
 		overflow: hidden !important;
+		width: 100% !important;
 	}
 
 	.app .alblingo-path .path-stage,
@@ -4502,13 +4511,13 @@
 		display: grid !important;
 		grid-template-columns: 40px minmax(0, 1fr) auto !important;
 		align-items: center !important;
-		column-gap: 10px !important;
+		column-gap: 12px !important;
 		row-gap: 0 !important;
 		width: 100% !important;
 		max-width: 100% !important;
 		min-height: 56px !important;
 		margin: 0 !important;
-		padding: 10px 12px !important;
+		padding: 12px 14px !important;
 		border: 0 !important;
 		border-radius: 0 !important;
 		border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
@@ -4522,7 +4531,7 @@
 	}
 
 	.app .alblingo-path .path-rail {
-		left: 29px;
+		left: 31px;
 		top: -1px;
 		bottom: calc(50% + 18px);
 		width: 2px;
@@ -4622,10 +4631,13 @@
 	}
 
 	.app .sidebar-compact:has(.alblingo-world) .sidebar-section-progress {
+		margin: 0 14px !important;
 		padding: 10px 12px !important;
 		border-radius: 12px !important;
 		background: #f8fafc !important;
 		border: 1px solid rgba(31, 111, 139, 0.08) !important;
+		width: auto !important;
+		box-sizing: border-box !important;
 	}
 
 	.app .sidebar-compact:has(.alblingo-world) .sidebar-section + .sidebar-section {
@@ -4635,12 +4647,14 @@
 	}
 
 	.app .sidebar-compact:has(.alblingo-world) .ocr-launch-card {
-		margin: 0 !important;
+		margin: 0 14px !important;
 		padding: 12px !important;
 		border-radius: 12px !important;
 		border: 1px solid rgba(31, 111, 139, 0.1) !important;
 		background: #f7fbfe !important;
 		box-shadow: none !important;
+		width: auto !important;
+		box-sizing: border-box !important;
 	}
 }
 
@@ -4649,13 +4663,13 @@
 	.app .alblingo-path .path-stage.path-side-a,
 	.app .alblingo-path .path-stage.path-side-b {
 		min-height: 54px !important;
-		padding: 10px 12px !important;
+		padding: 12px 14px !important;
 		grid-template-columns: 36px minmax(0, 1fr) auto !important;
 		column-gap: 10px !important;
 	}
 
 	.app .alblingo-path .path-rail {
-		left: 27px;
+		left: 29px;
 	}
 
 	.app .alblingo-path .path-node {
@@ -4679,21 +4693,26 @@
 }
 
 @media (max-width: 340px) {
-	.app .sidebar.sidebar-compact:has(.alblingo-world) {
-		padding: 10px !important;
+	.app .sidebar.sidebar-compact:has(.alblingo-world),
+	.app .main-content > .sidebar.sidebar-compact:has(.alblingo-world),
+	.app .main-content--home > .sidebar.sidebar-compact:has(.alblingo-world) {
+		width: calc(100% + 24px) !important;
+		margin-left: -12px !important;
+		margin-right: -12px !important;
+		padding: 10px 0 12px !important;
 	}
 
 	.app .alblingo-path .path-stage,
 	.app .alblingo-path .path-stage.path-side-a,
 	.app .alblingo-path .path-stage.path-side-b {
 		min-height: 50px !important;
-		padding: 9px 10px !important;
+		padding: 10px 12px !important;
 		grid-template-columns: 32px minmax(0, 1fr) auto !important;
 		column-gap: 8px !important;
 	}
 
 	.app .alblingo-path .path-rail {
-		left: 24px;
+		left: 26px;
 	}
 
 	.app .alblingo-path .path-node {
@@ -4709,6 +4728,12 @@
 
 	.app .alblingo-path .path-stage .class-label {
 		font-size: 0.86rem !important;
+	}
+
+	.app .sidebar-compact:has(.alblingo-world) .sidebar-section-progress,
+	.app .sidebar-compact:has(.alblingo-world) .ocr-launch-card {
+		margin-left: 12px !important;
+		margin-right: 12px !important;
 	}
 }
 
