@@ -96,7 +96,8 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  .leaderboard-card {
+  .leaderboard-card,
+  .level-info-card {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;

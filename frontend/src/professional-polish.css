@@ -620,7 +620,7 @@
 }
 
 /* Dense information views: clearer hierarchy without oversized nested cards. */
-.app .profile-card:not(.leaderboard-card) {
+.app .profile-card:not(.leaderboard-card):not(.level-info-card) {
   width: min(900px, calc(100vw - 32px));
   max-height: calc(100vh - 32px);
   padding: 18px;
