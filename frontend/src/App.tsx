@@ -1418,10 +1418,15 @@ function App() {
                     <LazyErrorBoundary label="panelit të administratorit">
                         <Suspense fallback={
                             <div className="route-loading page-loading" role="status" aria-live="polite" aria-busy="true">
-                                <div className="page-loading-mark" aria-hidden="true"><BrandLogo size={44} decorative /></div>
-                                <div className="page-loading-spinner" aria-hidden="true"></div>
-                                <p className="page-loading-title">Duke ngarkuar</p>
-                                <p className="page-loading-subtitle">Paneli i administratorit</p>
+                                <div className="page-loading-progress" aria-hidden="true">
+                                    <span className="page-loading-progress-bar"></span>
+                                </div>
+                                <div className="page-loading-inner">
+                                    <div className="page-loading-mark" aria-hidden="true"><BrandLogo size={52} decorative /></div>
+                                    <p className="page-loading-brand">AlbLingo</p>
+                                    <p className="page-loading-title">Duke ngarkuar</p>
+                                    <p className="page-loading-subtitle">Paneli i administratorit</p>
+                                </div>
                             </div>
                         }>
                             <AdminDashboard
@@ -1986,6 +1991,7 @@ function App() {
                             tabIndex={-1}
                             onClick={(e) => e.stopPropagation()}
                         >
+                            <div className="leaderboard-sheet-handle" aria-hidden="true"></div>
                             <div className="profile-header">
                                 <div className="profile-title" id="leaderboard-modal-title">🏆 {LEADERBOARD_TITLE}</div>
                                 <button className="profile-close" aria-label="Mbyll renditjen" onClick={() => setShowLeaderboard(false)}>×</button>
@@ -2852,12 +2858,17 @@ function MainContent({
             <div className="content-area">
                 {isLoading ? (
                     <div className="loading page-loading" role="status" aria-live="polite" aria-busy="true">
-                        <div className="page-loading-mark" aria-hidden="true">
-                            <BrandLogo size={44} decorative />
+                        <div className="page-loading-progress" aria-hidden="true">
+                            <span className="page-loading-progress-bar"></span>
                         </div>
-                        <div className="page-loading-spinner" aria-hidden="true"></div>
-                        <p className="page-loading-title">Duke ngarkuar</p>
-                        <p className="page-loading-subtitle">Ju lutem prisni një moment</p>
+                        <div className="page-loading-inner">
+                            <div className="page-loading-mark" aria-hidden="true">
+                                <BrandLogo size={52} decorative />
+                            </div>
+                            <p className="page-loading-brand">AlbLingo</p>
+                            <p className="page-loading-title">Duke ngarkuar</p>
+                            <p className="page-loading-subtitle">Po përgatitim platformën për ju</p>
+                        </div>
                     </div>
                 ) : !selectedClass ? (
                     <div className="welcome-screen-modern">
@@ -3394,10 +3405,12 @@ function MainContent({
                         {userId && selectedLevel && (
                             <LazyErrorBoundary label="ushtrimeve me AI">
                                 <Suspense fallback={
-                                    <div className="section-loading page-loading" role="status" aria-live="polite" aria-busy="true">
-                                        <div className="page-loading-spinner" aria-hidden="true"></div>
-                                        <p className="page-loading-title">Duke ngarkuar</p>
-                                        <p className="page-loading-subtitle">Ushtrimet me AI</p>
+                                    <div className="section-loading page-loading page-loading--inline" role="status" aria-live="polite" aria-busy="true">
+                                        <div className="page-loading-inner">
+                                            <div className="page-loading-spinner" aria-hidden="true"></div>
+                                            <p className="page-loading-title">Duke ngarkuar</p>
+                                            <p className="page-loading-subtitle">Ushtrimet me AI</p>
+                                        </div>
                                     </div>
                                 }>
                                     <AdvancedAIPractice

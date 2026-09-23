@@ -65,40 +65,44 @@ html {
    ============================================ */
 
 .app-loading {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 12px;
   min-height: 100vh;
+  min-height: 100dvh;
   background:
-    radial-gradient(ellipse 60% 40% at 50% 35%, rgba(31, 111, 139, 0.1), transparent 65%),
-    #f8fafc;
+    radial-gradient(ellipse 70% 45% at 50% 32%, rgba(31, 111, 139, 0.11), transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
   color: #13293d;
-  font-weight: 750;
-  font-size: 1.05rem;
+  overflow: hidden;
 }
 
 .app-loading::before {
   content: "";
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2.5px solid rgba(31, 111, 139, 0.15);
-  border-top-color: #1f6f8b;
-  animation: app-loading-spin 0.75s linear infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #1f6f8b, #2f9e6b, transparent);
+  background-size: 200% 100%;
+  animation: app-loading-bar 1.15s ease-in-out infinite;
 }
 
 .app-loading::after {
-  content: "Duke ngarkuar";
-  font-size: 1.05rem;
-  font-weight: 750;
+  content: "AlbLingo";
+  font-size: 1.35rem;
+  font-weight: 800;
   color: #13293d;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.03em;
 }
 
-@keyframes app-loading-spin {
-  to { transform: rotate(360deg); }
+@keyframes app-loading-bar {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
 
 /* ============================================

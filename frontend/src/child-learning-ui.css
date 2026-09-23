@@ -3172,8 +3172,8 @@
 }
 
 .app .leaderboard-card {
-	width: min(100%, 760px) !important;
-	max-width: 760px !important;
+	width: min(100%, 860px) !important;
+	max-width: 860px !important;
 	max-height: min(88vh, 860px) !important;
 	margin: 0 auto !important;
 	padding: 0 !important;
@@ -3428,27 +3428,43 @@
 	.app .profile-overlay:has(.leaderboard-card) {
 		align-items: flex-end !important;
 		padding: 0 !important;
+		background: rgba(15, 23, 42, 0.48) !important;
 	}
 
 	.app .leaderboard-card {
 		width: 100% !important;
 		max-width: 100% !important;
-		max-height: min(92dvh, 92vh) !important;
-		border-radius: 20px 20px 0 0 !important;
+		min-height: min(88dvh, 88vh) !important;
+		max-height: min(96dvh, 96vh) !important;
+		border-radius: 22px 22px 0 0 !important;
+		border: 0 !important;
 		border-left: 0 !important;
 		border-right: 0 !important;
 		border-bottom: 0 !important;
-		box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.12) !important;
+		padding: 0 !important;
+		box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.18) !important;
+		overflow: hidden !important;
+	}
+
+	.app .leaderboard-sheet-handle {
+		display: block !important;
+		width: 40px !important;
+		height: 4px !important;
+		margin: 10px auto 0 !important;
+		border-radius: 999px !important;
+		background: #cbd5e1 !important;
+		flex-shrink: 0 !important;
 	}
 
 	.app .leaderboard-card .profile-header {
-		padding: 14px 16px !important;
+		padding: 12px 18px 14px !important;
 		background: #fff !important;
+		border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
 	}
 
 	.app .leaderboard-card .profile-title {
-		font-size: 1.05rem !important;
-		letter-spacing: -0.01em !important;
+		font-size: 1.12rem !important;
+		letter-spacing: -0.02em !important;
 	}
 
 	.app .leaderboard-card .profile-close {
@@ -3460,9 +3476,11 @@
 	}
 
 	.app .leaderboard-content {
-		padding: 12px 14px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-		gap: 12px !important;
-		background: #f8fafc !important;
+		padding: 14px 0 calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+		gap: 14px !important;
+		background: #fff !important;
+		flex: 1 1 auto !important;
+		min-height: 0 !important;
 	}
 
 	.app .user-rank-badge {
@@ -3470,22 +3488,26 @@
 		flex-wrap: wrap !important;
 		align-items: center !important;
 		justify-content: space-between !important;
-		padding: 14px 16px !important;
-		gap: 10px 12px !important;
-		border-radius: 16px !important;
+		margin: 0 16px !important;
+		padding: 16px 18px !important;
+		gap: 10px 14px !important;
+		border-radius: 18px !important;
+		width: auto !important;
+		box-sizing: border-box !important;
 	}
 
 	.app .rank-value {
-		font-size: 1.5rem !important;
+		font-size: 1.65rem !important;
 	}
 
 	.app .rank-stats {
 		width: 100% !important;
+		gap: 8px !important;
 	}
 
 	.app .rank-stat-pill {
-		font-size: 0.72rem !important;
-		padding: 5px 9px !important;
+		font-size: 0.74rem !important;
+		padding: 6px 11px !important;
 	}
 
 	.app .leaderboard-header {
@@ -3495,65 +3517,78 @@
 	.app .leaderboard-table {
 		border: 0 !important;
 		background: transparent !important;
-		overflow: visible !important;
+		overflow: hidden !important;
 		border-radius: 0 !important;
+		flex: 1 1 auto !important;
+		min-height: 0 !important;
+		display: flex !important;
+		flex-direction: column !important;
 	}
 
 	.app .leaderboard-body {
-		max-height: min(60dvh, 540px) !important;
+		max-height: none !important;
+		flex: 1 1 auto !important;
 		display: flex !important;
 		flex-direction: column !important;
-		gap: 8px !important;
+		gap: 0 !important;
 		padding: 0 !important;
 		overflow-x: hidden !important;
 		overflow-y: auto !important;
+		-webkit-overflow-scrolling: touch;
+		border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
 	}
 
 	.app .leaderboard-row {
 		display: grid !important;
-		grid-template-columns: 44px minmax(0, 1fr) auto !important;
+		grid-template-columns: 52px minmax(0, 1fr) auto !important;
 		grid-template-areas:
 			"rank user points"
-			". meta meta" !important;
-		gap: 4px 12px !important;
+			"rank meta meta" !important;
+		gap: 2px 14px !important;
 		align-items: center !important;
-		padding: 12px 14px !important;
-		border: 1px solid rgba(31, 111, 139, 0.1) !important;
-		border-radius: 14px !important;
-		border-bottom: 1px solid rgba(31, 111, 139, 0.1) !important;
+		padding: 14px 18px !important;
+		border: 0 !important;
+		border-radius: 0 !important;
+		border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
 		background: #fff !important;
-		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+		box-shadow: none !important;
 		min-width: 0 !important;
 		width: 100% !important;
 		box-sizing: border-box !important;
 	}
 
+	.app .leaderboard-row:last-child {
+		border-bottom: 0 !important;
+	}
+
 	.app .leaderboard-row.current-user {
-		border-color: rgba(31, 111, 139, 0.28) !important;
-		background: linear-gradient(180deg, #f0f9fc 0%, #fff 100%) !important;
-		border-left: 3px solid #1f6f8b !important;
-		box-shadow: 0 2px 10px rgba(31, 111, 139, 0.08) !important;
+		border-color: transparent !important;
+		border-bottom-color: rgba(31, 111, 139, 0.12) !important;
+		background: #f0f9fc !important;
+		border-left: 0 !important;
+		box-shadow: inset 3px 0 0 #1f6f8b !important;
 	}
 
 	.app .leaderboard-row .rank-col {
 		grid-area: rank !important;
 		align-self: center !important;
 		justify-content: center !important;
-		width: 40px !important;
-		height: 40px !important;
-		border-radius: 12px !important;
+		width: 48px !important;
+		height: 48px !important;
+		border-radius: 14px !important;
 		background: #f1f5f9 !important;
-		font-size: 1rem !important;
+		font-size: 1.05rem !important;
 		font-weight: 800 !important;
 	}
 
 	.app .leaderboard-row.current-user .rank-col {
-		background: rgba(31, 111, 139, 0.12) !important;
+		background: rgba(31, 111, 139, 0.14) !important;
+		color: #1f6f8b !important;
 	}
 
 	.app .leaderboard-row .user-col {
 		grid-area: user !important;
-		font-size: 0.95rem !important;
+		font-size: 1rem !important;
 		min-width: 0 !important;
 		gap: 8px !important;
 	}
@@ -3564,7 +3599,7 @@
 		flex-direction: column !important;
 		align-items: flex-end !important;
 		justify-content: center !important;
-		gap: 0 !important;
+		gap: 1px !important;
 		padding: 0 !important;
 		border: 0 !important;
 		background: transparent !important;
@@ -3574,19 +3609,20 @@
 	}
 
 	.app .leaderboard-row .points-col .lb-stat-value {
-		font-size: 1.05rem !important;
+		font-size: 1.12rem !important;
 		font-weight: 800 !important;
 		color: #1f6f8b !important;
-		letter-spacing: -0.02em !important;
+		letter-spacing: -0.03em !important;
+		line-height: 1.1 !important;
 	}
 
 	.app .leaderboard-row .points-col .lb-stat-unit {
 		display: block !important;
-		font-size: 0.62rem !important;
+		font-size: 0.64rem !important;
 		font-weight: 700 !important;
-		color: #64748b !important;
+		color: #94a3b8 !important;
 		text-transform: uppercase !important;
-		letter-spacing: 0.04em !important;
+		letter-spacing: 0.05em !important;
 		line-height: 1.1 !important;
 	}
 
@@ -3598,7 +3634,7 @@
 		gap: 0 !important;
 		width: 100% !important;
 		min-width: 0 !important;
-		padding-top: 2px !important;
+		padding-top: 1px !important;
 		overflow: hidden !important;
 	}
 
@@ -3616,7 +3652,7 @@
 		border-radius: 0 !important;
 		min-width: 0 !important;
 		white-space: nowrap !important;
-		font-size: 0.78rem !important;
+		font-size: 0.8rem !important;
 		color: #64748b !important;
 	}
 
@@ -3624,7 +3660,7 @@
 	.app .leaderboard-row .accuracy-col::after {
 		content: "·" !important;
 		display: inline-block !important;
-		margin: 0 7px !important;
+		margin: 0 8px !important;
 		color: #cbd5e1 !important;
 		font-weight: 700 !important;
 	}
@@ -3636,9 +3672,9 @@
 	.app .leaderboard-row .level-col .lb-stat-value,
 	.app .leaderboard-row .accuracy-col .lb-stat-value,
 	.app .leaderboard-row .courses-col .lb-stat-value {
-		font-size: 0.78rem !important;
-		font-weight: 650 !important;
-		color: #475569 !important;
+		font-size: 0.8rem !important;
+		font-weight: 600 !important;
+		color: #64748b !important;
 		overflow: visible !important;
 		white-space: nowrap !important;
 	}
@@ -3646,9 +3682,9 @@
 	.app .leaderboard-row .courses-col .lb-stat-unit {
 		display: inline !important;
 		margin-left: 4px !important;
-		font-size: 0.78rem !important;
-		font-weight: 650 !important;
-		color: #64748b !important;
+		font-size: 0.8rem !important;
+		font-weight: 600 !important;
+		color: #94a3b8 !important;
 		text-transform: none !important;
 		letter-spacing: 0 !important;
 	}
@@ -3656,24 +3692,33 @@
 
 @media (max-width: 380px) {
 	.app .leaderboard-row {
-		grid-template-columns: 36px minmax(0, 1fr) auto !important;
-		gap: 4px 10px !important;
-		padding: 11px 12px !important;
+		grid-template-columns: 44px minmax(0, 1fr) auto !important;
+		gap: 2px 12px !important;
+		padding: 13px 14px !important;
+	}
+
+	.app .leaderboard-content {
+		padding-top: 12px !important;
+	}
+
+	.app .user-rank-badge {
+		margin: 0 12px !important;
+		padding: 14px 14px !important;
 	}
 
 	.app .leaderboard-row .rank-col {
-		width: 36px !important;
-		height: 36px !important;
-		border-radius: 10px !important;
-		font-size: 0.92rem !important;
+		width: 42px !important;
+		height: 42px !important;
+		border-radius: 12px !important;
+		font-size: 0.95rem !important;
 	}
 
 	.app .leaderboard-row .user-col {
-		font-size: 0.9rem !important;
+		font-size: 0.94rem !important;
 	}
 
 	.app .leaderboard-row .points-col .lb-stat-value {
-		font-size: 0.98rem !important;
+		font-size: 1.02rem !important;
 	}
 
 	.app .leaderboard-row .lb-meta {
@@ -3681,95 +3726,188 @@
 		row-gap: 2px !important;
 	}
 
-	.app .leaderboard-row .level-col,
-	.app .leaderboard-row .accuracy-col,
-	.app .leaderboard-row .courses-col {
-		font-size: 0.74rem !important;
-	}
-
 	.app .leaderboard-row .level-col .lb-stat-value,
 	.app .leaderboard-row .accuracy-col .lb-stat-value,
 	.app .leaderboard-row .courses-col .lb-stat-value,
 	.app .leaderboard-row .courses-col .lb-stat-unit {
-		font-size: 0.74rem !important;
+		font-size: 0.75rem !important;
 	}
 }
 
-/* ===== Professional page loading ===== */
+.app .leaderboard-sheet-handle {
+	display: none;
+}
+
+/* ===== Professional page loading (premium web style) ===== */
 .app .page-loading,
 .page-loading {
+	position: relative !important;
 	display: flex !important;
 	flex-direction: column !important;
 	align-items: center !important;
 	justify-content: center !important;
-	gap: 12px !important;
-	min-height: min(52vh, 420px) !important;
-	padding: 40px 24px !important;
+	gap: 0 !important;
+	min-height: min(60vh, 520px) !important;
+	padding: 0 !important;
 	text-align: center !important;
 	background:
-		radial-gradient(ellipse 70% 50% at 50% 30%, rgba(31, 111, 139, 0.08), transparent 70%),
-		#f8fafc !important;
-	border-radius: 16px !important;
+		radial-gradient(ellipse 80% 55% at 50% 28%, rgba(31, 111, 139, 0.09), transparent 62%),
+		linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+	border-radius: 18px !important;
 	box-sizing: border-box !important;
+	overflow: hidden !important;
+	animation: page-loading-fade 0.35s ease-out !important;
+}
+
+.app .content-area > .page-loading,
+.app .content-area > .loading.page-loading {
+	min-height: min(70vh, 640px) !important;
+	width: 100% !important;
+	border-radius: 18px !important;
+	border: 1px solid rgba(31, 111, 139, 0.08) !important;
 }
 
 .app .route-loading.page-loading,
 .route-loading.page-loading {
 	min-height: 100vh !important;
+	min-height: 100dvh !important;
 	border-radius: 0 !important;
+	border: 0 !important;
 	background:
-		radial-gradient(ellipse 60% 40% at 50% 35%, rgba(31, 111, 139, 0.1), transparent 65%),
-		#f8fafc !important;
+		radial-gradient(ellipse 70% 45% at 50% 32%, rgba(31, 111, 139, 0.11), transparent 60%),
+		linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%) !important;
 }
 
 .app .section-loading.page-loading,
-.section-loading.page-loading {
-	min-height: 220px !important;
+.section-loading.page-loading,
+.app .page-loading--inline,
+.page-loading--inline {
+	min-height: 240px !important;
 	border: 1px solid rgba(31, 111, 139, 0.1) !important;
+	border-radius: 16px !important;
+}
+
+.app .page-loading-progress,
+.page-loading-progress {
+	position: absolute !important;
+	top: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	height: 3px !important;
+	background: rgba(31, 111, 139, 0.08) !important;
+	overflow: hidden !important;
+	z-index: 2 !important;
+}
+
+.app .page-loading-progress-bar,
+.page-loading-progress-bar {
+	display: block !important;
+	width: 40% !important;
+	height: 100% !important;
+	border-radius: 999px !important;
+	background: linear-gradient(90deg, #1f6f8b, #2b8bb8, #2f9e6b) !important;
+	animation: page-loading-progress 1.15s ease-in-out infinite !important;
+}
+
+.app .page-loading-inner,
+.page-loading-inner {
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+	justify-content: center !important;
+	gap: 10px !important;
+	padding: 48px 28px !important;
+	max-width: 360px !important;
 }
 
 .app .page-loading-mark,
 .page-loading-mark {
 	display: grid !important;
 	place-items: center !important;
-	width: 72px !important;
-	height: 72px !important;
-	border-radius: 20px !important;
+	width: 84px !important;
+	height: 84px !important;
+	border-radius: 24px !important;
 	background: #fff !important;
-	border: 1px solid rgba(31, 111, 139, 0.12) !important;
-	box-shadow: 0 8px 24px rgba(31, 111, 139, 0.1) !important;
-	margin-bottom: 4px !important;
+	border: 1px solid rgba(31, 111, 139, 0.1) !important;
+	box-shadow:
+		0 1px 2px rgba(15, 23, 42, 0.04),
+		0 12px 32px rgba(31, 111, 139, 0.12) !important;
+	margin-bottom: 6px !important;
+	animation: page-loading-pulse 2.2s ease-in-out infinite !important;
+}
+
+.app .page-loading-brand,
+.page-loading-brand {
+	margin: 0 !important;
+	font-size: 1.35rem !important;
+	font-weight: 800 !important;
+	color: #13293d !important;
+	letter-spacing: -0.03em !important;
+	line-height: 1.1 !important;
 }
 
 .app .page-loading-spinner,
 .page-loading-spinner {
-	width: 28px !important;
-	height: 28px !important;
+	width: 26px !important;
+	height: 26px !important;
 	border-radius: 50% !important;
-	border: 2.5px solid rgba(31, 111, 139, 0.15) !important;
+	border: 2.5px solid rgba(31, 111, 139, 0.14) !important;
 	border-top-color: #1f6f8b !important;
-	animation: page-loading-spin 0.75s linear infinite !important;
+	animation: page-loading-spin 0.7s linear infinite !important;
+	margin: 4px 0 !important;
 }
 
 .app .page-loading-title,
 .page-loading-title {
-	margin: 0 !important;
-	font-size: 1.05rem !important;
-	font-weight: 750 !important;
-	color: #13293d !important;
+	margin: 4px 0 0 !important;
+	font-size: 0.95rem !important;
+	font-weight: 650 !important;
+	color: #334155 !important;
 	letter-spacing: -0.01em !important;
 }
 
 .app .page-loading-subtitle,
 .page-loading-subtitle {
 	margin: 0 !important;
-	font-size: 0.88rem !important;
-	font-weight: 550 !important;
-	color: #64748b !important;
-	max-width: 260px !important;
-	line-height: 1.4 !important;
+	font-size: 0.84rem !important;
+	font-weight: 500 !important;
+	color: #94a3b8 !important;
+	max-width: 280px !important;
+	line-height: 1.45 !important;
 }
 
 @keyframes page-loading-spin {
 	to { transform: rotate(360deg); }
+}
+
+@keyframes page-loading-progress {
+	0% { transform: translateX(-120%); }
+	100% { transform: translateX(320%); }
+}
+
+@keyframes page-loading-fade {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes page-loading-pulse {
+	0%, 100% { transform: scale(1); box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 32px rgba(31, 111, 139, 0.12); }
+	50% { transform: scale(1.03); box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 16px 40px rgba(31, 111, 139, 0.16); }
+}
+
+@media (max-width: 768px) {
+	.app .content-area > .page-loading,
+	.app .content-area > .loading.page-loading {
+		min-height: calc(100dvh - 140px) !important;
+		border-radius: 0 !important;
+		border: 0 !important;
+		background:
+			radial-gradient(ellipse 90% 50% at 50% 30%, rgba(31, 111, 139, 0.1), transparent 65%),
+			#fff !important;
+	}
+
+	.app .page-loading-inner,
+	.page-loading-inner {
+		padding: 36px 22px !important;
+	}
 }
