@@ -2360,11 +2360,11 @@
 .app .main > .main-content,
 .app .main-content {
 	display: grid !important;
-	grid-template-columns: 210px minmax(0, 1fr) !important;
+	grid-template-columns: 200px minmax(0, 1fr) !important;
 	grid-template-areas: "sidebar content" !important;
 	align-items: start !important;
 	align-self: center !important;
-	column-gap: 32px !important;
+	column-gap: 48px !important;
 	row-gap: 0 !important;
 	width: 100% !important;
 	max-width: 1320px !important; /* match .header-content */
@@ -2378,8 +2378,8 @@
 
 /* Narrower Classes path + explicit gap so content never collides. */
 .app .main-content:has(.alblingo-world) {
-	grid-template-columns: 210px minmax(0, 1fr) !important;
-	column-gap: 36px !important;
+	grid-template-columns: 200px minmax(0, 1fr) !important;
+	column-gap: 56px !important;
 }
 
 .app .main-content:has(.alblingo-world) > .content-area {
@@ -2389,8 +2389,8 @@
 .app .main-content > .sidebar,
 .app .main-content > .sidebar.sidebar-compact {
 	grid-area: sidebar !important;
-	width: 210px !important;
-	max-width: 210px !important;
+	width: 200px !important;
+	max-width: 200px !important;
 	margin: 0 !important;
 	align-self: start !important;
 	position: sticky !important;
@@ -2399,8 +2399,8 @@
 }
 
 .app .main-content > .sidebar.sidebar-compact:has(.alblingo-world) {
-	width: 210px !important;
-	max-width: 210px !important;
+	width: 200px !important;
+	max-width: 200px !important;
 	margin-right: 0 !important;
 }
 
@@ -2707,9 +2707,9 @@
 	.app .main > .main-content,
 	.app .main-content {
 		display: grid !important;
-		grid-template-columns: 210px minmax(0, 1fr) !important;
+		grid-template-columns: 200px minmax(0, 1fr) !important;
 		grid-template-areas: "sidebar content" !important;
-		column-gap: 36px !important;
+		column-gap: 56px !important;
 		width: 100% !important;
 		max-width: 1320px !important;
 		margin-left: auto !important;
@@ -2718,20 +2718,20 @@
 	}
 
 	.app .main-content:has(.alblingo-world) {
-		grid-template-columns: 210px minmax(0, 1fr) !important;
-		column-gap: 36px !important;
+		grid-template-columns: 200px minmax(0, 1fr) !important;
+		column-gap: 56px !important;
 	}
 
 	.app .sidebar,
 	.app .sidebar.sidebar-compact {
-		width: 210px !important;
+		width: 200px !important;
 		flex: none !important;
-		max-width: 210px !important;
+		max-width: 200px !important;
 	}
 
 	.app .main-content > .sidebar.sidebar-compact:has(.alblingo-world) {
-		width: 210px !important;
-		max-width: 210px !important;
+		width: 200px !important;
+		max-width: 200px !important;
 	}
 
 	.app .features-grid-modern > .features-row-3 {
@@ -2746,11 +2746,11 @@
 	.app .main > .main-content,
 	.app .main-content {
 		display: grid !important;
-		grid-template-columns: 196px minmax(0, 1fr) !important;
+		grid-template-columns: 188px minmax(0, 1fr) !important;
 		grid-template-areas: "sidebar content" !important;
 		width: 100% !important;
 		max-width: 1320px !important;
-		column-gap: 28px !important;
+		column-gap: 40px !important;
 		padding: 18px 0 28px !important;
 		margin-left: auto !important;
 		margin-right: auto !important;
@@ -2758,17 +2758,17 @@
 	}
 
 	.app .main-content:has(.alblingo-world) {
-		grid-template-columns: 196px minmax(0, 1fr) !important;
-		column-gap: 28px !important;
+		grid-template-columns: 188px minmax(0, 1fr) !important;
+		column-gap: 40px !important;
 	}
 
 	.app .main-content > .sidebar,
 	.app .main-content > .sidebar.sidebar-compact,
 	.app .sidebar,
 	.app .sidebar.sidebar-compact {
-		width: 196px !important;
+		width: 188px !important;
 		flex: none !important;
-		max-width: 196px !important;
+		max-width: 188px !important;
 		padding: 10px !important;
 	}
 
