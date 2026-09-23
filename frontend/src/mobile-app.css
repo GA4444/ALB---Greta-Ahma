@@ -343,8 +343,7 @@
   .app .main-content--class-view .course-preview-grid-modern > *,
   .app .main-content--class-view .level-picker-card,
   .app .main-content--class-view .level-grid-modern > *,
-  .app .main-content--class-view .level-card-modern,
-  .app .main-content--class-view .exercise-card-modern {
+  .app .main-content--class-view .level-card-modern {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
@@ -355,6 +354,21 @@
     height: auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .app .main-content--class-view .exercise-card-modern {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
     box-sizing: border-box !important;
   }
 
@@ -565,19 +579,49 @@
   }
 
   /* ===== Exercise focus mode ===== */
-  .app .exercise-area-modern {
-    display: flex;
-    flex-direction: column;
+  .app .exercise-area-modern,
+  .app .exercise-workspace {
+    display: flex !important;
+    flex-direction: column !important;
     gap: 12px;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
   }
 
   .app .exercise-header-modern {
     margin-bottom: 0 !important;
   }
 
+  .app .exercise-container-modern {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
   .app .exercise-card-modern {
-    padding: 18px 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
     border-radius: 20px !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .app .exercise-content-modern {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    padding: 16px 14px 18px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    flex: 1 1 auto !important;
   }
 
   .app .exercise-prompt-modern,
@@ -588,22 +632,77 @@
     line-height: 1.45 !important;
   }
 
-  .app .answer-input-field {
+  /* Answer field must always be visible on phones (all exercise types) */
+  .app .answer-input-modern,
+  .app .exercise-workspace .answer-input-modern,
+  .app .main-content--class-view .answer-input-modern {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 5 !important;
     width: 100% !important;
-    min-height: 54px !important;
-    font-size: 17px !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 4px 0 8px !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    order: 5 !important; /* right after Dëgjo / choices — always in view */
   }
 
-  .app .exercise-actions-modern {
-    position: sticky;
-    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
+  .app .exercise-prompt-modern { order: 1 !important; }
+  .app .dictation-helper-modern { order: 2 !important; }
+  .app .exercise-hint-modern { order: 3 !important; }
+  .app .word-choices-modern { order: 4 !important; }
+  .app .child-feedback-card { order: 30 !important; }
+
+  .app .answer-input-field,
+  .app .exercise-workspace .answer-input-field,
+  .app .main-content--class-view .answer-input-field,
+  .app input.answer-input-field {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 54px !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 14px 16px !important;
+    font-size: 17px !important; /* avoid iOS zoom */
+    line-height: 1.4 !important;
+    color: #13293d !important;
+    background: #fff !important;
+    border: 2px solid rgba(31, 111, 139, 0.28) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 10px rgba(31, 111, 139, 0.08) !important;
+    box-sizing: border-box !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    transform: none !important;
+    clip: auto !important;
+    clip-path: none !important;
+  }
+
+  .app .answer-input-field::placeholder {
+    color: #64748b !important;
+    opacity: 1 !important;
+  }
+
+  /* Do not cover the answer field with a sticky action bar */
+  .app .exercise-actions-modern,
+  .app .exercise-workspace .exercise-actions-modern {
+    position: static !important;
+    bottom: auto !important;
+    z-index: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 10px;
-    margin-top: 8px;
-    padding: 10px 0 4px;
-    background: linear-gradient(180deg, rgba(247, 251, 255, 0), rgba(247, 251, 255, 0.95) 28%, #f7fbff 100%);
+    margin-top: 4px;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: #f8fafc !important;
+    flex: 0 0 auto !important;
   }
 
   .app .submit-btn-modern {
@@ -634,6 +733,17 @@
   .app .voice-btn-modern {
     width: 100%;
     min-height: 48px;
+  }
+
+  .app .choices-grid-modern,
+  .app .choice-buttons-modern,
+  .app .word-choices-modern {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .app .choice-btn-modern {
+    min-height: 48px !important;
   }
 
   .app .choices-grid-modern,

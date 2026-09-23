@@ -1016,7 +1016,7 @@
 	border: 1px solid rgba(31, 111, 139, 0.12);
 	border-radius: 14px;
 	box-shadow: none;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .app .exercise-workspace .exercise-card-header-modern {
@@ -2981,6 +2981,39 @@
 		opacity: 1 !important;
 		transform: none !important;
 		visibility: visible !important;
+	}
+
+	/* Answer field: always visible on mobile exercise screens */
+	.app .main-content--class-view .answer-input-modern,
+	.app .main-content--class-view .exercise-workspace .answer-input-modern {
+		display: block !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+		width: 100% !important;
+		margin: 8px 0 12px !important;
+		flex: 0 0 auto !important;
+	}
+
+	.app .main-content--class-view .answer-input-field,
+	.app .main-content--class-view input.answer-input-field {
+		display: block !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+		width: 100% !important;
+		min-height: 54px !important;
+		font-size: 17px !important;
+		background: #fff !important;
+		border: 2px solid rgba(31, 111, 139, 0.28) !important;
+		border-radius: 14px !important;
+		box-sizing: border-box !important;
+	}
+
+	.app .main-content--class-view .exercise-card-modern {
+		overflow: visible !important;
+	}
+
+	.app .main-content--class-view .exercise-actions-modern {
+		position: static !important;
 	}
 
 	.app .main-content--home > .content-area {

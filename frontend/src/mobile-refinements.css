@@ -278,7 +278,23 @@
 
   .answer-input-field {
     width: 100%;
-    min-height: 48px;
+    min-height: 52px;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+
+  .answer-input-modern {
+    display: block;
+    width: 100%;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .exercise-actions-modern {
+    position: static;
   }
 
   /* Listen/record controls stack and fill the width */
