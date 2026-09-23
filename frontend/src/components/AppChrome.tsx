@@ -218,40 +218,46 @@ export function AppHeader({
 export function AppFooter() {
 	return (
 		<footer className="footer">
-			<div className="footer-content">
-				<div className="footer-section">
-					<div className="footer-brand">
-						<BrandLogo size={32} className="brand-logo-sm" decorative />
-						<h4>AlbLingo</h4>
+			<div className="footer-shell">
+				<div className="footer-content">
+					<div className="footer-section footer-section--brand">
+						<div className="footer-brand">
+							<BrandLogo size={36} className="brand-logo-sm" decorative />
+							<h4>AlbLingo</h4>
+						</div>
+						<p className="footer-tagline">
+							Platforma e mësimit të gjuhës shqipe për fëmijë
+						</p>
 					</div>
-					<p>Platforma e mësimit të gjuhës shqipe për fëmijë</p>
+					<div className="footer-section">
+						<h4>Burimet</h4>
+						<ul>
+							<li>Klasat</li>
+							<li>Kurset</li>
+							<li>Ushtrimet</li>
+							<li>AI Insights</li>
+						</ul>
+					</div>
+					<div className="footer-section">
+						<h4>Objektivat</h4>
+						<ul>
+							<li>Mësimi i gjuhës</li>
+							<li>Përmirësimi i shkrimit</li>
+							<li>Rritja e fjalorit</li>
+							<li>Gramatika e saktë</li>
+						</ul>
+					</div>
+					<div className="footer-section footer-section--contact">
+						<h4>Kontakti</h4>
+						<div className="footer-contact">
+							<p>info@alblingo.al</p>
+							<p>+355 XX XXX XXX</p>
+						</div>
+					</div>
 				</div>
-				<div className="footer-section">
-					<h4>Burimet</h4>
-					<ul>
-						<li>Klasat</li>
-						<li>Kurset</li>
-						<li>Ushtrimet</li>
-						<li>AI Insights</li>
-					</ul>
+				<div className="footer-bottom">
+					<p>&copy; 2025 AlbLingo. Të gjitha të drejtat e rezervuara.</p>
 				</div>
-				<div className="footer-section">
-					<h4>Objektivat</h4>
-					<ul>
-						<li>Mësimi i gjuhës</li>
-						<li>Përmirësimi i shkrimit</li>
-						<li>Rritja e fjalorit</li>
-						<li>Gramatika e saktë</li>
-					</ul>
-				</div>
-				<div className="footer-section">
-					<h4>Kontakti</h4>
-					<p>info@alblingo.al</p>
-					<p>+355 XX XXX XXX</p>
-				</div>
-			</div>
-			<div className="footer-bottom">
-				<p>&copy; 2025 AlbLingo. Të gjitha të drejtat e rezervuara.</p>
 			</div>
 		</footer>
 	)

@@ -633,12 +633,30 @@ h1, h2, h3,
 
 /* ---------- Footer ---------- */
 .app .footer {
-  background: rgba(255, 255, 255, 0.8);
-  border-top: 1px solid var(--kid-line);
+  background: linear-gradient(180deg, rgba(248, 251, 252, 0.95) 0%, #fff 55%);
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: none;
 }
 
 .app .footer h4 {
   font-family: var(--font-display);
+}
+
+.app .footer-section:not(.footer-section--brand) > h4 {
+  position: relative;
+  padding-bottom: 0.45rem;
+}
+
+.app .footer-section:not(.footer-section--brand) > h4::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1.4rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--color-primary, #1F6F8B);
+  opacity: 0.55;
 }
 
 @keyframes kid-fade-up {
