@@ -1302,7 +1302,6 @@ function App() {
                                     value={auth.username}
                                     onChange={(e) => setAuth({ ...auth, username: e.target.value })}
                                 />
-                                <p className="auth-hint">Username është ai që përdor për të hyrë (jo emri i plotë).</p>
                                 <input
                                     className="auth-input"
                                     placeholder="Fjalëkalimi *"
@@ -1318,11 +1317,11 @@ function App() {
                                         const username = auth.username?.trim()
                                         const password = auth.password
                                         if (!username || !password) {
-                                            setMessage('Plotëso username dhe fjalëkalimin! ❌')
+                                            setMessage('Shkruaj username dhe fjalëkalimin për të hyrë. 🙂')
                                             return
                                         }
                                         try {
-                                            setMessage('Duke u lidhur... 🔄')
+                                            setMessage('Po hyjmë... 🔄')
                                             const res = await login(username, password)
                                             setUserId(String(res.user_id))
                                             setIsAdmin(res.is_admin || false)
@@ -1332,11 +1331,11 @@ function App() {
                                             const status = e?.response?.status
                                             const detail = e?.response?.data?.detail || e?.message
                                             if (status === 401) {
-                                                setMessage('Kredencialet e pasakta. Provo përsëri! ❌')
+                                                setMessage('Hmm… username ose fjalëkalimi nuk është i saktë. Kontrollo edhe një herë! 🙂')
                                             } else if (e?.code === 'ECONNREFUSED' || e?.code === 'ECONNABORTED' || e?.message?.includes('timeout') || e?.message?.includes('Network') || !e?.response) {
-                                                setMessage('Serveri po zgjohet (mund të zgjasë deri në 1 minutë). Të lutem prit pak dhe provo përsëri. ⏳')
+                                                setMessage('Po pret pak… provo përsëri pas një çasti. ⏳')
                                             } else {
-                                                setMessage(detail || 'Gabim në lidhje. Provo përsëri! ❌')
+                                                setMessage(detail || 'Diçka nuk shkoi mirë. Provo përsëri! 🙂')
                                             }
                                         }
                                     }}
@@ -1372,7 +1371,9 @@ function App() {
                                         value={registrationData.username}
                                         onChange={(e) => setRegistrationData({...registrationData, username: e.target.value.replace(/\s/g, '')})}
                                     />
-                                    <p className="auth-hint">Pa hapësira. Ky username përdoret për t’u kyçur.</p>
+                                    {registrationData.username.length > 0 && (
+                                        <p className="auth-hint">Shkruaje bashkë, pa hapësira. Me këtë emër do të hysh herën tjetër! 🌟</p>
+                                    )}
                                 </div>
 
                                 <div className="form-row single-column">
@@ -1426,19 +1427,19 @@ function App() {
                                         const username = registrationData.username.trim()
                                         const email = registrationData.email.trim()
                                         if (!firstName || !lastName) {
-                                            setMessage('Plotëso emrin dhe mbiemrin! ❌')
+                                            setMessage('Shkruaj emrin dhe mbiemrin tënd. 🙂')
                                             return
                                         }
                                         if (!username || username.length < 3) {
-                                            setMessage('Username duhet të ketë të paktën 3 karaktere! ❌')
+                                            setMessage('Username duhet të ketë të paktën 3 shkronja. 🙂')
                                             return
                                         }
                                         if (!email || !registrationData.password) {
-                                            setMessage('Plotëso email dhe fjalëkalimin! ❌')
+                                            setMessage('Plotëso emailin dhe fjalëkalimin. 🙂')
                                             return
                                         }
                                         if (registrationData.password !== registrationData.confirmPassword) {
-                                            setMessage('Fjalëkalimet nuk përputhen! ❌')
+                                            setMessage('Fjalëkalimet nuk janë të njëjta. Kontrollo edhe një herë! 🙂')
                                             return
                                         }
                                         
@@ -1451,7 +1452,7 @@ function App() {
                                                 registrationData.password,
                                                 registrationData.age ? parseInt(registrationData.age) : undefined
                                             )
-                                            setMessage('Regjistrimi u krye me sukses! Tani hyr me username-in tënd. ✅')
+                                            setMessage('Bravo! Llogaria u krijua. Tani hyr me username-in tënd. 🌟')
                                             setShowAuth(false)
                                             setAuth({ username, password: '' })
                                             setRegistrationData({
@@ -1464,10 +1465,14 @@ function App() {
                                                 confirmPassword: ''
                                             })
                                         } catch (e: any) {
-                                            setMessage(
-                                                e.response?.data?.detail
-                                                    || 'Gabim në regjistrim. Provo përsëri! ❌'
-                                            )
+                                            const detail = e.response?.data?.detail
+                                            if (typeof detail === 'string' && /username|zënë|already/i.test(detail)) {
+                                                setMessage('Ky username është i zënë. Provo një tjetër! 🙂')
+                                            } else if (typeof detail === 'string' && /email/i.test(detail)) {
+                                                setMessage('Ky email përdoret tashmë. Provo një tjetër ose hyr në llogari. 🙂')
+                                            } else {
+                                                setMessage(detail || 'Diçka nuk shkoi mirë. Provo përsëri! 🙂')
+                                            }
                                         }
                                     }}
                                 >

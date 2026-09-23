@@ -3989,10 +3989,15 @@ html, body, #root {
 }
 
 .auth-hint {
-  margin: -4px 0 10px;
-  font-size: 0.78rem;
-  line-height: 1.35;
-  color: #64748b;
+  margin: 6px 0 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #1e3a5f;
+  font-weight: 600;
 }
 
 .profile-username-sub {
