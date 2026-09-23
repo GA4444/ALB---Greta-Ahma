@@ -2744,173 +2744,177 @@ function MainContent({
                                     >
                                         ✕
                                     </button>
-                    <div className="ocr-header">
-                        <div>
-                            <h3 id="ocr-modal-title">📝 Kontrollo diktimin tënd</h3>
-                            <p className="ocr-subtitle">
-                                Bëj një foto të diktimit tënd dhe ne do ta kontrollojmë së bashku! Do të shohim nëse ka gabime dhe do të mësojmë si t'i rregullojmë. 🎯
-                            </p>
-                        </div>
-                            {ocrLoading ? (
-                                <div className="ocr-loading-header">
-                                    <div className="ocr-spinner-small"></div>
-                                    <span>Po kontrollojmë... ⏳</span>
-                                </div>
-                            ) : (
-                                <button className="ocr-button" onClick={handleOCRSubmit}>
-                                    🚀 Kontrollo Diktimin
-                                </button>
-                            )}
-                    </div>
 
-                    <div className="ocr-form">
-                            <label className="ocr-field">
-                                <span>📷 Foto e diktimit:</span>
-                                <input type="file" accept="image/*" onChange={handleSelectOCRFile} />
-                            </label>
-                            <label className="ocr-field">
-                                <span>✍️ Teksti që duhet të jetë (nëse e di):</span>
-                                <textarea
-                                    rows={3}
-                                    value={ocrExpected}
-                                    onChange={(e) => setOcrExpected(e.target.value)}
-                                    placeholder="Shkruaj këtu tekstin që duhet të jetë në diktim..."
-                                />
-                            </label>
-                    </div>
+                                    <header className="ocr-header">
+                                        <div className="ocr-header-copy">
+                                            <h3 id="ocr-modal-title">📝 Kontrollo diktimin tënd</h3>
+                                            <p className="ocr-subtitle">
+                                                Bëj një foto të diktimit tënd dhe ne do ta kontrollojmë së bashku! Do të shohim nëse ka gabime dhe do të mësojmë si t'i rregullojmë. 🎯
+                                            </p>
+                                        </div>
+                                    </header>
 
-                                {ocrLoading && (
-                                    <div className="ocr-loading-overlay">
-                                        <div className="ocr-spinner"></div>
-                                        <p>Po lexojmë diktimin tënd dhe po kontrollojmë gabimet... 🤔</p>
+                                    <div className="ocr-form">
+                                        <label className="ocr-field">
+                                            <span>📷 Foto e diktimit:</span>
+                                            <input type="file" accept="image/*" onChange={handleSelectOCRFile} />
+                                        </label>
+                                        <label className="ocr-field">
+                                            <span>✍️ Teksti që duhet të jetë (nëse e di):</span>
+                                            <textarea
+                                                rows={3}
+                                                value={ocrExpected}
+                                                onChange={(e) => setOcrExpected(e.target.value)}
+                                                placeholder="Shkruaj këtu tekstin që duhet të jetë në diktim..."
+                                            />
+                                        </label>
                                     </div>
-                                )}
 
-                    {ocrError && <div className="ocr-error">{ocrError}</div>}
-
-                    {ocrResult && (
-                        <div className="ocr-result-container">
-                            {/* Stage 1: Raw OCR Output */}
-                            <div className="ocr-section ocr-extracted-section">
-                                <div className="ocr-section-header">
-                                    <h4>📄 Çfarë lexuam nga fotoja:</h4>
-                                    <div className="ocr-meta-pills">
-                                        {ocrResult.meta?.ocr_confidence_avg !== undefined && (
-                                            <span className={`ocr-confidence-pill ${ocrResult.meta.ocr_confidence_avg > 80 ? 'high' : ocrResult.meta.ocr_confidence_avg > 50 ? 'medium' : 'low'}`}>
-                                                Saktësia: {Math.round(ocrResult.meta.ocr_confidence_avg)}%
-                                            </span>
+                                    <div className="ocr-modal-actions">
+                                        {ocrLoading ? (
+                                            <div className="ocr-loading-header">
+                                                <div className="ocr-spinner-small"></div>
+                                                <span>Po kontrollojmë... ⏳</span>
+                                            </div>
+                                        ) : (
+                                            <button type="button" className="ocr-button" onClick={handleOCRSubmit}>
+                                                🚀 Kontrollo Diktimin
+                                            </button>
                                         )}
                                     </div>
-                                </div>
-                                <div className="ocr-text-box">
-                                    {ocrResult.extracted_text ? (
-                                        <p className="ocr-text">{ocrResult.extracted_text}</p>
-                                    ) : ocrResult.issues && ocrResult.issues.length > 0 ? (
-                                        <p className="ocr-text">
-                                            {ocrResult.issues.map((issue: any) => issue.token || issue.recognized).filter(Boolean).join(' ')}
-                                        </p>
-                                    ) : (
-                                        <p className="ocr-text-empty">😕 Nuk mundëm të lexojmë tekstin nga fotoja. Provo të bësh një foto më të qartë dhe me më shumë dritë! 💡</p>
-                                    )}
-                                </div>
-                                
-                                {/* Fjalët e detektuara (lista) */}
-                                {ocrResult.issues && ocrResult.issues.length > 0 && (
-                                    <div className="ocr-tokens-list">
-                                        <span className="tokens-label">Fjalët që lexuam:</span>
-                                        {ocrResult.issues.map((issue: any, idx: number) => (
-                                            <span key={idx} className="ocr-token-chip">
-                                                {issue.token || issue.recognized}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
 
-                            {/* Stage 2: LLM-Refined Text (if available) */}
-                            {ocrResult.refined_text && (
-                                <div className="ocr-section ocr-refined-section">
-                                    <div className="ocr-section-header">
-                                        <h4>🤖 Teksti i përmirësuar:</h4>
-                                        <div className="ocr-meta-pills">
-                                            {ocrResult.meta?.llm_model && (
-                                                <span className="ocr-llm-pill">{ocrResult.meta.llm_model}</span>
-                                            )}
-                                            {ocrResult.meta?.llm_confidence !== undefined && (
-                                                <span className={`ocr-confidence-pill ${ocrResult.meta.llm_confidence > 0.8 ? 'high' : ocrResult.meta.llm_confidence > 0.5 ? 'medium' : 'low'}`}>
-                                                    AI: {Math.round(ocrResult.meta.llm_confidence * 100)}%
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="ocr-text-box refined">
-                                        <p className="ocr-text">{ocrResult.refined_text}</p>
-                                    </div>
-                                    
-                                    {/* LLM Corrections */}
-                                    {ocrResult.llm_corrections && ocrResult.llm_corrections.length > 0 && (
-                                        <div className="llm-corrections">
-                                            <h5>✨ Ndryshimet që bëmë:</h5>
-                                            <ul>
-                                                {ocrResult.llm_corrections.map((corr: any, idx: number) => (
-                                                    <li key={idx} className="llm-correction-item">
-                                                        <span className="correction-original">{corr.original}</span>
-                                                        <span className="correction-arrow">→</span>
-                                                        <span className="correction-fixed">{corr.corrected}</span>
-                                                        {corr.reason && <span className="correction-reason">({corr.reason})</span>}
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                    {ocrLoading && (
+                                        <div className="ocr-loading-overlay">
+                                            <div className="ocr-spinner"></div>
+                                            <p>Po lexojmë diktimin tënd dhe po kontrollojmë gabimet... 🤔</p>
                                         </div>
                                     )}
-                                </div>
-                            )}
 
-                            {/* Stage 3: Orthography Analysis */}
-                            <div className="ocr-section ocr-analysis-section">
-                                <h4>🔍 Çfarë gjetëm:</h4>
-                                {(ocrResult.issues?.length || ocrResult.errors?.length) > 0 ? (
-                                    <div className="ocr-errors-list">
-                                        <ul>
-                                            {(ocrResult.issues || ocrResult.errors).map((err: any, idx: number) => (
-                                                <li key={idx} className="ocr-error-item">
-                                                    <div className="ocr-error-main">
-                                                        {err.expected ? (
-                                                            <>
-                                                                <span className="ocr-type-tag type-orth">
-                                                                    {getOCRIssueLabel(err.type)}
-                                                                </span>
-                                                                Pozicioni {err.position}: Fjala <strong>"{err.recognized || err.token}"</strong> duhet të shkruhet <strong>"{err.expected}"</strong>. {err.message}
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <span className={`ocr-type-tag ${err.source === 'ocr' ? 'type-ocr' : 'type-orth'}`}>
-                                                                    {err.source === 'ocr' ? 'OCR' : 'Drejtshkrim'}
-                                                                </span>
-                                                                <span className="ocr-type-tag type-orth">
-                                                                    {getOCRIssueLabel(err.type)}
-                                                                </span>
-                                                                Fjala <strong>"{err.token || err.recognized}"</strong>: {err.message}
-                                                            </>
+                                    {ocrError && <div className="ocr-error">{ocrError}</div>}
+
+                                    {ocrResult && (
+                                        <div className="ocr-result-container">
+                                            {/* Stage 1: Raw OCR Output */}
+                                            <div className="ocr-section ocr-extracted-section">
+                                                <div className="ocr-section-header">
+                                                    <h4>📄 Çfarë lexuam nga fotoja:</h4>
+                                                    <div className="ocr-meta-pills">
+                                                        {ocrResult.meta?.ocr_confidence_avg !== undefined && (
+                                                            <span className={`ocr-confidence-pill ${ocrResult.meta.ocr_confidence_avg > 80 ? 'high' : ocrResult.meta.ocr_confidence_avg > 50 ? 'medium' : 'low'}`}>
+                                                                Saktësia: {Math.round(ocrResult.meta.ocr_confidence_avg)}%
+                                                            </span>
                                                         )}
                                                     </div>
-                                                    {err.suggestions?.length > 0 && (
-                                                        <div className="ocr-error-suggestions">
-                                                            Sugjerime: {err.suggestions.map((s: string, si: number) => <span key={si} className="sugg-tag">{s}</span>)}
+                                                </div>
+                                                <div className="ocr-text-box">
+                                                    {ocrResult.extracted_text ? (
+                                                        <p className="ocr-text">{ocrResult.extracted_text}</p>
+                                                    ) : ocrResult.issues && ocrResult.issues.length > 0 ? (
+                                                        <p className="ocr-text">
+                                                            {ocrResult.issues.map((issue: any) => issue.token || issue.recognized).filter(Boolean).join(' ')}
+                                                        </p>
+                                                    ) : (
+                                                        <p className="ocr-text-empty">😕 Nuk mundëm të lexojmë tekstin nga fotoja. Provo të bësh një foto më të qartë dhe me më shumë dritë! 💡</p>
+                                                    )}
+                                                </div>
+                                                
+                                                {/* Fjalët e detektuara (lista) */}
+                                                {ocrResult.issues && ocrResult.issues.length > 0 && (
+                                                    <div className="ocr-tokens-list">
+                                                        <span className="tokens-label">Fjalët që lexuam:</span>
+                                                        {ocrResult.issues.map((issue: any, idx: number) => (
+                                                            <span key={idx} className="ocr-token-chip">
+                                                                {issue.token || issue.recognized}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Stage 2: LLM-Refined Text (if available) */}
+                                            {ocrResult.refined_text && (
+                                                <div className="ocr-section ocr-refined-section">
+                                                    <div className="ocr-section-header">
+                                                        <h4>🤖 Teksti i përmirësuar:</h4>
+                                                        <div className="ocr-meta-pills">
+                                                            {ocrResult.meta?.llm_model && (
+                                                                <span className="ocr-llm-pill">{ocrResult.meta.llm_model}</span>
+                                                            )}
+                                                            {ocrResult.meta?.llm_confidence !== undefined && (
+                                                                <span className={`ocr-confidence-pill ${ocrResult.meta.llm_confidence > 0.8 ? 'high' : ocrResult.meta.llm_confidence > 0.5 ? 'medium' : 'low'}`}>
+                                                                    AI: {Math.round(ocrResult.meta.llm_confidence * 100)}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="ocr-text-box refined">
+                                                        <p className="ocr-text">{ocrResult.refined_text}</p>
+                                                    </div>
+                                                    
+                                                    {/* LLM Corrections */}
+                                                    {ocrResult.llm_corrections && ocrResult.llm_corrections.length > 0 && (
+                                                        <div className="llm-corrections">
+                                                            <h5>✨ Ndryshimet që bëmë:</h5>
+                                                            <ul>
+                                                                {ocrResult.llm_corrections.map((corr: any, idx: number) => (
+                                                                    <li key={idx} className="llm-correction-item">
+                                                                        <span className="correction-original">{corr.original}</span>
+                                                                        <span className="correction-arrow">→</span>
+                                                                        <span className="correction-fixed">{corr.corrected}</span>
+                                                                        {corr.reason && <span className="correction-reason">({corr.reason})</span>}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
                                                         </div>
                                                     )}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                ) : (
-                                    <div className="ocr-clean-box">
-                                        <p>🎉 Bravo! Nuk gjetëm asnjë gabim! Diktimi yt është perfekt! ⭐</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Stage 3: Orthography Analysis */}
+                                            <div className="ocr-section ocr-analysis-section">
+                                                <h4>🔍 Çfarë gjetëm:</h4>
+                                                {(ocrResult.issues?.length || ocrResult.errors?.length) > 0 ? (
+                                                    <div className="ocr-errors-list">
+                                                        <ul>
+                                                            {(ocrResult.issues || ocrResult.errors).map((err: any, idx: number) => (
+                                                                <li key={idx} className="ocr-error-item">
+                                                                    <div className="ocr-error-main">
+                                                                        {err.expected ? (
+                                                                            <>
+                                                                                <span className="ocr-type-tag type-orth">
+                                                                                    {getOCRIssueLabel(err.type)}
+                                                                                </span>
+                                                                                Pozicioni {err.position}: Fjala <strong>"{err.recognized || err.token}"</strong> duhet të shkruhet <strong>"{err.expected}"</strong>. {err.message}
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <span className={`ocr-type-tag ${err.source === 'ocr' ? 'type-ocr' : 'type-orth'}`}>
+                                                                                    {err.source === 'ocr' ? 'OCR' : 'Drejtshkrim'}
+                                                                                </span>
+                                                                                <span className="ocr-type-tag type-orth">
+                                                                                    {getOCRIssueLabel(err.type)}
+                                                                                </span>
+                                                                                Fjala <strong>"{err.token || err.recognized}"</strong>: {err.message}
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                    {err.suggestions?.length > 0 && (
+                                                                        <div className="ocr-error-suggestions">
+                                                                            Sugjerime: {err.suggestions.map((s: string, si: number) => <span key={si} className="sugg-tag">{s}</span>)}
+                                                                        </div>
+                                                                    )}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                ) : (
+                                                    <div className="ocr-clean-box">
+                                                        <p>🎉 Bravo! Nuk gjetëm asnjë gabim! Diktimi yt është perfekt! ⭐</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </section>
                             </div>
                         )}

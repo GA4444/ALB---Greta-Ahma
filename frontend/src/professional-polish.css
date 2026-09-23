@@ -1358,6 +1358,7 @@
   transform: none;
 }
 
+/* OCR workspace modal: stacked, responsive layout */
 .app .ocr-modal-overlay {
   position: fixed;
   inset: 0;
@@ -1371,22 +1372,27 @@
   animation: ocr-overlay-in 160ms ease-out;
 }
 
+.app .ocr-workspace-modal,
 .app .sidebar-compact .ocr-workspace-modal {
   position: relative;
-  width: min(920px, calc(100vw - 48px));
-  max-width: 920px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(640px, calc(100vw - 48px));
+  max-width: 640px;
   max-height: calc(100vh - 48px);
   margin: 0;
-  padding: 24px;
+  padding: 22px 22px 20px;
   overflow-x: hidden;
   overflow-y: auto;
-  border: 1px solid #dbe4ec;
+  border: 1px solid rgba(31, 111, 139, 0.14);
   border-radius: 16px;
   background: #fff;
   box-sizing: border-box;
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
 }
 
+.app .ocr-workspace-modal .ocr-modal-close,
 .app .sidebar-compact .ocr-workspace-modal .ocr-modal-close {
   position: absolute;
   top: 12px;
@@ -1394,103 +1400,188 @@
   z-index: 3;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   padding: 0;
-  border: 1px solid #cbd5e1;
-  border-radius: 12px;
+  border: 1px solid rgba(31, 111, 139, 0.16);
+  border-radius: 10px;
   background: #f8fafc;
-  color: #0f172a;
-  font-size: 1.65rem;
+  color: #334155;
+  font-size: 1.15rem;
   font-weight: 600;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  box-shadow: none;
   transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
+.app .ocr-workspace-modal .ocr-modal-close:hover,
 .app .sidebar-compact .ocr-workspace-modal .ocr-modal-close:hover {
-  background: #fee2e2;
-  border-color: #fecaca;
-  color: #b91c1c;
+  background: #f1f5f9;
+  border-color: rgba(31, 111, 139, 0.28);
+  color: #0f172a;
 }
 
+.app .ocr-workspace-modal .ocr-header,
 .app .sidebar-compact .ocr-workspace-modal .ocr-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px;
-  align-items: end;
-  margin: 0 48px 18px 0;
-  padding: 0 0 16px;
-  border-bottom: 1px solid #e2e8f0;
+  display: block;
+  margin: 0 40px 0 0;
+  padding: 0 0 12px;
+  border-bottom: 1px solid rgba(31, 111, 139, 0.1);
 }
 
+.app .ocr-workspace-modal .ocr-header-copy {
+  min-width: 0;
+}
+
+.app .ocr-workspace-modal .ocr-header h3,
 .app .sidebar-compact .ocr-workspace-modal .ocr-header h3 {
-  font-size: 1.3rem;
+  margin: 0 0 6px;
+  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+  font-weight: 800;
+  line-height: 1.3;
+  color: #13293d;
+  word-break: break-word;
 }
 
+.app .ocr-workspace-modal .ocr-subtitle,
 .app .sidebar-compact .ocr-workspace-modal .ocr-subtitle {
   display: block;
-  max-width: 650px;
-  margin-top: 6px;
+  max-width: none;
+  margin: 0;
   overflow: visible;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   line-height: 1.5;
+  color: #5a7384;
 }
 
-.app .sidebar-compact .ocr-workspace-modal .ocr-button {
-  width: auto;
-  min-width: 180px;
-  min-height: 40px;
-  padding: 10px 16px;
-  font-size: 0.82rem;
-}
-
+.app .ocr-workspace-modal .ocr-form,
 .app .sidebar-compact .ocr-workspace-modal .ocr-form {
   display: grid;
-  grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.2fr);
-  gap: 16px;
-  margin-bottom: 18px;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 0;
 }
 
+.app .ocr-workspace-modal .ocr-field,
 .app .sidebar-compact .ocr-workspace-modal .ocr-field {
-  gap: 7px;
-  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
 }
 
+.app .ocr-workspace-modal .ocr-field span,
 .app .sidebar-compact .ocr-workspace-modal .ocr-field span {
   font-size: 0.78rem;
   font-weight: 700;
+  color: #334155;
 }
 
+.app .ocr-workspace-modal input[type="file"],
 .app .sidebar-compact .ocr-workspace-modal input[type="file"] {
-  min-height: 46px;
-  padding: 8px;
-  font-size: 0.78rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid rgba(31, 111, 139, 0.18);
+  border-radius: 10px;
+  background: #f8fafc;
+  font-size: 0.82rem;
+  box-sizing: border-box;
 }
 
+.app .ocr-workspace-modal input[type="file"]::file-selector-button,
 .app .sidebar-compact .ocr-workspace-modal input[type="file"]::file-selector-button {
   margin: 0 10px 0 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #e8f1f5;
+  color: #1f6f8b;
+  font-weight: 700;
+  cursor: pointer;
 }
 
+.app .ocr-workspace-modal .ocr-field textarea,
 .app .sidebar-compact .ocr-workspace-modal .ocr-field textarea {
+  width: 100%;
   min-height: 96px;
+  padding: 10px 12px;
+  border: 1px solid rgba(31, 111, 139, 0.18);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.app .ocr-workspace-modal .ocr-field textarea:focus,
+.app .sidebar-compact .ocr-workspace-modal .ocr-field textarea:focus,
+.app .ocr-workspace-modal input[type="file"]:focus,
+.app .sidebar-compact .ocr-workspace-modal input[type="file"]:focus {
+  outline: none;
+  border-color: #1f6f8b;
+  box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.12);
+}
+
+.app .ocr-workspace-modal .ocr-modal-actions,
+.app .sidebar-compact .ocr-workspace-modal .ocr-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app .ocr-workspace-modal .ocr-button,
+.app .sidebar-compact .ocr-workspace-modal .ocr-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 11px;
+  background: #1f6f8b;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.app .ocr-workspace-modal .ocr-button:hover,
+.app .sidebar-compact .ocr-workspace-modal .ocr-button:hover {
+  background: #185a71;
+  transform: none;
+  box-shadow: none;
+}
+
+.app .ocr-workspace-modal .ocr-loading-header,
+.app .sidebar-compact .ocr-workspace-modal .ocr-loading-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 11px;
+  background: #f7fbfe;
+  border: 1px solid rgba(31, 111, 139, 0.12);
+  color: #1f6f8b;
+  font-weight: 700;
   font-size: 0.88rem;
 }
 
+.app .ocr-workspace-modal .ocr-result-container,
 .app .sidebar-compact .ocr-workspace-modal .ocr-result-container {
   max-height: none;
   overflow: visible;
-  padding: 18px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid rgba(31, 111, 139, 0.1);
 }
 
-.app .sidebar-compact .ocr-workspace-modal :where(
-  .ocr-section,
-  .ocr-text-box,
-  .ocr-error-item,
-  .ocr-clean-box
-) {
-  padding: 16px;
+.app .ocr-workspace-modal :where(.ocr-section, .ocr-text-box, .ocr-error-item, .ocr-clean-box),
+.app .sidebar-compact .ocr-workspace-modal :where(.ocr-section, .ocr-text-box, .ocr-error-item, .ocr-clean-box) {
+  padding: 12px;
+  border-radius: 10px;
 }
 
 @keyframes ocr-overlay-in {
@@ -1500,85 +1591,68 @@
 
 @media (max-width: 768px) {
   .app .ocr-modal-overlay {
-    align-items: center;
-    justify-items: center;
-    padding: max(12px, env(safe-area-inset-top, 0px))
-      max(12px, env(safe-area-inset-right, 0px))
-      max(12px, env(safe-area-inset-bottom, 0px))
-      max(12px, env(safe-area-inset-left, 0px));
-    background: rgba(15, 23, 42, 0.45);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    overflow: auto;
+    align-items: end;
+    justify-items: stretch;
+    padding: 0;
+    overflow: hidden;
     overscroll-behavior: contain;
   }
 
+  .app .ocr-workspace-modal,
   .app .sidebar-compact .ocr-workspace-modal {
-    width: min(100%, calc(100vw - 24px));
-    max-width: min(520px, calc(100vw - 24px));
+    width: 100%;
+    max-width: 100%;
     height: auto;
-    max-height: min(88dvh, calc(100dvh - 24px));
-    margin: auto;
-    padding: 16px 14px 18px;
+    max-height: min(94dvh, calc(100dvh - env(safe-area-inset-top, 0px)));
+    margin: 0;
+    padding: 16px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+    border-radius: 18px 18px 0 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
-    border: 1px solid #dbe4ec;
-    border-radius: 16px;
-    box-sizing: border-box;
-    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.28);
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.2);
   }
 
+  .app .ocr-workspace-modal .ocr-modal-close,
   .app .sidebar-compact .ocr-workspace-modal .ocr-modal-close {
     top: 10px;
     right: 10px;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    font-size: 1.75rem;
+    width: 40px;
+    height: 40px;
   }
 
-  .app .sidebar-compact .ocr-workspace-modal .ocr-header,
-  .app .sidebar-compact .ocr-workspace-modal .ocr-form {
-    grid-template-columns: 1fr;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-  }
-
+  .app .ocr-workspace-modal .ocr-header,
   .app .sidebar-compact .ocr-workspace-modal .ocr-header {
-    align-items: stretch;
-    margin: 0 46px 14px 0;
-    padding-right: 0;
+    margin-right: 44px;
   }
 
+  .app .ocr-workspace-modal .ocr-header h3,
   .app .sidebar-compact .ocr-workspace-modal .ocr-header h3 {
     font-size: 1.05rem;
-    padding-right: 8px;
-    word-break: break-word;
   }
 
+  .app .ocr-workspace-modal .ocr-subtitle,
   .app .sidebar-compact .ocr-workspace-modal .ocr-subtitle {
-    font-size: 0.8rem;
-    max-width: 100%;
+    font-size: 0.82rem;
   }
 
-  .app .sidebar-compact .ocr-workspace-modal .ocr-button {
-    width: 100%;
-  }
-
-  .app .sidebar-compact .ocr-workspace-modal .ocr-field,
-  .app .sidebar-compact .ocr-workspace-modal .ocr-result-container,
-  .app .sidebar-compact .ocr-workspace-modal .ocr-section,
+  .app .ocr-workspace-modal input,
+  .app .ocr-workspace-modal textarea,
   .app .sidebar-compact .ocr-workspace-modal input,
   .app .sidebar-compact .ocr-workspace-modal textarea {
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
+    font-size: 16px;
   }
+}
 
-  .app .sidebar-compact .ocr-workspace-modal .ocr-tokens-list {
-    flex-wrap: wrap;
-    max-width: 100%;
+@media (min-width: 769px) and (max-width: 980px) {
+  .app .ocr-workspace-modal,
+  .app .sidebar-compact .ocr-workspace-modal {
+    width: min(560px, calc(100vw - 40px));
+    max-width: 560px;
+    padding: 18px;
   }
 }
