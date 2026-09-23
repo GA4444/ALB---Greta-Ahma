@@ -303,16 +303,18 @@
 /* Home nav: quieter professional chip */
 .app .header-navigation .nav-btn,
 .app .header-navigation .nav-btn-home {
-	min-height: 34px !important;
-	padding: 6px 14px !important;
+	min-height: 28px !important;
+	height: 28px !important;
+	padding: 3px 10px !important;
 	border-radius: 999px !important;
-	font-size: 0.82rem !important;
+	font-size: 0.75rem !important;
 	font-weight: 650 !important;
 	letter-spacing: 0.01em !important;
 	background: #fff !important;
 	color: #3d5566 !important;
 	border: 1px solid rgba(31, 111, 139, 0.16) !important;
 	box-shadow: none !important;
+	line-height: 1 !important;
 }
 
 .app .header-navigation .nav-btn:hover,
