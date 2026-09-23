@@ -1303,25 +1303,19 @@
 /* Dictation launcher + focused workspace.
    The entry stays in the sidebar while the full task gets enough room. */
 .app .ocr-launch-card {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
-  gap: 9px 10px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
   padding: 12px;
-  border: 1px solid #dbe7ef;
-  border-radius: 11px;
-  background: linear-gradient(145deg, #fff 0%, #f2f8fc 100%);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(31, 111, 139, 0.12);
+  border-radius: 12px;
+  background: #f7fbfe;
+  box-shadow: none;
 }
 
 .app .ocr-launch-icon {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: #e8f4fc;
-  font-size: 1.15rem;
+  display: none;
 }
 
 .app .ocr-launch-copy {
@@ -1329,39 +1323,39 @@
 }
 
 .app .ocr-launch-copy h3 {
-  margin: 0 0 3px;
-  font-size: 0.86rem;
+  margin: 0 0 4px;
+  font-size: 0.88rem;
   line-height: 1.25;
-  color: #1e293b;
+  color: #13293d;
+  font-weight: 800;
 }
 
 .app .ocr-launch-copy p {
   margin: 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   line-height: 1.4;
-  color: #64748b;
+  color: #5a7384;
 }
 
 .app .ocr-launch-button {
-  grid-column: 1 / -1;
   width: 100%;
   min-height: 36px;
   padding: 8px 10px;
-  border: 1px solid #3b8bbf;
-  border-radius: 9px;
-  background: #4a9fd4;
+  border: 0;
+  border-radius: 10px;
+  background: #1f6f8b;
   color: #fff;
   font: inherit;
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition: background 160ms ease;
 }
 
 .app .ocr-launch-button:hover {
-  background: #3b8bbf;
-  box-shadow: 0 5px 12px rgba(59, 139, 191, 0.22);
-  transform: translateY(-1px);
+  background: #185a71;
+  box-shadow: none;
+  transform: none;
 }
 
 .app .ocr-modal-overlay {
