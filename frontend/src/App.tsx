@@ -2878,40 +2878,44 @@ function MainContent({
                             </div>
                             
                             <div className="features-grid-modern">
-                                <div className="feature-card-modern">
-                                    <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern icon-audio" aria-hidden="true"></div>
+                                <div className="features-row features-row-3">
+                                    <div className="feature-card-modern">
+                                        <div className="feature-icon-wrapper">
+                                            <div className="feature-icon-modern icon-audio" aria-hidden="true"></div>
+                                        </div>
+                                        <h4 className="feature-title-modern">Audio Interaktiv</h4>
+                                        <p className="feature-description-modern">Dëgjoni dhe përsëritni me cilësi të lartë audio</p>
                                     </div>
-                                    <h4 className="feature-title-modern">Audio Interaktiv</h4>
-                                    <p className="feature-description-modern">Dëgjoni dhe përsëritni me cilësi të lartë audio</p>
+                                    <div className="feature-card-modern">
+                                        <div className="feature-icon-wrapper">
+                                            <div className="feature-icon-modern icon-chart" aria-hidden="true"></div>
+                                        </div>
+                                        <h4 className="feature-title-modern">Progres i Detajuar</h4>
+                                        <p className="feature-description-modern">Ndiqni përparimin tuaj me statistika të hollësishme</p>
+                                    </div>
+                                    <div className="feature-card-modern">
+                                        <div className="feature-icon-wrapper">
+                                            <div className="feature-icon-modern icon-trophy" aria-hidden="true"></div>
+                                        </div>
+                                        <h4 className="feature-title-modern">Sistem Pikësh</h4>
+                                        <p className="feature-description-modern">Fitoni pikë, yje dhe nivele për të qenë të motivuar</p>
+                                    </div>
                                 </div>
-                                <div className="feature-card-modern">
-                                    <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern icon-chart" aria-hidden="true"></div>
+                                <div className="features-row features-row-2">
+                                    <div className="feature-card-modern">
+                                        <div className="feature-icon-wrapper">
+                                            <div className="feature-icon-modern icon-ai" aria-hidden="true"></div>
+                                        </div>
+                                        <h4 className="feature-title-modern">AI i Personalizuar</h4>
+                                        <p className="feature-description-modern">Rekomandime inteligjente bazuar në progresin tuaj</p>
                                     </div>
-                                    <h4 className="feature-title-modern">Progres i Detajuar</h4>
-                                    <p className="feature-description-modern">Ndiqni përparimin tuaj me statistika të hollësishme</p>
-                                </div>
-                                <div className="feature-card-modern">
-                                    <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern icon-trophy" aria-hidden="true"></div>
+                                    <div className="feature-card-modern">
+                                        <div className="feature-icon-wrapper">
+                                            <div className="feature-icon-modern icon-rank" aria-hidden="true"></div>
+                                        </div>
+                                        <h4 className="feature-title-modern">{LEADERBOARD_TITLE}</h4>
+                                        <p className="feature-description-modern">Krahasoni rezultatet me përdorues të tjerë</p>
                                     </div>
-                                    <h4 className="feature-title-modern">Sistem Pikësh</h4>
-                                    <p className="feature-description-modern">Fitoni pikë, yje dhe nivele për të qenë të motivuar</p>
-                                </div>
-                                <div className="feature-card-modern">
-                                    <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern icon-ai" aria-hidden="true"></div>
-                                    </div>
-                                    <h4 className="feature-title-modern">AI i Personalizuar</h4>
-                                    <p className="feature-description-modern">Rekomandime inteligjente bazuar në progresin tuaj</p>
-                                </div>
-                                <div className="feature-card-modern">
-                                    <div className="feature-icon-wrapper">
-                                        <div className="feature-icon-modern icon-rank" aria-hidden="true"></div>
-                                    </div>
-                                    <h4 className="feature-title-modern">{LEADERBOARD_TITLE}</h4>
-                                    <p className="feature-description-modern">Krahasoni rezultatet me përdorues të tjerë</p>
                                 </div>
                             </div>
                         </div>

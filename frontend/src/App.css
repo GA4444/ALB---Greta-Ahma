@@ -8259,9 +8259,22 @@ body {
 }
 
 .features-grid-modern {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.features-grid-modern > .features-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--space-6);
+    gap: var(--space-4);
+}
+
+.features-grid-modern > .features-row-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.features-grid-modern > .features-row-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .feature-card-modern {

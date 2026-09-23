@@ -2535,14 +2535,32 @@
 }
 
 .app .features-grid-modern {
-	display: grid !important;
-	grid-template-columns: 1fr !important;
+	display: flex !important;
+	flex-direction: column !important;
+	grid-template-columns: none !important;
 	gap: 12px !important;
 	margin: 0 !important;
+	width: 100% !important;
+}
+
+.app .features-grid-modern > .features-row {
+	display: grid !important;
+	gap: 12px !important;
+	width: 100% !important;
+	margin: 0 !important;
+	animation: kid-fade-up 420ms ease both;
+}
+
+.app .features-grid-modern > .features-row-3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.app .features-grid-modern > .features-row-2 {
+	grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
 
 .app .features-grid-modern > * {
-	animation: kid-fade-up 420ms ease both;
+	animation: none;
 }
 
 .app .feature-card-modern {
@@ -2600,8 +2618,11 @@
 }
 
 @media (min-width: 900px) {
-	.app .features-grid-modern {
+	.app .features-grid-modern > .features-row-3 {
 		grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	}
+	.app .features-grid-modern > .features-row-2 {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 	}
 }
 
@@ -2626,8 +2647,11 @@
 		max-width: 220px !important;
 	}
 
-	.app .features-grid-modern {
+	.app .features-grid-modern > .features-row-3 {
 		grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	}
+	.app .features-grid-modern > .features-row-2 {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 	}
 }
 
@@ -2660,8 +2684,11 @@
 		padding: 22px 18px 18px !important;
 	}
 
-	.app .features-grid-modern {
+	.app .features-grid-modern > .features-row-3 {
 		grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	}
+	.app .features-grid-modern > .features-row-2 {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 	}
 }
 
@@ -2742,6 +2769,11 @@
 	}
 
 	.app .features-grid-modern {
+		gap: 8px !important;
+	}
+
+	.app .features-grid-modern > .features-row-3,
+	.app .features-grid-modern > .features-row-2 {
 		grid-template-columns: 1fr !important;
 		gap: 8px !important;
 	}
