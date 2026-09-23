@@ -2917,7 +2917,7 @@
 		font-size: 0.75rem !important;
 	}
 
-	.app .class-list-compact {
+	.app .class-list-compact:not(.alblingo-path) {
 		display: grid !important;
 		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 		gap: 6px !important;
@@ -2926,7 +2926,7 @@
 		flex-direction: unset !important;
 	}
 
-	.app .class-item-compact {
+	.app .class-item-compact:not(.path-stage) {
 		flex: none !important;
 		min-width: 0 !important;
 		width: 100% !important;
@@ -4093,5 +4093,412 @@
 	.app .page-loading-inner,
 	.page-loading-inner {
 		padding: 36px 22px !important;
+	}
+}
+
+/* ===== ALBLingo World: Classes learning path ===== */
+.app .alblingo-world {
+	position: relative;
+}
+
+.app .alblingo-path {
+	position: relative;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 0 !important;
+	padding: 4px 0 2px !important;
+	overflow: visible !important;
+}
+
+.app .alblingo-path .path-stage {
+	position: relative;
+	display: grid !important;
+	grid-template-columns: auto minmax(0, 1fr) auto !important;
+	align-items: center !important;
+	gap: 0 10px !important;
+	width: 100% !important;
+	min-height: 48px !important;
+	margin: 0 !important;
+	padding: 8px 8px 8px 4px !important;
+	border: 1px solid transparent !important;
+	border-radius: 12px !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	z-index: 1;
+}
+
+.app .alblingo-path .path-stage .class-item-left {
+	display: contents;
+}
+
+.app .alblingo-path .path-rail {
+	position: absolute;
+	left: 21px;
+	top: -10px;
+	bottom: calc(50% + 16px);
+	width: 3px;
+	border-radius: 999px;
+	background: linear-gradient(180deg, rgba(31, 111, 139, 0.18), rgba(31, 111, 139, 0.32));
+	z-index: 0;
+	pointer-events: none;
+}
+
+.app .alblingo-path .path-stage:first-child .path-rail {
+	display: none;
+}
+
+.app .alblingo-path .path-stage.path-completed .path-rail,
+.app .alblingo-path .path-stage.path-completed + .path-stage .path-rail {
+	background: linear-gradient(180deg, #2f9e6b, rgba(31, 111, 139, 0.45));
+}
+
+.app .alblingo-path .path-stage.path-locked .path-rail {
+	background: repeating-linear-gradient(
+		180deg,
+		rgba(148, 163, 184, 0.35) 0 4px,
+		transparent 4px 8px
+	);
+}
+
+.app .alblingo-path .path-node {
+	position: relative;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	flex-shrink: 0;
+	border-radius: 50%;
+	background: #fff;
+	border: 2px solid rgba(31, 111, 139, 0.2);
+	box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+	transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.app .alblingo-path .path-node .class-num {
+	width: 28px !important;
+	height: 28px !important;
+	border-radius: 50% !important;
+	background: #eef4f7 !important;
+	color: #5a7384 !important;
+	font-size: 0.78rem !important;
+	font-weight: 800 !important;
+}
+
+.app .alblingo-path .path-node .class-num.active {
+	background: #1f6f8b !important;
+	color: #fff !important;
+}
+
+.app .alblingo-path .path-stage .class-label {
+	min-width: 0;
+	font-size: 0.84rem !important;
+	font-weight: 700 !important;
+	color: #1e3a4c !important;
+	line-height: 1.25 !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.app .alblingo-path .path-stage .class-item-right {
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	min-width: 36px;
+}
+
+.app .alblingo-path .path-complete-mark {
+	display: inline-grid;
+	place-items: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: rgba(47, 158, 107, 0.14);
+	color: #2f9e6b;
+}
+
+.app .alblingo-path .progress-mini {
+	width: 40px !important;
+	height: 5px !important;
+	background: #e8eef2 !important;
+}
+
+.app .alblingo-path .progress-mini-fill {
+	background: linear-gradient(90deg, #1f6f8b, #2f9e6b) !important;
+}
+
+/* Available */
+.app .alblingo-path .path-stage.path-available {
+	background: rgba(31, 111, 139, 0.04) !important;
+	border-color: rgba(31, 111, 139, 0.1) !important;
+}
+
+.app .alblingo-path .path-stage.path-available .path-node {
+	border-color: rgba(31, 111, 139, 0.45);
+}
+
+.app .alblingo-path .path-stage.path-available .path-node .class-num {
+	background: rgba(31, 111, 139, 0.12) !important;
+	color: #1f6f8b !important;
+}
+
+/* In progress — ring using conic gradient */
+.app .alblingo-path .path-stage.path-progress .path-node {
+	border-color: transparent;
+	background:
+		radial-gradient(circle at center, #fff 62%, transparent 63%),
+		conic-gradient(#1f6f8b var(--path-progress, 40%), rgba(31, 111, 139, 0.15) 0);
+}
+
+.app .alblingo-path .path-stage.path-progress .path-node .class-num {
+	background: #fff !important;
+	color: #1f6f8b !important;
+}
+
+/* Completed */
+.app .alblingo-path .path-stage.path-completed {
+	background: rgba(47, 158, 107, 0.06) !important;
+	border-color: rgba(47, 158, 107, 0.14) !important;
+}
+
+.app .alblingo-path .path-stage.path-completed .path-node {
+	border-color: #2f9e6b;
+	background: linear-gradient(145deg, #ecfdf5, #d1fae5);
+	box-shadow: 0 2px 10px rgba(47, 158, 107, 0.16);
+}
+
+.app .alblingo-path .path-stage.path-completed .path-node .class-num {
+	background: #2f9e6b !important;
+	color: #fff !important;
+}
+
+.app .alblingo-path .path-stage.path-completed .class-label {
+	color: #166534 !important;
+}
+
+/* Locked */
+.app .alblingo-path .path-stage.path-locked {
+	opacity: 1 !important;
+	background: #f8fafc !important;
+	border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+.app .alblingo-path .path-stage.path-locked .path-node {
+	border-color: rgba(148, 163, 184, 0.45);
+	background: #f1f5f9;
+	box-shadow: none;
+}
+
+.app .alblingo-path .path-stage.path-locked .path-node .class-num {
+	background: #e2e8f0 !important;
+	color: #94a3b8 !important;
+}
+
+.app .alblingo-path .path-stage.path-locked .class-label {
+	color: #94a3b8 !important;
+}
+
+.app .alblingo-path .path-stage.path-locked .lock-mini {
+	color: #94a3b8;
+}
+
+/* Current / selected */
+.app .alblingo-path .path-stage.selected {
+	background: #eaf6fb !important;
+	border-color: rgba(31, 111, 139, 0.28) !important;
+	box-shadow: 0 4px 14px rgba(31, 111, 139, 0.1) !important;
+}
+
+.app .alblingo-path .path-stage.selected .path-node,
+.app .alblingo-path .path-node.is-current {
+	transform: scale(1.06);
+	border-color: #1f6f8b;
+	box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.16), 0 4px 12px rgba(31, 111, 139, 0.14);
+}
+
+.app .alblingo-path .path-stage:hover:not(.path-locked) {
+	background: #f7fbfe !important;
+	border-color: rgba(31, 111, 139, 0.14) !important;
+}
+
+.app .alblingo-path .path-stage:hover:not(.path-locked) .path-node {
+	transform: scale(1.04);
+}
+
+.app .alblingo-path .path-stage:focus-visible {
+	outline: 2px solid #1f6f8b;
+	outline-offset: 2px;
+}
+
+/* Desktop sidebar: slightly roomier world panel */
+@media (min-width: 901px) {
+	.app .main-content > .sidebar.sidebar-compact:has(.alblingo-world) {
+		width: 248px !important;
+		max-width: 248px !important;
+	}
+
+	.app .alblingo-world {
+		padding: 2px;
+		border-radius: 14px;
+		background:
+			radial-gradient(ellipse 120% 60% at 20% 0%, rgba(31, 111, 139, 0.06), transparent 55%),
+			transparent;
+	}
+
+	.app .alblingo-path .path-stage {
+		min-height: 50px !important;
+		padding: 9px 10px 9px 6px !important;
+	}
+}
+
+/* Tablet / mobile: full-width journey, zigzag stages */
+@media (max-width: 900px) {
+	.app .alblingo-path {
+		display: flex !important;
+		flex-direction: column !important;
+		grid-template-columns: none !important;
+		gap: 8px !important;
+		padding: 6px 2px 4px !important;
+	}
+
+	.app .alblingo-path .path-stage {
+		display: grid !important;
+		grid-template-columns: auto minmax(0, 1fr) auto !important;
+		min-height: 56px !important;
+		padding: 10px 12px 10px 8px !important;
+		border-radius: 14px !important;
+		background: #fff !important;
+		border: 1px solid rgba(31, 111, 139, 0.1) !important;
+		box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+	}
+
+	.app .alblingo-path .path-rail {
+		left: 25px;
+		top: -12px;
+		bottom: calc(50% + 18px);
+		width: 3px;
+	}
+
+	.app .alblingo-path .path-node {
+		width: 40px;
+		height: 40px;
+	}
+
+	.app .alblingo-path .path-node .class-num {
+		width: 30px !important;
+		height: 30px !important;
+		font-size: 0.82rem !important;
+	}
+
+	.app .alblingo-path .path-stage .class-label {
+		font-size: 0.92rem !important;
+		white-space: normal !important;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.app .alblingo-path .path-stage.path-side-a {
+		margin-right: 10% !important;
+	}
+
+	.app .alblingo-path .path-stage.path-side-b {
+		margin-left: 10% !important;
+	}
+
+	.app .alblingo-path .path-stage.selected {
+		border-color: rgba(31, 111, 139, 0.35) !important;
+		background: #eaf6fb !important;
+	}
+
+	.app .alblingo-path .path-stage.path-completed {
+		background: #f0fdf6 !important;
+	}
+
+	.app .alblingo-path .path-stage.path-locked {
+		background: #f8fafc !important;
+	}
+}
+
+@media (max-width: 768px) {
+	.app .class-list-compact.alblingo-path {
+		display: flex !important;
+		flex-direction: column !important;
+		grid-template-columns: none !important;
+		gap: 8px !important;
+	}
+
+	.app .alblingo-path .path-stage {
+		width: auto !important;
+		flex: none !important;
+	}
+
+	.app .alblingo-world .sidebar-section-header.compact {
+		margin-bottom: 10px !important;
+	}
+}
+
+@media (max-width: 430px) {
+	.app .alblingo-path .path-stage.path-side-a,
+	.app .alblingo-path .path-stage.path-side-b {
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+	}
+
+	.app .alblingo-path .path-stage {
+		min-height: 54px !important;
+		padding: 10px 10px 10px 6px !important;
+	}
+
+	.app .alblingo-path .path-rail {
+		left: 23px;
+	}
+
+	.app .alblingo-path .path-node {
+		width: 38px;
+		height: 38px;
+	}
+
+	.app .alblingo-path .progress-mini {
+		width: 34px !important;
+	}
+}
+
+@media (max-width: 340px) {
+	.app .alblingo-path .path-stage {
+		gap: 0 8px !important;
+		padding: 9px 8px 9px 4px !important;
+		min-height: 52px !important;
+	}
+
+	.app .alblingo-path .path-node {
+		width: 34px;
+		height: 34px;
+	}
+
+	.app .alblingo-path .path-node .class-num {
+		width: 26px !important;
+		height: 26px !important;
+		font-size: 0.74rem !important;
+	}
+
+	.app .alblingo-path .path-stage .class-label {
+		font-size: 0.84rem !important;
+	}
+
+	.app .alblingo-path .path-rail {
+		left: 20px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.app .alblingo-path .path-node,
+	.app .alblingo-path .path-stage.selected .path-node,
+	.app .alblingo-path .path-stage:hover:not(.path-locked) .path-node {
+		transition: none !important;
+		transform: none !important;
 	}
 }

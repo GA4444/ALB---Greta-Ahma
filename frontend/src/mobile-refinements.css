@@ -48,21 +48,28 @@
 
 /* =============================== CLASSES ================================== */
 /* The classes list lives only in the sidebar; on phones we render it as a
-   compact two-column grid above the content so it is easy to scan and tap. */
+   compact two-column grid above the content so it is easy to scan and tap.
+   ALBLingo World path (.alblingo-path) stays a vertical journey instead. */
 @media (max-width: 1024px) {
-  .class-list-compact {
+  .class-list-compact:not(.alblingo-path) {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
-  .class-item-compact {
+  .class-item-compact:not(.path-stage) {
     min-height: 52px;
+  }
+
+  .class-list-compact.alblingo-path {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 }
 
 @media (max-width: 480px) {
-  .class-list-compact {
+  .class-list-compact:not(.alblingo-path) {
     grid-template-columns: 1fr;
   }
 }

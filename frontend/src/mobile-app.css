@@ -317,7 +317,7 @@
     font-size: 1rem !important;
   }
 
-  .app .class-list-compact {
+  .app .class-list-compact:not(.alblingo-path) {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
@@ -325,7 +325,14 @@
     padding-bottom: 0 !important;
   }
 
-  .app .class-item-compact {
+  .app .class-list-compact.alblingo-path {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    gap: 8px !important;
+  }
+
+  .app .class-item-compact:not(.path-stage) {
     flex: none !important;
     min-width: 0 !important;
     width: 100% !important;

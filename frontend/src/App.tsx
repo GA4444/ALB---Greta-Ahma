@@ -2499,12 +2499,12 @@ function MainContent({
         <div className={`main-content ${selectedLevel ? 'with-ai-panel' : ''} ${!selectedClass ? 'main-content--home' : ''}`}>
             {/* Compact Left Sidebar - Navigation Only */}
             <aside className="sidebar sidebar-compact">
-                <div className="sidebar-section sidebar-section-classes">
+                <div className="sidebar-section sidebar-section-classes alblingo-world">
                     <div className="sidebar-section-header compact">
                         <h3>Klasat</h3>
                         <span className="classes-count-badge">{classes.length}</span>
                     </div>
-                    <div className="class-list-compact" role="list">
+                    <div className="class-list-compact alblingo-path" role="list">
                         {isLoading && classes.length === 0 ? (
                             <>
                                 {[1, 2, 3].map((i) => (
@@ -2514,28 +2514,50 @@ function MainContent({
                                     </div>
                                 ))}
                             </>
-                        ) : classes.map((classData) => {
-                            const progress = (classData as any).progress_percent || 0
+                        ) : classes.map((classData, classIndex) => {
+                            const progress = classData.progress_percent || 0
                             const isSelected = selectedClass?.id === classData.id
+                            const isCompleted = Boolean(classData.completed) || progress >= 100
+                            const isInProgress = Boolean(classData.unlocked) && !isCompleted && progress > 0
+                            const pathState = !classData.unlocked
+                                ? 'path-locked'
+                                : isCompleted
+                                    ? 'path-completed'
+                                    : isInProgress
+                                        ? 'path-progress'
+                                        : 'path-available'
                             return (
                                 <button
                                     type="button"
                                     key={classData.id}
                                     role="listitem"
-                                    className={`class-item-compact ${classData.unlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}`}
+                                    className={`class-item-compact path-stage ${pathState} ${classData.unlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''} ${classIndex % 2 === 0 ? 'path-side-a' : 'path-side-b'}`}
                                     onClick={() => onClassClick(classData)}
                                     aria-current={isSelected ? 'page' : undefined}
                                     aria-disabled={!classData.unlocked}
                                     aria-label={`${classData.name}${classData.unlocked ? `, ${Math.round(progress)}%` : ', i mbyllur'}`}
                                 >
+                                    <span className="path-rail" aria-hidden="true"></span>
                                     <div className="class-item-left">
-                                        <span className={`class-num ${isSelected ? 'active' : ''}`}>
-                                            {classData.order_index}
+                                        <span
+                                            className={`path-node ${isSelected ? 'is-current' : ''}`}
+                                            aria-hidden="true"
+                                            style={isInProgress ? { ['--path-progress' as string]: `${Math.max(8, Math.min(100, progress))}%` } : undefined}
+                                        >
+                                            <span className={`class-num ${isSelected ? 'active' : ''}`}>
+                                                {classData.order_index}
+                                            </span>
                                         </span>
                                         <span className="class-label">{classData.name}</span>
                                     </div>
                                     <div className="class-item-right">
-                                        {classData.unlocked ? (
+                                        {isCompleted ? (
+                                            <span className="path-complete-mark" aria-hidden="true">
+                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M20 6 9 17l-5-5" />
+                                                </svg>
+                                            </span>
+                                        ) : classData.unlocked ? (
                                             <div className="progress-mini" title={`${Math.round(progress)}%`}>
                                                 <div className="progress-mini-fill" style={{ width: `${progress}%` }}></div>
                                             </div>
