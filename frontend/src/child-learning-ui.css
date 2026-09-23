@@ -572,3 +572,36 @@
 	-webkit-text-fill-color: #fff !important;
 	background: none !important;
 }
+
+/* Flatten nested page chrome: content-area was a second card around course/level screens */
+.app .content-area {
+	background: transparent !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	padding: 0 !important;
+	min-height: 0 !important;
+	overflow: visible !important;
+}
+
+.app .content-area::before,
+.app .content-area::after {
+	content: none !important;
+	display: none !important;
+}
+
+.app .course-selection,
+.app .level-selection-modern {
+	background: transparent !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	padding: 0 !important;
+	overflow: visible !important;
+}
+
+.app .course-selection::before,
+.app .level-selection-modern::before {
+	content: none !important;
+	display: none !important;
+}
