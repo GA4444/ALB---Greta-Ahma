@@ -2834,36 +2834,48 @@
 		padding: 0 0 calc(80px + env(safe-area-inset-bottom, 0px)) !important;
 		gap: 0 !important;
 		min-height: calc(100dvh - 56px) !important;
+		overflow: visible !important;
 	}
 
 	.app .main-content--class-view > .content-area {
 		display: block !important;
+		flex: 1 1 auto !important;
+		flex-shrink: 0 !important;
 		width: 100% !important;
 		max-width: 100% !important;
 		min-height: calc(100dvh - 56px - 80px) !important;
+		height: auto !important;
+		max-height: none !important;
 		margin: 0 !important;
-		padding: 12px 14px 20px !important;
+		padding: 12px 14px 24px !important;
 		background: #fff !important;
 		border: 0 !important;
 		border-radius: 0 !important;
 		box-shadow: none !important;
 		box-sizing: border-box !important;
+		overflow: visible !important;
+		position: relative !important;
 	}
 
 	.app .main-content--class-view .course-selection.level-picker,
 	.app .main-content--class-view .level-selection-modern,
 	.app .main-content--class-view .exercise-workspace {
+		display: block !important;
 		width: 100% !important;
 		max-width: 100% !important;
 		margin: 0 !important;
 		padding: 0 !important;
-		min-height: 0 !important;
+		min-height: auto !important;
+		height: auto !important;
+		overflow: visible !important;
+		visibility: visible !important;
+		opacity: 1 !important;
 	}
 
 	.app .main-content--class-view .level-picker-header {
-		position: sticky !important;
-		top: 0 !important;
-		z-index: 5 !important;
+		position: relative !important;
+		top: auto !important;
+		z-index: 1 !important;
 		gap: 10px !important;
 		margin: 0 0 14px !important;
 		padding: 0 0 12px !important;
@@ -2893,21 +2905,58 @@
 		font-size: 1.35rem !important;
 	}
 
-	.app .main-content--class-view .level-picker-grid {
+	.app .main-content--class-view .level-picker-grid,
+	.app .main-content--class-view .course-preview-grid-modern.level-picker-grid {
 		display: grid !important;
-		grid-template-columns: 1fr !important;
+		grid-template-columns: minmax(0, 1fr) !important;
 		gap: 10px !important;
+		margin: 0 !important;
+		padding: 0 0 8px !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		height: auto !important;
+		min-height: 120px !important;
+		overflow: visible !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+		position: relative !important;
+		z-index: 1 !important;
 	}
 
-	.app .main-content--class-view .level-picker-card.course-card-modern {
+	.app .main-content--class-view .level-picker-card.course-card-modern,
+	.app .main-content--class-view .course-preview-grid-modern > .level-picker-card {
+		display: flex !important;
+		flex-direction: column !important;
 		width: 100% !important;
-		min-height: 0 !important;
+		max-width: 100% !important;
+		min-height: 88px !important;
+		height: auto !important;
 		padding: 14px !important;
 		border-radius: 14px !important;
 		box-sizing: border-box !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+		transform: none !important;
+		animation: none !important;
+		overflow: visible !important;
 	}
 
-	.app .main-content > .content-area {
+	.app .main-content--class-view .level-grid-modern {
+		display: grid !important;
+		grid-template-columns: minmax(0, 1fr) !important;
+		gap: 10px !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+	}
+
+	.app .main-content--class-view .level-grid-modern > * {
+		animation: none !important;
+		opacity: 1 !important;
+		transform: none !important;
+		visibility: visible !important;
+	}
+
+	.app .main-content--home > .content-area {
 		width: 100% !important;
 		padding: 0 !important;
 		min-height: 0 !important;

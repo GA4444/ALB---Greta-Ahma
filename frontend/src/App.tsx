@@ -551,6 +551,8 @@ function App() {
         setExercises([])
         setCurrentExerciseIndex(0)
         setCourseLevels([])
+        setClassCourses([])
+        setIsLoading(true)
         
         try {
             // One request returns courses and their levels (no N+1 round-trips).
@@ -565,6 +567,8 @@ function App() {
         } catch (error) {
             console.error('Error fetching class courses:', error)
             setClassCourses([])
+        } finally {
+            setIsLoading(false)
         }
     }
 
