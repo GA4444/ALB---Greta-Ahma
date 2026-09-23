@@ -20,20 +20,23 @@
   }
 
   /* ===== Compact top bar ===== */
-  .app .header {
+  .app .header,
+  .app .app-chrome-header {
     display: grid !important;
-    grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
     grid-template-areas:
       "brand stats"
       "curr curr";
     align-items: center;
-    column-gap: 10px;
+    column-gap: 8px;
     row-gap: 8px;
     position: sticky;
     top: 0;
     z-index: 40;
     padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.96);
+    padding-top: max(10px, env(safe-area-inset-top, 0px));
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(26, 47, 61, 0.08);
     box-shadow: 0 4px 16px rgba(31, 111, 139, 0.06);
     min-height: 0 !important;
@@ -50,6 +53,8 @@
     max-width: none !important;
     margin: 0 !important;
     min-width: 0;
+    grid-template-columns: none !important;
+    grid-template-areas: none !important;
   }
 
   .app .header-main {
@@ -67,8 +72,14 @@
     gap: 8px !important;
   }
 
+  .app .header-logo .brand-logo,
+  .app .header-logo img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
   .app .header-logo h1 {
-    font-size: 1.15rem !important;
+    font-size: 1.1rem !important;
     white-space: nowrap;
   }
 
@@ -89,7 +100,7 @@
     grid-area: stats;
     display: flex !important;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     margin: 0 !important;
     padding: 0 !important;
     width: 100%;

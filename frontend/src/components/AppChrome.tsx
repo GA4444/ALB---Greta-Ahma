@@ -44,7 +44,7 @@ export function AppHeader({
 
 	return (
 		<>
-			<header className="header">
+			<header className="header app-chrome-header">
 				<div className="header-content">
 					<div className="header-main">
 						<div className="header-logo brand-mark">
@@ -53,18 +53,19 @@ export function AppHeader({
 						</div>
 						<nav className="header-navigation" aria-label="Navigimi kryesor">
 							<button
+								type="button"
 								className={`nav-btn ${!selectedClass ? 'active' : ''}`}
 								onClick={onBackToClasses}
 							>
 								Shtëpia
 							</button>
 							{selectedClass && (
-								<button className="nav-btn" onClick={onBackToClasses}>
+								<button type="button" className="nav-btn" onClick={onBackToClasses}>
 									← Kthehu te Klasat
 								</button>
 							)}
 							{selectedCourse && (
-								<button className="nav-btn" onClick={onBackToCourses}>
+								<button type="button" className="nav-btn" onClick={onBackToCourses}>
 									← Kthehu te Kurset
 								</button>
 							)}
@@ -112,15 +113,16 @@ export function AppHeader({
 						</div>
 
 						<div className="header-actions">
-							<button className="profile-btn" onClick={onShowProfile}>Unë</button>
+							<button type="button" className="profile-btn" onClick={onShowProfile}>Unë</button>
 							<button
+								type="button"
 								className="leaderboard-btn"
 								onClick={onShowLeaderboard}
 								title={LEADERBOARD_TITLE}
 							>
 								{LEADERBOARD_TITLE}
 							</button>
-							<button className="logout-btn" onClick={onLogout}>Dil</button>
+							<button type="button" className="logout-btn" onClick={onLogout}>Dil</button>
 						</div>
 					</div>
 				</div>

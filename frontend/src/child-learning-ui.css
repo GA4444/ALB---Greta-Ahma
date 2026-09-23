@@ -389,20 +389,24 @@
 @media (max-width: 768px) {
 	.app .header {
 		display: grid !important;
-		grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+		grid-template-columns: minmax(0, auto) minmax(0, 1fr);
 		grid-template-areas:
 			"brand stats"
 			"curr curr";
 		align-items: center;
-		column-gap: 10px;
+		column-gap: 8px;
 		row-gap: 8px;
 	}
 
 	.app .header-content {
 		grid-area: brand;
+		display: flex !important;
+		flex-direction: row !important;
 		width: auto !important;
 		max-width: none !important;
 		margin: 0 !important;
+		grid-template-columns: none !important;
+		grid-template-areas: none !important;
 	}
 
 	.app .header-navigation,
@@ -416,7 +420,7 @@
 		grid-area: stats;
 		display: flex !important;
 		flex-direction: column;
-		gap: 8px;
+		gap: 6px;
 		margin: 0 !important;
 		padding: 0 !important;
 		width: 100%;

@@ -20,110 +20,12 @@
 }
 
 /* ============================== HEADER / NAV =============================== */
+/* Phone chrome (logo + chips + bottom tabs) is owned by mobile-app.css.
+   Keep only non-layout safety rules here so the two files do not fight. */
 @media (max-width: 768px) {
   .header {
-    padding: 12px 16px;
-    min-height: 0;
     position: sticky;
     top: 0;
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .header-main {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    width: 100%;
-  }
-
-  .header-logo {
-    justify-content: center;
-  }
-
-  .header h1 {
-    font-size: 1.25rem;
-  }
-
-  /* Navigation buttons scroll horizontally instead of wrapping awkwardly */
-  .header-navigation {
-    justify-content: flex-start;
-    flex: none;
-    gap: 8px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 2px;
-    scrollbar-width: none;
-  }
-
-  .header-navigation::-webkit-scrollbar {
-    display: none;
-  }
-
-  .nav-btn {
-    flex: 0 0 auto;
-    white-space: nowrap;
-    min-height: 40px;
-  }
-
-  /* Progress bar spans the full width for a cleaner look */
-  .header-progress-summary .user-progress {
-    width: 100%;
-  }
-
-  /* User actions: a single tidy row that wraps gracefully */
-  .header-account,
-  .header-actions {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  /* Show the XP/points/streak chips again (the old rule hid them and also
-     targeted the wrong selector). Compact them instead of hiding. */
-  .user-stats {
-    display: flex !important;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    order: 3;
-  }
-
-  .stat-item {
-    padding: 6px 10px;
-  }
-
-  .stat-icon {
-    font-size: 1rem;
-  }
-
-  .stat-value {
-    font-size: 0.8rem;
-  }
-
-  .profile-btn,
-  .leaderboard-btn,
-  .logout-btn {
-    flex: 1 1 auto;
-    min-height: 44px;
-    min-width: 96px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    text-align: center;
-    line-height: 1.25;
-    white-space: normal;
-  }
-
-  .leaderboard-btn {
-    flex: 1 1 100%;
-    max-width: 100%;
   }
 }
 
