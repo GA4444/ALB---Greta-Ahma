@@ -21,7 +21,7 @@ export default function WelcomeLanding({
 		<div className="welcome-landing">
 			<header className="welcome-header">
 				<div className="welcome-brand">
-					<BrandLogo size={14} className="welcome-brand-mark" />
+					<BrandLogo size={5} className="welcome-brand-mark" />
 					<span className="welcome-brand-name">ALBLingo</span>
 				</div>
 				<div className="welcome-lang" aria-label="Gjuha e faqes">

@@ -34,9 +34,9 @@
 }
 
 .welcome-brand-mark {
-	width: 14px;
-	height: 14px;
-	border-radius: 3.5px;
+	width: 5px;
+	height: 5px;
+	border-radius: 1px;
 	display: block;
 	flex-shrink: 0;
 	object-fit: cover;
@@ -358,9 +358,9 @@
 	}
 
 	.welcome-brand-mark {
-		width: 12px;
-		height: 12px;
-		border-radius: 3px;
+		width: 5px;
+		height: 5px;
+		border-radius: 1px;
 	}
 
 	.welcome-float-pen,
