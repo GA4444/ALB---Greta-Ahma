@@ -33,10 +33,15 @@
 	line-height: 1;
 }
 
+.welcome-brand .brand-logo.welcome-brand-mark,
 .welcome-brand-mark {
-	width: 5px;
-	height: 5px;
-	border-radius: 1px;
+	width: 5px !important;
+	height: 5px !important;
+	max-width: 5px !important;
+	max-height: 5px !important;
+	min-width: 5px !important;
+	min-height: 5px !important;
+	border-radius: 1px !important;
 	display: block;
 	flex-shrink: 0;
 	object-fit: cover;
@@ -357,10 +362,15 @@
 		font-size: 0.875rem;
 	}
 
+	.welcome-brand .brand-logo.welcome-brand-mark,
 	.welcome-brand-mark {
-		width: 5px;
-		height: 5px;
-		border-radius: 1px;
+		width: 5px !important;
+		height: 5px !important;
+		max-width: 5px !important;
+		max-height: 5px !important;
+		min-width: 5px !important;
+		min-height: 5px !important;
+		border-radius: 1px !important;
 	}
 
 	.welcome-float-pen,
