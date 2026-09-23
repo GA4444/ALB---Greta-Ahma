@@ -4380,64 +4380,58 @@
 	}
 }
 
-/* Tablet / mobile: full-width journey, zigzag stages */
-@media (max-width: 900px) {
+/* Tablet: gentle journey, full-width stages */
+@media (max-width: 900px) and (min-width: 769px) {
 	.app .alblingo-path {
 		display: flex !important;
 		flex-direction: column !important;
 		grid-template-columns: none !important;
-		gap: 8px !important;
-		padding: 6px 2px 4px !important;
+		gap: 6px !important;
+		padding: 4px 0 !important;
 	}
 
 	.app .alblingo-path .path-stage {
 		display: grid !important;
 		grid-template-columns: auto minmax(0, 1fr) auto !important;
-		min-height: 56px !important;
+		min-height: 52px !important;
 		padding: 10px 12px 10px 8px !important;
-		border-radius: 14px !important;
+		border-radius: 12px !important;
 		background: #fff !important;
 		border: 1px solid rgba(31, 111, 139, 0.1) !important;
-		box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+		box-shadow: none !important;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
 	}
 
 	.app .alblingo-path .path-rail {
 		left: 25px;
-		top: -12px;
-		bottom: calc(50% + 18px);
+		top: -10px;
+		bottom: calc(50% + 16px);
 		width: 3px;
 	}
 
 	.app .alblingo-path .path-node {
-		width: 40px;
-		height: 40px;
+		width: 38px;
+		height: 38px;
 	}
 
 	.app .alblingo-path .path-node .class-num {
-		width: 30px !important;
-		height: 30px !important;
-		font-size: 0.82rem !important;
+		width: 28px !important;
+		height: 28px !important;
+		font-size: 0.8rem !important;
 	}
 
 	.app .alblingo-path .path-stage .class-label {
-		font-size: 0.92rem !important;
-		white-space: normal !important;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
-	.app .alblingo-path .path-stage.path-side-a {
-		margin-right: 10% !important;
-	}
-
-	.app .alblingo-path .path-stage.path-side-b {
-		margin-left: 10% !important;
+		font-size: 0.9rem !important;
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		display: block !important;
+		-webkit-line-clamp: unset;
 	}
 
 	.app .alblingo-path .path-stage.selected {
-		border-color: rgba(31, 111, 139, 0.35) !important;
+		border-color: rgba(31, 111, 139, 0.32) !important;
 		background: #eaf6fb !important;
 	}
 
@@ -4450,55 +4444,218 @@
 	}
 }
 
+/* Mobile: clean professional journey list (no zigzag) */
 @media (max-width: 768px) {
+	.app .sidebar.sidebar-compact:has(.alblingo-world),
+	.app .main-content > .sidebar.sidebar-compact:has(.alblingo-world),
+	.app .main-content--home > .sidebar.sidebar-compact:has(.alblingo-world) {
+		padding: 12px !important;
+		gap: 12px !important;
+		border-radius: 16px !important;
+		background: #fff !important;
+		border: 1px solid rgba(31, 111, 139, 0.1) !important;
+		box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
+	}
+
+	.app .alblingo-world {
+		margin: 0 !important;
+		padding: 0 !important;
+		background: transparent !important;
+	}
+
+	.app .alblingo-world .sidebar-section-header.compact {
+		margin: 0 0 10px !important;
+		padding: 0 2px !important;
+	}
+
+	.app .alblingo-world .sidebar-section-header.compact h3 {
+		font-size: 0.78rem !important;
+		letter-spacing: 0.05em !important;
+		text-transform: uppercase !important;
+		color: #64748b !important;
+	}
+
+	.app .alblingo-world .classes-count-badge {
+		min-width: 24px !important;
+		height: 24px !important;
+		font-size: 0.72rem !important;
+		background: rgba(31, 111, 139, 0.1) !important;
+		color: #1f6f8b !important;
+	}
+
 	.app .class-list-compact.alblingo-path {
 		display: flex !important;
 		flex-direction: column !important;
 		grid-template-columns: none !important;
-		gap: 8px !important;
+		gap: 0 !important;
+		padding: 0 !important;
+		margin: 0 !important;
+		border: 1px solid rgba(31, 111, 139, 0.1) !important;
+		border-radius: 14px !important;
+		background: #f8fafc !important;
+		overflow: hidden !important;
 	}
 
-	.app .alblingo-path .path-stage {
-		width: auto !important;
-		flex: none !important;
+	.app .alblingo-path .path-stage,
+	.app .alblingo-path .path-stage.path-side-a,
+	.app .alblingo-path .path-stage.path-side-b {
+		display: grid !important;
+		grid-template-columns: 40px minmax(0, 1fr) auto !important;
+		align-items: center !important;
+		column-gap: 10px !important;
+		row-gap: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		min-height: 56px !important;
+		margin: 0 !important;
+		padding: 10px 12px !important;
+		border: 0 !important;
+		border-radius: 0 !important;
+		border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+		background: #fff !important;
+		box-shadow: none !important;
+		box-sizing: border-box !important;
 	}
 
-	.app .alblingo-world .sidebar-section-header.compact {
-		margin-bottom: 10px !important;
+	.app .alblingo-path .path-stage:last-child {
+		border-bottom: 0 !important;
+	}
+
+	.app .alblingo-path .path-rail {
+		left: 29px;
+		top: -1px;
+		bottom: calc(50% + 18px);
+		width: 2px;
+		background: rgba(31, 111, 139, 0.22);
+	}
+
+	.app .alblingo-path .path-stage.path-completed .path-rail,
+	.app .alblingo-path .path-stage.path-completed + .path-stage .path-rail {
+		background: #2f9e6b;
+	}
+
+	.app .alblingo-path .path-stage.path-locked .path-rail {
+		background: repeating-linear-gradient(
+			180deg,
+			rgba(148, 163, 184, 0.4) 0 3px,
+			transparent 3px 6px
+		);
+	}
+
+	.app .alblingo-path .path-node {
+		width: 36px;
+		height: 36px;
+		box-shadow: none;
+	}
+
+	.app .alblingo-path .path-node .class-num {
+		width: 28px !important;
+		height: 28px !important;
+		font-size: 0.8rem !important;
+	}
+
+	.app .alblingo-path .path-stage .class-label {
+		font-size: 0.95rem !important;
+		font-weight: 700 !important;
+		color: #13293d !important;
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		display: block !important;
+		-webkit-line-clamp: unset;
+		line-height: 1.25 !important;
+	}
+
+	.app .alblingo-path .path-stage.path-available {
+		background: #fff !important;
+	}
+
+	.app .alblingo-path .path-stage.path-progress {
+		background: #f7fbfe !important;
+	}
+
+	.app .alblingo-path .path-stage.path-completed {
+		background: #f7fdf9 !important;
+	}
+
+	.app .alblingo-path .path-stage.path-completed .class-label {
+		color: #166534 !important;
+	}
+
+	.app .alblingo-path .path-stage.path-locked {
+		background: #fafbfc !important;
+		opacity: 1 !important;
+	}
+
+	.app .alblingo-path .path-stage.path-locked .class-label {
+		color: #94a3b8 !important;
+	}
+
+	.app .alblingo-path .path-stage.selected {
+		background: #eaf6fb !important;
+		box-shadow: inset 3px 0 0 #1f6f8b !important;
+		border-color: transparent !important;
+	}
+
+	.app .alblingo-path .path-stage.selected .path-node,
+	.app .alblingo-path .path-node.is-current {
+		transform: none;
+		box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.14);
+	}
+
+	.app .alblingo-path .path-stage:hover:not(.path-locked) {
+		background: #f7fbfe !important;
+	}
+
+	.app .alblingo-path .path-stage:hover:not(.path-locked) .path-node {
+		transform: none;
+	}
+
+	.app .alblingo-path .progress-mini {
+		width: 42px !important;
+		height: 5px !important;
+	}
+
+	.app .alblingo-path .path-complete-mark {
+		width: 24px;
+		height: 24px;
+	}
+
+	.app .sidebar-compact:has(.alblingo-world) .sidebar-section-progress {
+		padding: 10px 12px !important;
+		border-radius: 12px !important;
+		background: #f8fafc !important;
+		border: 1px solid rgba(31, 111, 139, 0.08) !important;
+	}
+
+	.app .sidebar-compact:has(.alblingo-world) .sidebar-section + .sidebar-section {
+		margin-top: 0 !important;
+		padding-top: 0 !important;
+		border-top: 0 !important;
+	}
+
+	.app .sidebar-compact:has(.alblingo-world) .ocr-launch-card {
+		margin: 0 !important;
+		padding: 12px !important;
+		border-radius: 12px !important;
+		border: 1px solid rgba(31, 111, 139, 0.1) !important;
+		background: #f7fbfe !important;
+		box-shadow: none !important;
 	}
 }
 
 @media (max-width: 430px) {
+	.app .alblingo-path .path-stage,
 	.app .alblingo-path .path-stage.path-side-a,
 	.app .alblingo-path .path-stage.path-side-b {
-		margin-left: 0 !important;
-		margin-right: 0 !important;
-	}
-
-	.app .alblingo-path .path-stage {
 		min-height: 54px !important;
-		padding: 10px 10px 10px 6px !important;
+		padding: 10px 12px !important;
+		grid-template-columns: 36px minmax(0, 1fr) auto !important;
+		column-gap: 10px !important;
 	}
 
 	.app .alblingo-path .path-rail {
-		left: 23px;
-	}
-
-	.app .alblingo-path .path-node {
-		width: 38px;
-		height: 38px;
-	}
-
-	.app .alblingo-path .progress-mini {
-		width: 34px !important;
-	}
-}
-
-@media (max-width: 340px) {
-	.app .alblingo-path .path-stage {
-		gap: 0 8px !important;
-		padding: 9px 8px 9px 4px !important;
-		min-height: 52px !important;
+		left: 27px;
 	}
 
 	.app .alblingo-path .path-node {
@@ -4509,15 +4666,49 @@
 	.app .alblingo-path .path-node .class-num {
 		width: 26px !important;
 		height: 26px !important;
-		font-size: 0.74rem !important;
+		font-size: 0.76rem !important;
 	}
 
 	.app .alblingo-path .path-stage .class-label {
-		font-size: 0.84rem !important;
+		font-size: 0.92rem !important;
+	}
+
+	.app .alblingo-path .progress-mini {
+		width: 36px !important;
+	}
+}
+
+@media (max-width: 340px) {
+	.app .sidebar.sidebar-compact:has(.alblingo-world) {
+		padding: 10px !important;
+	}
+
+	.app .alblingo-path .path-stage,
+	.app .alblingo-path .path-stage.path-side-a,
+	.app .alblingo-path .path-stage.path-side-b {
+		min-height: 50px !important;
+		padding: 9px 10px !important;
+		grid-template-columns: 32px minmax(0, 1fr) auto !important;
+		column-gap: 8px !important;
 	}
 
 	.app .alblingo-path .path-rail {
-		left: 20px;
+		left: 24px;
+	}
+
+	.app .alblingo-path .path-node {
+		width: 32px;
+		height: 32px;
+	}
+
+	.app .alblingo-path .path-node .class-num {
+		width: 24px !important;
+		height: 24px !important;
+		font-size: 0.72rem !important;
+	}
+
+	.app .alblingo-path .path-stage .class-label {
+		font-size: 0.86rem !important;
 	}
 }
 
