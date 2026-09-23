@@ -2560,12 +2560,12 @@ function MainContent({
         <div className={`main-content ${selectedLevel ? 'with-ai-panel' : ''}`}>
             {/* Compact Left Sidebar - Navigation Only */}
             <aside className="sidebar sidebar-compact">
-                <div className="sidebar-section">
+                <div className="sidebar-section sidebar-section-classes">
                     <div className="sidebar-section-header compact">
-                        <h3>📚 Klasat</h3>
+                        <h3>Klasat</h3>
                         <span className="classes-count-badge">{classes.length}</span>
                     </div>
-                    <div className="class-list-compact">
+                    <div className="class-list-compact" role="list">
                         {isLoading && classes.length === 0 ? (
                             <>
                                 {[1, 2, 3].map((i) => (
@@ -2579,10 +2579,15 @@ function MainContent({
                             const progress = (classData as any).progress_percent || 0
                             const isSelected = selectedClass?.id === classData.id
                             return (
-                                <div
+                                <button
+                                    type="button"
                                     key={classData.id}
+                                    role="listitem"
                                     className={`class-item-compact ${classData.unlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}`}
                                     onClick={() => onClassClick(classData)}
+                                    aria-current={isSelected ? 'page' : undefined}
+                                    aria-disabled={!classData.unlocked}
+                                    aria-label={`${classData.name}${classData.unlocked ? `, ${Math.round(progress)}%` : ', i mbyllur'}`}
                                 >
                                     <div className="class-item-left">
                                         <span className={`class-num ${isSelected ? 'active' : ''}`}>
@@ -2596,10 +2601,15 @@ function MainContent({
                                                 <div className="progress-mini-fill" style={{ width: `${progress}%` }}></div>
                                             </div>
                                         ) : (
-                                            <span className="lock-mini">🔒</span>
+                                            <span className="lock-mini" aria-hidden="true">
+                                                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <rect x="5" y="11" width="14" height="10" rx="2" />
+                                                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                                                </svg>
+                                            </span>
                                         )}
                                     </div>
-                                </div>
+                                </button>
                             )
                         })}
                     </div>
@@ -2609,8 +2619,8 @@ function MainContent({
                 {userId && aiRecommendations && (
                     <div className="sidebar-section">
                         <div className="sidebar-section-header compact">
-                            <h3>📊 Progresi yt</h3>
-                            <button className="toggle-btn-compact" onClick={onToggleAIInsights}>
+                            <h3>Progresi yt</h3>
+                            <button type="button" className="toggle-btn-compact" onClick={onToggleAIInsights} aria-expanded={showAIInsights}>
                                 {showAIInsights ? '−' : '+'}
                             </button>
                         </div>
@@ -2641,7 +2651,6 @@ function MainContent({
                     <div className="sidebar-section child-ai-sidebar-section">
                         <div className="child-ai-side-card">
                             <div className="child-ai-side-header">
-                                <span>🤖</span>
                                 <strong>Ndihma jote</strong>
                             </div>
                             <p>{getChildGuideText()}</p>
@@ -2664,14 +2673,13 @@ function MainContent({
                 {userId && userStreak && (
                     <div className="sidebar-section">
                         <div className="sidebar-section-header compact">
-                            <h3>🏆 Progresi</h3>
-                            <button className="toggle-btn-compact" onClick={() => setShowGamification(!showGamification)}>
+                            <h3>Progresi</h3>
+                            <button type="button" className="toggle-btn-compact" onClick={() => setShowGamification(!showGamification)} aria-expanded={showGamification}>
                                 {showGamification ? '−' : '+'}
                             </button>
                         </div>
                         <div className="gamification-compact">
                             <div className="streak-compact">
-                                <span className="streak-fire">🔥</span>
                                 <span className="streak-num">{userStreak.current_streak}</span>
                                 <span className="streak-txt">ditë</span>
                             </div>
@@ -2679,7 +2687,7 @@ function MainContent({
                                 <>
                                     {dailyChallenge && dailyChallenge.user_progress && (
                                         <div className="challenge-compact">
-                                            <div className="challenge-label">🎯 Sfida</div>
+                                            <div className="challenge-label">Sfida</div>
                                             <div className="challenge-bar-compact">
                                                 <div 
                                                     className="challenge-fill-compact"
@@ -2691,7 +2699,7 @@ function MainContent({
                                     )}
                                     {userAchievements && userAchievements.total_achievements > 0 && (
                                         <div className="achievements-compact">
-                                            <span>🏅 {userAchievements.total_achievements} arritje</span>
+                                            <span>{userAchievements.total_achievements} arritje</span>
                                         </div>
                                     )}
                                 </>
@@ -2704,12 +2712,11 @@ function MainContent({
                 {!selectedClass && !selectedCourse && !selectedLevel && (
                     <>
                         <section className="ocr-launch-card">
-                            <div className="ocr-launch-icon" aria-hidden="true">📝</div>
                             <div className="ocr-launch-copy">
                                 <h3>Kontrollo diktimin</h3>
                                 <p>Ngarko një foto dhe merr korrigjime të qarta të drejtshkrimit.</p>
                             </div>
-                            <button className="ocr-launch-button" onClick={() => setIsOCRWorkspaceOpen(true)}>
+                            <button type="button" className="ocr-launch-button" onClick={() => setIsOCRWorkspaceOpen(true)}>
                                 Hap kontrollin
                             </button>
                         </section>
