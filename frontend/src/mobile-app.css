@@ -289,6 +289,26 @@
     box-shadow: 0 6px 20px rgba(31, 111, 139, 0.06) !important;
   }
 
+  /* After selecting a class on mobile, hide the Classes list — show only the class screen */
+  .app .main-content--class-view > .sidebar,
+  .app .main-content--class-view > .sidebar.sidebar-compact {
+    display: none !important;
+  }
+
+  .app .main-content--class-view {
+    padding: 0 0 calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 0 !important;
+  }
+
+  .app .main-content--class-view > .content-area {
+    width: 100% !important;
+    min-height: calc(100dvh - 140px) !important;
+    padding: 12px 14px 20px !important;
+    background: #fff !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
   /* Keep AI / gamification / OCR tools reachable on phones */
   .app .sidebar-section + .sidebar-section {
     display: block !important;
