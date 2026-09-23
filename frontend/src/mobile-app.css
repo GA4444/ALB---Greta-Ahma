@@ -395,27 +395,44 @@
 
   /* ===== Home / hero ===== */
   .app .hero-section-modern {
-    padding: 28px 18px !important;
-    border-radius: 22px !important;
-    margin-bottom: 4px !important;
+    padding: 18px 14px 14px !important;
+    border-radius: 18px !important;
+    margin-bottom: 0 !important;
   }
 
   .app .hero-title-modern {
-    font-size: 2rem !important;
+    font-size: 1.45rem !important;
   }
 
   .app .hero-description-modern {
-    font-size: 1.05rem !important;
-    max-width: none !important;
+    font-size: 0.88rem !important;
+    max-width: 22rem !important;
   }
 
   .app .hero-stats-modern {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
+    gap: 6px !important;
   }
 
   .app .hero-stat-modern {
-    padding: 12px 8px !important;
+    padding: 8px 6px !important;
+  }
+
+  .app .features-grid-modern {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .app .features-grid-modern > .features-row-3,
+  .app .features-grid-modern > .features-row-2 {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .app .feature-card-modern {
+    padding: 11px 12px !important;
   }
 
   /* ===== Course / level cards ===== */
