@@ -3238,6 +3238,30 @@ function CorpusDocModal({ doc, onClose, onSave, classes }: {
 function UserReportModal({ user, reportData, onClose }: { user: any, reportData: any, onClose: () => void }) {
 	const modalRef = useRef<HTMLDivElement>(null)
 	const [isExporting, setIsExporting] = useState(false)
+	const [viewport, setViewport] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+
+	useEffect(() => {
+		const mqMobile = window.matchMedia('(max-width: 639px)')
+		const mqTablet = window.matchMedia('(max-width: 1023px)')
+		const sync = () => {
+			if (mqMobile.matches) setViewport('mobile')
+			else if (mqTablet.matches) setViewport('tablet')
+			else setViewport('desktop')
+		}
+		sync()
+		mqMobile.addEventListener('change', sync)
+		mqTablet.addEventListener('change', sync)
+		return () => {
+			mqMobile.removeEventListener('change', sync)
+			mqTablet.removeEventListener('change', sync)
+		}
+	}, [])
+
+	useEffect(() => {
+		// Preload PDF libs while the report is open (helps mobile download after async)
+		void import('./utils/pdfExport')
+		void import('jspdf')
+	}, [])
 
 	if (!user || !reportData) return null
 
@@ -3250,6 +3274,20 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 	const activityByDay = reportData.activityByDay || []
 	const peakHours = reportData.peakHours || []
 	const progressOverTime = reportData.progressOverTime || []
+
+	const isMobile = viewport === 'mobile'
+	const chartTick = { fill: '#64748b', fontSize: isMobile ? 10 : 11 }
+	const chartMargin = isMobile
+		? { top: 8, right: 8, left: -8, bottom: 4 }
+		: viewport === 'tablet'
+			? { top: 12, right: 12, left: 0, bottom: 6 }
+			: { top: 16, right: 20, left: 8, bottom: 8 }
+	const chartH = {
+		main: isMobile ? 200 : viewport === 'tablet' ? 240 : 280,
+		mid: isMobile ? 180 : viewport === 'tablet' ? 200 : 220,
+		area: isMobile ? 180 : viewport === 'tablet' ? 210 : 240,
+	}
+	const tooltipStyle = { backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }
 
 	const timeHours = Math.floor((metrics.totalTimeMinutes || 0) / 60)
 	const timeMinutes = (metrics.totalTimeMinutes || 0) % 60
@@ -3266,7 +3304,10 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 				day: 'numeric',
 			})
 
-	const handleExportPDF = async () => {
+	const handleExportPDF = async (e?: React.MouseEvent | React.TouchEvent) => {
+		e?.preventDefault?.()
+		e?.stopPropagation?.()
+		if (isExporting) return
 		setIsExporting(true)
 		try {
 			const { exportUserReportToPDF } = await import('./utils/pdfExport')
@@ -3275,7 +3316,9 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 				user.email || 'Email jo i specifikuar',
 				reportData
 			)
-			alert('Raporti u shkarkua me sukses.')
+			if (!window.matchMedia('(max-width: 1023px)').matches) {
+				alert('Raporti u shkarkua me sukses.')
+			}
 		} catch (error) {
 			console.error('Gabim në eksportimin e PDF:', error)
 			alert('Gabim në eksportimin e raportit. Ju lutem provoni përsëri.')
@@ -3285,16 +3328,16 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 	}
 
 	return (
-		<div className="modal-overlay" onClick={onClose} ref={modalRef}>
+		<div className="modal-overlay user-report-overlay" onClick={onClose} ref={modalRef}>
 			<div className="modal-content user-report-modal" onClick={(e) => e.stopPropagation()}>
-				<button type="button" className="modal-close" onClick={onClose} aria-label="Mbyll">✕</button>
+				<button type="button" className="modal-close user-report-close" onClick={onClose} aria-label="Mbyll">✕</button>
 
 				<header className="report-header">
 					<div className="report-header-content">
 						<div className="report-logo-badge">
-							<BrandLogo size={52} className="report-brand-logo" decorative />
+							<BrandLogo size={isMobile ? 40 : 52} className="report-brand-logo" decorative />
 						</div>
-						<div>
+						<div className="report-header-text">
 							<p className="report-brand-eyebrow">ALBLingo</p>
 							<h2>Raporti i Progresit</h2>
 							<p className="report-username">{user.username}</p>
@@ -3306,7 +3349,11 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 						<button
 							type="button"
 							className="export-report-btn"
-							onClick={handleExportPDF}
+							onClick={(ev) => {
+								ev.preventDefault()
+								ev.stopPropagation()
+								void handleExportPDF(ev)
+							}}
 							disabled={isExporting}
 						>
 							<span className="export-report-btn-logo" aria-hidden="true">
@@ -3395,19 +3442,52 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 							<p className="report-empty">Nuk ka ende të dhëna për kategori.</p>
 						) : (
 							<>
-								<div className="chart-card">
-									<ResponsiveContainer width="100%" height={280}>
-										<BarChart data={categoryPerformance} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
-											<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-											<XAxis dataKey="category" tick={{ fill: '#64748b', fontSize: 11 }} />
-											<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-											<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-											<Legend />
-											<Bar dataKey="completed" fill="#5BBD6C" radius={[6, 6, 0, 0]} name="Të sakta" />
-											<Bar dataKey="total" fill="#cbd5e1" radius={[6, 6, 0, 0]} name="Totali" />
-										</BarChart>
-									</ResponsiveContainer>
+								<div className="chart-card report-chart-card">
+									<div className="report-chart-wrap">
+										<ResponsiveContainer width="100%" height={chartH.main}>
+											<BarChart data={categoryPerformance} margin={chartMargin}>
+												<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+												<XAxis
+													dataKey="category"
+													tick={chartTick}
+													interval={0}
+													angle={isMobile ? -25 : 0}
+													textAnchor={isMobile ? 'end' : 'middle'}
+													height={isMobile ? 56 : 30}
+												/>
+												<YAxis tick={chartTick} width={isMobile ? 28 : 40} />
+												<Tooltip contentStyle={tooltipStyle} />
+												{!isMobile && <Legend />}
+												<Bar dataKey="completed" fill="#5BBD6C" radius={[6, 6, 0, 0]} name="Të sakta" />
+												<Bar dataKey="total" fill="#cbd5e1" radius={[6, 6, 0, 0]} name="Totali" />
+											</BarChart>
+										</ResponsiveContainer>
+									</div>
 								</div>
+								{/* Mobile card layout */}
+								<div className="report-perf-cards" aria-hidden={false}>
+									{categoryPerformance.map((cat: any, i: number) => (
+										<article key={i} className="report-perf-card">
+											<header className="report-perf-card-head">
+												<strong>{cat.category}</strong>
+												<span>{cat.percentage}%</span>
+											</header>
+											<div className="category-progress-bar report-table-bar">
+												<div
+													className="category-progress-fill"
+													style={{ width: `${Math.min(100, cat.percentage || 0)}%` }}
+												>
+													{cat.percentage}%
+												</div>
+											</div>
+											<div className="report-perf-card-meta">
+												<span>Të sakta: {cat.completed}</span>
+												<span>Totali: {cat.total}</span>
+											</div>
+										</article>
+									))}
+								</div>
+								{/* Desktop/tablet table */}
 								<div className="report-table-wrap">
 									<table className="report-table">
 										<thead>
@@ -3446,17 +3526,19 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 					{/* Strengths */}
 					<section className="report-section">
 						<h3 className="report-section-title">Pikat e forta</h3>
-						<div className="chart-card">
+						<div className="chart-card report-chart-card">
 							{strengths.length > 0 && (
-								<ResponsiveContainer width="100%" height={220}>
-									<BarChart data={strengths} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
-										<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-										<XAxis dataKey="area" tick={{ fill: '#64748b', fontSize: 11 }} />
-										<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-										<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-										<Bar dataKey="score" fill="#5BBD6C" radius={[6, 6, 0, 0]} name="Saktësi %" />
-									</BarChart>
-								</ResponsiveContainer>
+								<div className="report-chart-wrap">
+									<ResponsiveContainer width="100%" height={chartH.mid}>
+										<BarChart data={strengths} margin={chartMargin}>
+											<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+											<XAxis dataKey="area" tick={chartTick} interval={0} angle={isMobile ? -20 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 48 : 30} />
+											<YAxis tick={chartTick} width={isMobile ? 28 : 40} />
+											<Tooltip contentStyle={tooltipStyle} />
+											<Bar dataKey="score" fill="#5BBD6C" radius={[6, 6, 0, 0]} name="Saktësi %" />
+										</BarChart>
+									</ResponsiveContainer>
+								</div>
 							)}
 							<div className="strength-list">
 								{strengths.length === 0 && (
@@ -3475,17 +3557,19 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 					{/* Areas for Improvement */}
 					<section className="report-section">
 						<h3 className="report-section-title">Fushat për përmirësim</h3>
-						<div className="chart-card">
+						<div className="chart-card report-chart-card">
 							{weaknesses.length > 0 && (
-								<ResponsiveContainer width="100%" height={220}>
-									<BarChart data={weaknesses} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
-										<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-										<XAxis dataKey="area" tick={{ fill: '#64748b', fontSize: 11 }} />
-										<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-										<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-										<Bar dataKey="score" fill="#D97706" radius={[6, 6, 0, 0]} name="Saktësi %" />
-									</BarChart>
-								</ResponsiveContainer>
+								<div className="report-chart-wrap">
+									<ResponsiveContainer width="100%" height={chartH.mid}>
+										<BarChart data={weaknesses} margin={chartMargin}>
+											<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+											<XAxis dataKey="area" tick={chartTick} interval={0} angle={isMobile ? -20 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 48 : 30} />
+											<YAxis tick={chartTick} width={isMobile ? 28 : 40} />
+											<Tooltip contentStyle={tooltipStyle} />
+											<Bar dataKey="score" fill="#D97706" radius={[6, 6, 0, 0]} name="Saktësi %" />
+										</BarChart>
+									</ResponsiveContainer>
+								</div>
 							)}
 							<div className="weakness-list">
 								{weaknesses.length === 0 && (
@@ -3504,58 +3588,64 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 					{/* Recent Activity */}
 					<section className="report-section">
 						<h3 className="report-section-title">Aktiviteti</h3>
-						<div className="chart-card">
+						<div className="chart-card report-chart-card">
 							<h4 className="chart-subtitle">Aktiviteti sipas ditëve të javës</h4>
-							<ResponsiveContainer width="100%" height={280}>
-								<ComposedChart data={activityByDay} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
-									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-									<XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 11 }} />
-									<YAxis yAxisId="left" tick={{ fill: '#64748b', fontSize: 12 }} />
-									<YAxis yAxisId="right" orientation="right" tick={{ fill: '#64748b', fontSize: 12 }} />
-									<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-									<Legend />
-									<Bar yAxisId="left" dataKey="sessions" fill="#1F6F8B" radius={[6, 6, 0, 0]} name="Ushtrime" />
-									<Line yAxisId="right" type="monotone" dataKey="minutes" stroke="#5BBD6C" strokeWidth={2.5} name="Minutë" />
-								</ComposedChart>
-							</ResponsiveContainer>
+							<div className="report-chart-wrap">
+								<ResponsiveContainer width="100%" height={chartH.main}>
+									<ComposedChart data={activityByDay} margin={chartMargin}>
+										<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+										<XAxis dataKey="day" tick={chartTick} />
+										<YAxis yAxisId="left" tick={chartTick} width={isMobile ? 28 : 40} />
+										{!isMobile && <YAxis yAxisId="right" orientation="right" tick={chartTick} width={36} />}
+										<Tooltip contentStyle={tooltipStyle} />
+										{!isMobile && <Legend />}
+										<Bar yAxisId="left" dataKey="sessions" fill="#1F6F8B" radius={[6, 6, 0, 0]} name="Ushtrime" />
+										<Line yAxisId={isMobile ? 'left' : 'right'} type="monotone" dataKey="minutes" stroke="#5BBD6C" strokeWidth={2.5} name="Minutë" />
+									</ComposedChart>
+								</ResponsiveContainer>
+							</div>
 						</div>
-						<div className="chart-card">
+						<div className="chart-card report-chart-card">
 							<h4 className="chart-subtitle">Orët më të frekuentuara</h4>
-							<ResponsiveContainer width="100%" height={240}>
-								<AreaChart data={peakHours} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
-									<defs>
-										<linearGradient id="colorActivityUser" x1="0" y1="0" x2="0" y2="1">
-											<stop offset="5%" stopColor="#1F6F8B" stopOpacity={0.75} />
-											<stop offset="95%" stopColor="#1F6F8B" stopOpacity={0.08} />
-										</linearGradient>
-									</defs>
-									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-									<XAxis dataKey="hour" tick={{ fill: '#64748b', fontSize: 11 }} />
-									<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-									<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-									<Area type="monotone" dataKey="activity" stroke="#1F6F8B" fillOpacity={1} fill="url(#colorActivityUser)" name="Aktivitet" />
-								</AreaChart>
-							</ResponsiveContainer>
+							<div className="report-chart-wrap">
+								<ResponsiveContainer width="100%" height={chartH.area}>
+									<AreaChart data={peakHours} margin={chartMargin}>
+										<defs>
+											<linearGradient id="colorActivityUser" x1="0" y1="0" x2="0" y2="1">
+												<stop offset="5%" stopColor="#1F6F8B" stopOpacity={0.75} />
+												<stop offset="95%" stopColor="#1F6F8B" stopOpacity={0.08} />
+											</linearGradient>
+										</defs>
+										<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+										<XAxis dataKey="hour" tick={chartTick} interval={isMobile ? 1 : 0} />
+										<YAxis tick={chartTick} width={isMobile ? 28 : 40} />
+										<Tooltip contentStyle={tooltipStyle} />
+										<Area type="monotone" dataKey="activity" stroke="#1F6F8B" fillOpacity={1} fill="url(#colorActivityUser)" name="Aktivitet" />
+									</AreaChart>
+								</ResponsiveContainer>
+							</div>
 						</div>
 					</section>
 
 					{/* Progress over time */}
 					<section className="report-section">
 						<h3 className="report-section-title">Përparimi në kohë</h3>
-						<div className="chart-card">
+						<div className="chart-card report-chart-card">
 							<h4 className="chart-subtitle">Përparimi në kohë (6 muaj)</h4>
-							<ResponsiveContainer width="100%" height={280}>
-								<ComposedChart data={progressOverTime} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
-									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-									<XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 11 }} />
-									<YAxis yAxisId="left" tick={{ fill: '#64748b', fontSize: 12 }} />
-									<YAxis yAxisId="right" orientation="right" tick={{ fill: '#64748b', fontSize: 12 }} />
-									<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-									<Legend />
-									<Area yAxisId="right" type="monotone" dataKey="avgScore" fill="#4A9FD4" stroke="#4A9FD4" fillOpacity={0.25} name="Pikë Mesatare %" />
-									<Bar yAxisId="left" dataKey="exercises" fill="#5BBD6C" radius={[6, 6, 0, 0]} name="Ushtrime" />
-								</ComposedChart>
-							</ResponsiveContainer>
+							<div className="report-chart-wrap">
+								<ResponsiveContainer width="100%" height={chartH.main}>
+									<ComposedChart data={progressOverTime} margin={chartMargin}>
+										<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+										<XAxis dataKey="month" tick={chartTick} />
+										<YAxis yAxisId="left" tick={chartTick} width={isMobile ? 28 : 40} />
+										{!isMobile && <YAxis yAxisId="right" orientation="right" tick={chartTick} width={36} />}
+										<Tooltip contentStyle={tooltipStyle} />
+										{!isMobile && <Legend />}
+										<Area yAxisId={isMobile ? 'left' : 'right'} type="monotone" dataKey="avgScore" fill="#4A9FD4" stroke="#4A9FD4" fillOpacity={0.25} name="Pikë Mesatare %" />
+										<Bar yAxisId="left" dataKey="exercises" fill="#5BBD6C" radius={[6, 6, 0, 0]} name="Ushtrime" />
+									</ComposedChart>
+								</ResponsiveContainer>
+							</div>
 						</div>
 					</section>
 
@@ -3633,25 +3723,14 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 						</div>
 					</div>
 
-					<footer className="report-download-bar">
+					<footer className="report-download-bar report-download-bar--brand-only">
 						<div className="report-download-brand">
-							<BrandLogo size={40} decorative />
+							<BrandLogo size={isMobile ? 32 : 40} decorative />
 							<div>
 								<strong>ALBLingo</strong>
 								<span>Educational Progress Report</span>
 							</div>
 						</div>
-						<button
-							type="button"
-							className="export-report-btn export-report-btn-footer"
-							onClick={handleExportPDF}
-							disabled={isExporting}
-						>
-							<span className="export-report-btn-logo" aria-hidden="true">
-								<BrandLogo size={20} decorative />
-							</span>
-							{isExporting ? 'Duke shkarkuar…' : 'Shkarko raportin'}
-						</button>
 					</footer>
 				</div>
 			</div>

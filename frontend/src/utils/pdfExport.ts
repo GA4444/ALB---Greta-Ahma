@@ -69,6 +69,71 @@ async function loadAlbLingoLogoDataUrl(): Promise<string | null> {
 	}
 }
 
+function isMobileOrIOS(): boolean {
+	if (typeof navigator === 'undefined') return false
+	const ua = navigator.userAgent || ''
+	const iOS =
+		/iPad|iPhone|iPod/.test(ua) ||
+		(navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1)
+	const mobile = /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua)
+	return iOS || mobile || (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches)
+}
+
+/** Reliable PDF download across desktop + mobile (iOS Safari blocks pdf.save after async). */
+async function triggerPdfDownload(
+	pdf: { output: (type: 'blob') => Blob; save: (name: string) => void },
+	fileName: string
+) {
+	const blob = pdf.output('blob')
+
+	// Best path on phones: native share sheet (Save to Files / Drive)
+	try {
+		const nav = navigator as Navigator & {
+			canShare?: (data: ShareData) => boolean
+			share?: (data: ShareData) => Promise<void>
+		}
+		if (isMobileOrIOS() && typeof nav.share === 'function') {
+			const file = new File([blob], fileName, { type: 'application/pdf' })
+			const shareData: ShareData = { files: [file], title: fileName }
+			if (!nav.canShare || nav.canShare(shareData)) {
+				await nav.share(shareData)
+				return
+			}
+		}
+	} catch {
+		// User cancelled share or share unsupported — fall through
+	}
+
+	const url = URL.createObjectURL(blob)
+	try {
+		const link = document.createElement('a')
+		link.href = url
+		link.download = fileName
+		link.rel = 'noopener'
+		link.style.display = 'none'
+		document.body.appendChild(link)
+		link.click()
+		link.remove()
+
+		if (isMobileOrIOS()) {
+			// iOS often ignores download= — open viewer so user can Share → Save File
+			window.setTimeout(() => {
+				window.open(url, '_blank')
+			}, 200)
+			window.setTimeout(() => URL.revokeObjectURL(url), 90_000)
+			return
+		}
+
+		window.setTimeout(() => URL.revokeObjectURL(url), 4_000)
+	} catch {
+		try {
+			pdf.save(fileName)
+		} finally {
+			window.setTimeout(() => URL.revokeObjectURL(url), 4_000)
+		}
+	}
+}
+
 export async function exportUserReportToPDF(
 	username: string,
 	email: string,
@@ -457,7 +522,7 @@ export async function exportUserReportToPDF(
 
 		const safeName = (username || 'user').replace(/[^\w\-]+/g, '_').slice(0, 40)
 		const fileName = `AlbLingo_Raport_${safeName}_${new Date().toISOString().split('T')[0]}.pdf`
-		pdf.save(fileName)
+		await triggerPdfDownload(pdf, fileName)
 	} catch (error) {
 		console.error('Gabim në gjenerimin e PDF:', error)
 		throw error
