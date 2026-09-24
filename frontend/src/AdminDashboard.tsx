@@ -91,7 +91,7 @@ const Legend = lazy(() => import('./admin/AdminCharts').then(module => ({ defaul
 const ResponsiveContainer = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.ResponsiveContainer })))
 
 const chartFallback = (
-	<PageLoading inline title="Duke ngarkuar grafikët..." subtitle="" showProgress={false} />
+	<PageLoading inline title="Duke ngarkuar grafikët..." />
 )
 
 interface AdminDashboardProps {
@@ -1877,7 +1877,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<div className="corpus-linguistic-section">
 										<h2>Analiza Linguistike e Korpusit</h2>
 										{corpusAnalysisLoading ? (
-											<PageLoading inline title="Duke analizuar korpusin..." subtitle="" showProgress={false} />
+											<PageLoading inline title="Duke analizuar korpusin..." />
 										) : corpusStats && corpusStats.total_documents === 0 ? (
 											renderCorpusEmptyState('Nuk ka tekst për analizë linguistike')
 										) : linguisticMetrics && !linguisticMetrics.empty ? (
@@ -2216,7 +2216,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											)
 										) : (
 											<div className="admin-loading-wrap">
-												<PageLoading inline title="Duke kontrolluar integritetin..." subtitle="" showProgress={false} />
+												<PageLoading inline title="Duke kontrolluar integritetin..." />
 											</div>
 										)}
 									</div>

@@ -4309,9 +4309,29 @@
 .section-loading.page-loading,
 .app .page-loading--inline,
 .page-loading--inline {
-	min-height: 240px !important;
+	min-height: min(42vh, 360px) !important;
+	width: 100% !important;
 	border: 1px solid rgba(31, 111, 139, 0.1) !important;
 	border-radius: 16px !important;
+}
+
+/* Nested loaders inside class / levels / exercises grids */
+.app .page-loading--content,
+.page-loading--content {
+	grid-column: 1 / -1 !important;
+	width: 100% !important;
+	min-height: min(48vh, 420px) !important;
+	margin: 0 !important;
+}
+
+.app .level-picker-grid > .page-loading,
+.app .level-grid-modern > .page-loading,
+.app .course-preview-grid-modern > .page-loading,
+.app .exercise-workspace > .page-loading,
+.app .exercise-workspace-main > .page-loading,
+.app .exercise-workspace-secondary > .page-loading {
+	grid-column: 1 / -1 !important;
+	width: 100% !important;
 }
 
 .app .page-loading-progress,

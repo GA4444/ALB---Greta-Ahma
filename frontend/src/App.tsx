@@ -2264,7 +2264,7 @@ function App() {
                                             <button className="corpus-search-btn" onClick={() => { setCorpusBrowseOffset(0); loadCorpusBrowse() }}>Kërko</button>
                                         </div>
                                         {corpusBrowseLoading ? (
-                                            <div className="corpus-loading">Duke ngarkuar...</div>
+                                            <PageLoading inline className="page-loading--content" />
                                         ) : corpusBrowseDocs.length === 0 ? (
                                             <div className="corpus-empty">Nuk u gjetën dokumente.</div>
                                         ) : (
@@ -3057,15 +3057,7 @@ function MainContent({
                         
                         <div className="course-preview-grid-modern level-picker-grid" role="list">
                             {isLoadingClassCourses && classCourses.length === 0 ? (
-                                <div className="skeleton-grid">
-                                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                                        <div key={`skeleton-course-${i}`} className="skeleton-card">
-                                            <div className="skeleton skeleton-circle" style={{width: '48px', height: '48px', marginBottom: '10px'}}></div>
-                                            <div className="skeleton skeleton-title" style={{marginBottom: '10px'}}></div>
-                                            <div className="skeleton skeleton-text medium"></div>
-                                        </div>
-                                    ))}
-                                </div>
+                                <PageLoading inline className="page-loading--content" />
                             ) : classCourses.map((course) => {
                                 const progressPercent = course.progress 
                                     ? Math.min(100, (course.progress.completed_exercises / Math.max(1, course.progress.total_exercises)) * 100)
@@ -3142,17 +3134,7 @@ function MainContent({
                         {/* Show levels for the selected course */}
                         <div className="level-grid-modern">
                             {isLoadingExercises && courseLevels.length === 0 ? (
-                                // Skeleton loading for levels
-                                <>
-                                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                                        <div key={`skeleton-level-${i}`} className="skeleton-card">
-                                            <div className="skeleton skeleton-circle" style={{width: '50px', height: '50px', marginBottom: '12px'}}></div>
-                                            <div className="skeleton skeleton-title"></div>
-                                            <div className="skeleton skeleton-text short"></div>
-                                            <div className="skeleton skeleton-text" style={{width: '80%', marginTop: '12px'}}></div>
-                                        </div>
-                                    ))}
-                                </>
+                                <PageLoading inline className="page-loading--content" />
                             ) : courseLevels.map((level, index) => {
                                 const levelProgress = getLevelProgress(level.id)
                                 const levelDisplayName = selectedClass && selectedCourse
@@ -3228,13 +3210,7 @@ function MainContent({
                         </header>
 
                         {isLoadingExercises ? (
-                            <div className="loading page-loading page-loading--inline" role="status" aria-live="polite" aria-busy="true">
-                                <div className="page-loading-inner">
-                                    <div className="page-loading-spinner" aria-hidden="true"></div>
-                                    <p className="page-loading-title">Duke ngarkuar</p>
-                                    <p className="page-loading-subtitle">Po përgatitim platformën për ju</p>
-                                </div>
-                            </div>
+                            <PageLoading inline className="page-loading--content" />
                         ) : exercises.length > 0 ? (
                         <>
                         <div className="exercise-workspace-main">
@@ -3476,13 +3452,7 @@ function MainContent({
                             <div className="exercise-workspace-secondary">
                             <LazyErrorBoundary label="ushtrimeve me AI">
                                 <Suspense fallback={
-                                    <div className="section-loading page-loading page-loading--inline" role="status" aria-live="polite" aria-busy="true">
-                                        <div className="page-loading-inner">
-                                            <div className="page-loading-spinner" aria-hidden="true"></div>
-                                            <p className="page-loading-title">Duke ngarkuar</p>
-                                            <p className="page-loading-subtitle">Ushtrimet me AI</p>
-                                        </div>
-                                    </div>
+                                    <PageLoading inline className="page-loading--content" subtitle="Ushtrimet me AI" />
                                 }>
                                     <AdvancedAIPractice
                                         userId={userId}
