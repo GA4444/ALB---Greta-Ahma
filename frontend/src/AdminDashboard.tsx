@@ -3037,32 +3037,44 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 	if (!user || !reportData) return null
 
+	const metrics = reportData.metrics || {}
+	const strengths = reportData.strengths || []
+	const weaknesses = reportData.weaknesses || []
+	const categoryPerformance = reportData.categoryPerformance || []
+	const recommendations = reportData.recommendations || []
+	const learningStyle = reportData.learningStyle || {}
+	const activityByDay = reportData.activityByDay || []
+	const peakHours = reportData.peakHours || []
+	const progressOverTime = reportData.progressOverTime || []
+
+	const timeHours = Math.floor((metrics.totalTimeMinutes || 0) / 60)
+	const timeMinutes = (metrics.totalTimeMinutes || 0) % 60
+	const timeLabel = timeHours > 0 ? `${timeHours}h ${timeMinutes}min` : `${timeMinutes} min`
+	const generatedLabel = reportData.generatedAt
+		? new Date(reportData.generatedAt).toLocaleDateString('sq-AL', {
+				year: 'numeric',
+				month: 'long',
+				day: 'numeric',
+			})
+		: new Date().toLocaleDateString('sq-AL', {
+				year: 'numeric',
+				month: 'long',
+				day: 'numeric',
+			})
+
 	const handleExportPDF = async () => {
 		setIsExporting(true)
 		try {
-			// Method 1: Text-based PDF (faster, smaller file)
 			const { exportUserReportToPDF } = await import('./utils/pdfExport')
 			await exportUserReportToPDF(
 				user.username,
 				user.email || 'Email jo i specifikuar',
 				reportData
 			)
-			
-			// Method 2: Image-based PDF with charts (more accurate, larger file)
-			// Uncomment below to use chart capture instead:
-			/*
-			if (modalRef.current) {
-				const reportContent = modalRef.current.querySelector('.user-report-modal') as HTMLElement
-				if (reportContent) {
-					await exportUserReportWithChartsToPDF(reportContent, user.username)
-				}
-			}
-			*/
-			
-			alert('✅ Raporti u eksportua me sukses në PDF!')
+			alert('Raporti u shkarkua me sukses.')
 		} catch (error) {
 			console.error('Gabim në eksportimin e PDF:', error)
-			alert('❌ Gabim në eksportimin e raportit. Ju lutem provoni përsëri.')
+			alert('Gabim në eksportimin e raportit. Ju lutem provoni përsëri.')
 		} finally {
 			setIsExporting(false)
 		}
@@ -3071,276 +3083,340 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 	return (
 		<div className="modal-overlay" onClick={onClose} ref={modalRef}>
 			<div className="modal-content user-report-modal" onClick={(e) => e.stopPropagation()}>
-				<button className="modal-close" onClick={onClose}>✕</button>
-				
-				<div className="report-header">
+				<button type="button" className="modal-close" onClick={onClose} aria-label="Mbyll">✕</button>
+
+				<header className="report-header">
 					<div className="report-header-content">
-						<div className="report-user-icon">👤</div>
+						<BrandLogo size={48} className="report-brand-logo" decorative />
 						<div>
-							<h2>📊 Raporti i Përdoruesit</h2>
+							<p className="report-brand-eyebrow">ALBLingo</p>
+							<h2>User Progress Report</h2>
 							<p className="report-username">{user.username}</p>
 							<p className="report-email">{user.email || 'Email jo i specifikuar'}</p>
-							{reportData.dataSource && <p className="report-email">✓ {reportData.dataSource}</p>}
+							<p className="report-meta">Gjeneruar: {generatedLabel}</p>
 						</div>
 					</div>
-					<button 
-						className="export-report-btn" 
+					<button
+						type="button"
+						className="export-report-btn"
 						onClick={handleExportPDF}
 						disabled={isExporting}
 					>
-						{isExporting ? '⏳ Duke eksportuar...' : '📄 Eksporto PDF'}
+						{isExporting ? 'Duke shkarkuar…' : 'Shkarko raportin'}
 					</button>
-				</div>
+				</header>
 
 				<div className="report-content">
-					{/* Key Metrics */}
-					<div className="report-section">
-						<h3 className="report-section-title">📈 Metriks Kryesore</h3>
+					{/* User information */}
+					<section className="report-section">
+						<h3 className="report-section-title">Informacioni i përdoruesit</h3>
+						<div className="report-user-info">
+							<div className="report-info-row">
+								<span className="report-info-label">Përdoruesi</span>
+								<span className="report-info-value">{user.username}</span>
+							</div>
+							<div className="report-info-row">
+								<span className="report-info-label">Email</span>
+								<span className="report-info-value">{user.email || 'Email jo i specifikuar'}</span>
+							</div>
+							{user.age != null && (
+								<div className="report-info-row">
+									<span className="report-info-label">Mosha</span>
+									<span className="report-info-value">{user.age}</span>
+								</div>
+							)}
+							{metrics.level && (
+								<div className="report-info-row">
+									<span className="report-info-label">Niveli</span>
+									<span className="report-info-value">{metrics.level}</span>
+								</div>
+							)}
+							{reportData.dataSource && (
+								<div className="report-info-row">
+									<span className="report-info-label">Burimi</span>
+									<span className="report-info-value">{reportData.dataSource}</span>
+								</div>
+							)}
+						</div>
+					</section>
+
+					{/* Overall Progress */}
+					<section className="report-section">
+						<h3 className="report-section-title">Overall Progress</h3>
 						<div className="metrics-grid">
 							<div className="metric-card">
-								<div className="metric-icon">✏️</div>
-								<div className="metric-value">{reportData.metrics.totalExercises}</div>
-								<div className="metric-label">Ushtrime Totale</div>
+								<div className="metric-value">{metrics.totalExercises ?? 0}</div>
+								<div className="metric-label">Ushtrime</div>
 							</div>
 							<div className="metric-card">
-								<div className="metric-icon">✅</div>
-								<div className="metric-value">{reportData.metrics.completedExercises}</div>
-								<div className="metric-label">Përgjigje të sakta</div>
-							</div>
-							<div className="metric-card">
-								<div className="metric-icon">🎯</div>
-								<div className="metric-value">{reportData.metrics.averageScore}%</div>
+								<div className="metric-value">{metrics.averageScore ?? 0}%</div>
 								<div className="metric-label">Saktësia mesatare</div>
 							</div>
 							<div className="metric-card">
-								<div className="metric-icon">⏱️</div>
-								<div className="metric-value">{Math.round(reportData.metrics.totalTimeMinutes / 60)}h</div>
+								<div className="metric-value">{metrics.completedExercises ?? 0}</div>
+								<div className="metric-label">Përgjigje të sakta</div>
+							</div>
+							<div className="metric-card">
+								<div className="metric-value">{timeLabel}</div>
 								<div className="metric-label">Kohë Totale</div>
 							</div>
 							<div className="metric-card">
-								<div className="metric-icon">🔥</div>
-								<div className="metric-value">{reportData.metrics.currentStreak}</div>
+								<div className="metric-value">{metrics.currentStreak ?? 0}</div>
 								<div className="metric-label">Ditë radhazi</div>
 							</div>
 							<div className="metric-card">
-								<div className="metric-icon">🏆</div>
-								<div className="metric-value">{reportData.metrics.achievements}</div>
-								<div className="metric-label">Arritje</div>
+								<div className="metric-value">{metrics.longestStreak ?? 0}</div>
+								<div className="metric-label">Rekord ditësh</div>
 							</div>
-						</div>
-					</div>
-
-					{/* Strengths & Weaknesses */}
-					<div className="report-section">
-						<h3 className="report-section-title">💪 Pikat e Forta & Dobëta</h3>
-						<div className="strength-weakness-grid">
-							<div className="chart-card chart-card-half">
-								<h4 className="chart-subtitle">✨ Pikat e Forta</h4>
-								<ResponsiveContainer width="100%" height={250}>
-									<BarChart data={reportData.strengths} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-										<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-										<XAxis dataKey="area" tick={{ fill: '#64748b', fontSize: 11 }} />
-										<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-										<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-										<Bar dataKey="score" fill="#5BBD6C" radius={[8, 8, 0, 0]} name="Pikët" />
-									</BarChart>
-								</ResponsiveContainer>
-								<div className="strength-list">
-									{reportData.strengths.length === 0 && (
-										<div className="strength-item">Nuk ka ende të dhëna të mjaftueshme.</div>
-									)}
-									{reportData.strengths.map((s: any, i: number) => (
-										<div key={i} className="strength-item">
-											<span className="strength-badge success">✓</span>
-											<span>{s.area}: {s.score}% ({s.exercises} ushtrime)</span>
-										</div>
-									))}
+							{metrics.achievements != null && (
+								<div className="metric-card">
+									<div className="metric-value">{metrics.achievements}</div>
+									<div className="metric-label">Arritje</div>
 								</div>
-							</div>
-
-							<div className="chart-card chart-card-half">
-								<h4 className="chart-subtitle">⚠️ Pikat e Dobëta</h4>
-								<ResponsiveContainer width="100%" height={250}>
-									<BarChart data={reportData.weaknesses} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-										<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-										<XAxis dataKey="area" tick={{ fill: '#64748b', fontSize: 11 }} />
-										<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-										<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-										<Bar dataKey="score" fill="#FF9600" radius={[8, 8, 0, 0]} name="Pikët" />
-									</BarChart>
-								</ResponsiveContainer>
-								<div className="weakness-list">
-									{reportData.weaknesses.length === 0 && (
-										<div className="weakness-item">Nuk është identifikuar ende ndonjë fushë e dobët.</div>
-									)}
-									{reportData.weaknesses.map((w: any, i: number) => (
-										<div key={i} className="weakness-item">
-											<span className="strength-badge warning">!</span>
-											<span>{w.area}: {w.score}% ({w.exercises} ushtrime)</span>
-										</div>
-									))}
-								</div>
-							</div>
+							)}
 						</div>
-					</div>
+					</section>
 
-					{/* Activity Patterns */}
-					<div className="report-section">
-						<h3 className="report-section-title">📅 Modelet e aktivitetit</h3>
+					{/* Learning Performance */}
+					<section className="report-section">
+						<h3 className="report-section-title">Learning Performance</h3>
+						{categoryPerformance.length === 0 ? (
+							<p className="report-empty">Nuk ka ende të dhëna për kategori.</p>
+						) : (
+							<>
+								<div className="chart-card">
+									<ResponsiveContainer width="100%" height={280}>
+										<BarChart data={categoryPerformance} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
+											<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+											<XAxis dataKey="category" tick={{ fill: '#64748b', fontSize: 11 }} />
+											<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+											<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+											<Legend />
+											<Bar dataKey="completed" fill="#5BBD6C" radius={[6, 6, 0, 0]} name="Të sakta" />
+											<Bar dataKey="total" fill="#cbd5e1" radius={[6, 6, 0, 0]} name="Totali" />
+										</BarChart>
+									</ResponsiveContainer>
+								</div>
+								<div className="report-table-wrap">
+									<table className="report-table">
+										<thead>
+											<tr>
+												<th>Kategoria</th>
+												<th>Të sakta</th>
+												<th>Totali</th>
+												<th>Saktësi</th>
+											</tr>
+										</thead>
+										<tbody>
+											{categoryPerformance.map((cat: any, i: number) => (
+												<tr key={i}>
+													<td data-label="Kategoria">{cat.category}</td>
+													<td data-label="Të sakta">{cat.completed}</td>
+													<td data-label="Totali">{cat.total}</td>
+													<td data-label="Saktësi">
+														<div className="category-progress-bar report-table-bar">
+															<div
+																className="category-progress-fill"
+																style={{ width: `${Math.min(100, cat.percentage || 0)}%` }}
+															>
+																{cat.percentage}%
+															</div>
+														</div>
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+							</>
+						)}
+					</section>
+
+					{/* Strengths */}
+					<section className="report-section">
+						<h3 className="report-section-title">Strengths</h3>
 						<div className="chart-card">
-							<h4 className="chart-subtitle">📊 Aktiviteti sipas Ditëve të Javës</h4>
-							<ResponsiveContainer width="100%" height={300}>
-								<ComposedChart data={reportData.activityByDay} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+							{strengths.length > 0 && (
+								<ResponsiveContainer width="100%" height={220}>
+									<BarChart data={strengths} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
+										<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+										<XAxis dataKey="area" tick={{ fill: '#64748b', fontSize: 11 }} />
+										<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+										<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+										<Bar dataKey="score" fill="#5BBD6C" radius={[6, 6, 0, 0]} name="Saktësi %" />
+									</BarChart>
+								</ResponsiveContainer>
+							)}
+							<div className="strength-list">
+								{strengths.length === 0 && (
+									<div className="strength-item">Nuk ka ende të dhëna të mjaftueshme.</div>
+								)}
+								{strengths.map((s: any, i: number) => (
+									<div key={i} className="strength-item">
+										<span className="strength-badge success">✓</span>
+										<span>{s.area}: {s.score}% ({s.exercises} ushtrime)</span>
+									</div>
+								))}
+							</div>
+						</div>
+					</section>
+
+					{/* Areas for Improvement */}
+					<section className="report-section">
+						<h3 className="report-section-title">Areas for Improvement</h3>
+						<div className="chart-card">
+							{weaknesses.length > 0 && (
+								<ResponsiveContainer width="100%" height={220}>
+									<BarChart data={weaknesses} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
+										<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+										<XAxis dataKey="area" tick={{ fill: '#64748b', fontSize: 11 }} />
+										<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+										<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+										<Bar dataKey="score" fill="#D97706" radius={[6, 6, 0, 0]} name="Saktësi %" />
+									</BarChart>
+								</ResponsiveContainer>
+							)}
+							<div className="weakness-list">
+								{weaknesses.length === 0 && (
+									<div className="weakness-item">Nuk është identifikuar ende ndonjë fushë e dobët.</div>
+								)}
+								{weaknesses.map((w: any, i: number) => (
+									<div key={i} className="weakness-item">
+										<span className="strength-badge warning">!</span>
+										<span>{w.area}: {w.score}% ({w.exercises} ushtrime)</span>
+									</div>
+								))}
+							</div>
+						</div>
+					</section>
+
+					{/* Recent Activity */}
+					<section className="report-section">
+						<h3 className="report-section-title">Recent Activity</h3>
+						<div className="chart-card">
+							<h4 className="chart-subtitle">Aktiviteti sipas ditëve të javës</h4>
+							<ResponsiveContainer width="100%" height={280}>
+								<ComposedChart data={activityByDay} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
 									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
 									<XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 11 }} />
 									<YAxis yAxisId="left" tick={{ fill: '#64748b', fontSize: 12 }} />
 									<YAxis yAxisId="right" orientation="right" tick={{ fill: '#64748b', fontSize: 12 }} />
 									<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
 									<Legend />
-									<Bar yAxisId="left" dataKey="sessions" fill="#4A9FD4" radius={[8, 8, 0, 0]} name="Ushtrime" />
-									<Line yAxisId="right" type="monotone" dataKey="minutes" stroke="#5BBD6C" strokeWidth={3} name="Minutë" />
+									<Bar yAxisId="left" dataKey="sessions" fill="#1F6F8B" radius={[6, 6, 0, 0]} name="Ushtrime" />
+									<Line yAxisId="right" type="monotone" dataKey="minutes" stroke="#5BBD6C" strokeWidth={2.5} name="Minutë" />
 								</ComposedChart>
 							</ResponsiveContainer>
 						</div>
-
 						<div className="chart-card">
-							<h4 className="chart-subtitle">🕐 Orët më të Frekuentuara</h4>
-							<ResponsiveContainer width="100%" height={250}>
-								<AreaChart data={reportData.peakHours} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+							<h4 className="chart-subtitle">Orët më të frekuentuara</h4>
+							<ResponsiveContainer width="100%" height={240}>
+								<AreaChart data={peakHours} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
 									<defs>
 										<linearGradient id="colorActivityUser" x1="0" y1="0" x2="0" y2="1">
-											<stop offset="5%" stopColor="#CE82FF" stopOpacity={0.8}/>
-											<stop offset="95%" stopColor="#CE82FF" stopOpacity={0.1}/>
+											<stop offset="5%" stopColor="#1F6F8B" stopOpacity={0.75} />
+											<stop offset="95%" stopColor="#1F6F8B" stopOpacity={0.08} />
 										</linearGradient>
 									</defs>
 									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
 									<XAxis dataKey="hour" tick={{ fill: '#64748b', fontSize: 11 }} />
 									<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
 									<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-									<Area type="monotone" dataKey="activity" stroke="#CE82FF" fillOpacity={1} fill="url(#colorActivityUser)" name="Aktivitet" />
+									<Area type="monotone" dataKey="activity" stroke="#1F6F8B" fillOpacity={1} fill="url(#colorActivityUser)" name="Aktivitet" />
 								</AreaChart>
 							</ResponsiveContainer>
 						</div>
-					</div>
+					</section>
 
-					{/* Progress Over Time */}
-					<div className="report-section">
-						<h3 className="report-section-title">📈 Përparimi në Kohë (6 Muaj)</h3>
+					{/* Progress over time */}
+					<section className="report-section">
+						<h3 className="report-section-title">Progress over time</h3>
 						<div className="chart-card">
-							<ResponsiveContainer width="100%" height={300}>
-								<ComposedChart data={reportData.progressOverTime} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+							<h4 className="chart-subtitle">Përparimi në kohë (6 muaj)</h4>
+							<ResponsiveContainer width="100%" height={280}>
+								<ComposedChart data={progressOverTime} margin={{ top: 16, right: 20, left: 8, bottom: 8 }}>
 									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
 									<XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 11 }} />
 									<YAxis yAxisId="left" tick={{ fill: '#64748b', fontSize: 12 }} />
 									<YAxis yAxisId="right" orientation="right" tick={{ fill: '#64748b', fontSize: 12 }} />
 									<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
 									<Legend />
-									<Area yAxisId="right" type="monotone" dataKey="avgScore" fill="#4A9FD4" stroke="#4A9FD4" fillOpacity={0.3} name="Pikë Mesatare %" />
-									<Bar yAxisId="left" dataKey="exercises" fill="#5BBD6C" radius={[8, 8, 0, 0]} name="Ushtrime" />
+									<Area yAxisId="right" type="monotone" dataKey="avgScore" fill="#4A9FD4" stroke="#4A9FD4" fillOpacity={0.25} name="Pikë Mesatare %" />
+									<Bar yAxisId="left" dataKey="exercises" fill="#5BBD6C" radius={[6, 6, 0, 0]} name="Ushtrime" />
 								</ComposedChart>
 							</ResponsiveContainer>
 						</div>
-					</div>
+					</section>
 
-					{/* Category Performance */}
-					<div className="report-section">
-						<h3 className="report-section-title">🎯 Performanca sipas Kategorisë</h3>
-						<div className="chart-card">
-							<ResponsiveContainer width="100%" height={300}>
-								<BarChart data={reportData.categoryPerformance} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-									<XAxis dataKey="category" tick={{ fill: '#64748b', fontSize: 11 }} />
-									<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-									<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-									<Legend />
-									<Bar dataKey="completed" fill="#5BBD6C" radius={[8, 8, 0, 0]} name="Përfunduar" />
-									<Bar dataKey="total" fill="#e2e8f0" radius={[8, 8, 0, 0]} name="Totali" />
-								</BarChart>
-							</ResponsiveContainer>
-							<div className="category-details">
-								{reportData.categoryPerformance.map((cat: any, i: number) => (
-									<div key={i} className="category-detail-item">
-										<div className="category-name">{cat.category}</div>
-										<div className="category-progress-bar">
-											<div className="category-progress-fill" style={{ width: `${cat.percentage}%` }}>
-												{cat.percentage}%
-											</div>
-										</div>
-										<div className="category-stats">{cat.completed}/{cat.total}</div>
-									</div>
-								))}
-							</div>
-						</div>
-					</div>
-
-					{/* Learning Style */}
-					<div className="report-section">
-						<h3 className="report-section-title">🧠 Stili i Mësimit & Preferencat</h3>
+					{/* Learning style */}
+					<section className="report-section">
+						<h3 className="report-section-title">Stili i mësimit</h3>
 						<div className="learning-style-grid">
 							<div className="learning-style-card">
-								<div className="ls-icon">🕐</div>
 								<div className="ls-label">Koha e Preferuar</div>
-								<div className="ls-value">{reportData.learningStyle.preferredTime}</div>
+								<div className="ls-value">{learningStyle.preferredTime}</div>
 							</div>
 							<div className="learning-style-card">
-								<div className="ls-icon">⏱️</div>
 								<div className="ls-label">Gjatësia Mesatare</div>
-								<div className="ls-value">{reportData.learningStyle.averageSessionLength}</div>
+								<div className="ls-value">{learningStyle.averageSessionLength}</div>
 							</div>
 							<div className="learning-style-card">
-								<div className="ls-icon">📅</div>
 								<div className="ls-label">Frekuenca</div>
-								<div className="ls-value">{reportData.learningStyle.studyFrequency}</div>
+								<div className="ls-value">{learningStyle.studyFrequency}</div>
 							</div>
 							<div className="learning-style-card">
-								<div className="ls-icon">⭐</div>
 								<div className="ls-label">Dita më e Mirë</div>
-								<div className="ls-value">{reportData.learningStyle.bestPerformanceDay}</div>
+								<div className="ls-value">{learningStyle.bestPerformanceDay}</div>
 							</div>
 							<div className="learning-style-card">
-								<div className="ls-icon">✅</div>
 								<div className="ls-label">Shkalla e Përfundimit</div>
-								<div className="ls-value">{reportData.learningStyle.completionRate}%</div>
+								<div className="ls-value">{learningStyle.completionRate}%</div>
 							</div>
 						</div>
-					</div>
+					</section>
 
 					{/* Recommendations */}
-					<div className="report-section">
-						<h3 className="report-section-title">💡 Rekomandime Personalizuara</h3>
+					<section className="report-section">
+						<h3 className="report-section-title">Recommendations</h3>
 						<div className="recommendations-list">
-							{reportData.recommendations.map((rec: string, i: number) => (
+							{recommendations.length === 0 && (
+								<p className="report-empty">Nuk ka rekomandime për momentin.</p>
+							)}
+							{recommendations.map((rec: string, i: number) => (
 								<div key={i} className="recommendation-item">
 									<span className="rec-number">{i + 1}</span>
 									<span className="rec-text">{rec}</span>
 								</div>
 							))}
 						</div>
-					</div>
+					</section>
 
 					{/* Summary */}
 					<div className="report-summary">
-						<h3 className="summary-title">📋 Përmbledhje e Plotë</h3>
+						<h3 className="summary-title">Përmbledhje</h3>
 						<div className="summary-content">
-							<p><strong>Niveli Aktual:</strong> {reportData.metrics.level}</p>
+							<p><strong>Niveli Aktual:</strong> {metrics.level}</p>
 							<p>
-								<strong>Ushtrime totale:</strong> {reportData.metrics.totalExercises}
-								{' '}({reportData.metrics.totalExercises > 0
-									? Math.round((reportData.metrics.completedExercises / reportData.metrics.totalExercises) * 100)
+								<strong>Ushtrime totale:</strong> {metrics.totalExercises}
+								{' '}({metrics.totalExercises > 0
+									? Math.round((metrics.completedExercises / metrics.totalExercises) * 100)
 									: 0}% të sakta)
 							</p>
-							<p><strong>Koha Totale:</strong> {Math.round(reportData.metrics.totalTimeMinutes / 60)} orë dhe {reportData.metrics.totalTimeMinutes % 60} minuta</p>
-							<p><strong>Numri më i madh i ditëve radhazi:</strong> {reportData.metrics.longestStreak} ditë</p>
+							<p>
+								<strong>Koha Totale:</strong>{' '}
+								{Math.round((metrics.totalTimeMinutes || 0) / 60)} orë dhe {(metrics.totalTimeMinutes || 0) % 60} minuta
+							</p>
+							<p><strong>Numri më i madh i ditëve radhazi:</strong> {metrics.longestStreak} ditë</p>
 							<p>
 								<strong>Më i fortë në:</strong>{' '}
-								{reportData.strengths[0]
-									? `${reportData.strengths[0].area} (${reportData.strengths[0].score}%)`
+								{strengths[0]
+									? `${strengths[0].area} (${strengths[0].score}%)`
 									: 'Nuk ka ende të dhëna të mjaftueshme'}
 							</p>
 							<p>
 								<strong>Duhet të përmirësojë:</strong>{' '}
-								{reportData.weaknesses[0]
-									? `${reportData.weaknesses[0].area} (${reportData.weaknesses[0].score}%)`
+								{weaknesses[0]
+									? `${weaknesses[0].area} (${weaknesses[0].score}%)`
 									: 'Nuk është identifikuar ende'}
 							</p>
 						</div>

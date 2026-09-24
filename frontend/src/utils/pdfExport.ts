@@ -23,6 +23,34 @@ interface UserReportData {
 		completionRate: number
 	}
 	recommendations: string[]
+	categoryPerformance?: Array<{
+		category: string
+		completed: number
+		total: number
+		percentage: number
+	}>
+	generatedAt?: string
+	dataSource?: string
+}
+
+/** AlbLingo brand teal #1F6F8B */
+const BRAND = {
+	primary: [31, 111, 139] as [number, number, number],
+	sky: [74, 159, 212] as [number, number, number],
+	success: [91, 189, 108] as [number, number, number],
+	warning: [217, 119, 6] as [number, number, number],
+	text: [30, 41, 59] as [number, number, number],
+	muted: [100, 116, 139] as [number, number, number],
+	border: [226, 232, 240] as [number, number, number],
+	bg: [248, 250, 252] as [number, number, number],
+	white: [255, 255, 255] as [number, number, number],
+}
+
+function formatTimeSpent(totalMinutes: number): string {
+	const hours = Math.floor(totalMinutes / 60)
+	const minutes = totalMinutes % 60
+	if (hours <= 0) return `${minutes} min`
+	return `${hours}h ${minutes}min`
 }
 
 export async function exportUserReportToPDF(
@@ -32,568 +60,359 @@ export async function exportUserReportToPDF(
 ): Promise<void> {
 	try {
 		const { default: jsPDF } = await import('jspdf')
-		// Create PDF with better settings
 		const pdf = new jsPDF({
 			orientation: 'p',
 			unit: 'mm',
 			format: 'a4',
-			compress: true
+			compress: true,
 		})
-		
+
 		const pageWidth = pdf.internal.pageSize.getWidth()
 		const pageHeight = pdf.internal.pageSize.getHeight()
-		const margin = 20  // Increased margin
+		const margin = 18
 		const contentWidth = pageWidth - 2 * margin
-		let yPosition = margin
+		const footerReserve = 22
+		let y = margin
 
-		// Colors (matching platform) - RGB format for better rendering
-		const colors = {
-			primaryBlue: [74, 159, 212],
-			successGreen: [91, 189, 108],
-			warningOrange: [255, 150, 0],
-			accentYellow: [255, 200, 0],
-			textDark: [30, 41, 59],
-			textLight: [100, 116, 139],
-			bgLight: [248, 250, 252],
-			border: [226, 232, 240],
-			white: [255, 255, 255]
-		}
-
-		// Helper functions
-		const addText = (
-			text: string,
-			x: number,
-			y: number,
-			maxWidth: number,
-			fontSize: number = 10,
-			color: number[] = colors.textDark,
-			isBold: boolean = false
-		): number => {
-			pdf.setFontSize(fontSize)
-			pdf.setFont('helvetica', isBold ? 'bold' : 'normal')
-			pdf.setTextColor(color[0], color[1], color[2])
-			
-			const lines = pdf.splitTextToSize(text, maxWidth)
-			pdf.text(lines, x, y)
-			
-			return y + (lines.length * fontSize * 0.4) // Better line height
-		}
-
-		const addSectionTitle = (title: string, y: number, sectionNumber: string = ''): number => {
-			pdf.setFontSize(16)
-			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2])
-			const displayTitle = sectionNumber ? `${sectionNumber}. ${title}` : title
-			pdf.text(displayTitle, margin, y)
-			
-			// Underline
-			pdf.setDrawColor(colors.primaryBlue[0], colors.primaryBlue[1], colors.primaryBlue[2])
-			pdf.setLineWidth(0.8)
-			pdf.line(margin, y + 2, margin + 60, y + 2)
-			
-			return y + 10
-		}
-
-		// Enhanced Header with gradient effect
-		const headerHeight = 55
-		
-		// Gradient background (simulated with layers)
-		pdf.setFillColor(74, 159, 212)
-		pdf.rect(0, 0, pageWidth, headerHeight, 'F')
-		pdf.setFillColor(64, 139, 192)
-		pdf.rect(0, headerHeight - 10, pageWidth, 10, 'F')
-		
-		// Decorative corner elements
-		pdf.setFillColor(colors.white[0], colors.white[1], colors.white[2])
-		pdf.setGState(new pdf.GState({ opacity: 0.1 }))
-		pdf.circle(pageWidth - 20, 20, 30, 'F')
-		pdf.circle(-10, headerHeight - 10, 25, 'F')
-		pdf.setGState(new pdf.GState({ opacity: 1 }))
-		
-		// Logo circle with AL text
-		pdf.setFillColor(colors.white[0], colors.white[1], colors.white[2])
-		pdf.circle(30, 27, 14, 'F')
-		pdf.setDrawColor(colors.primaryBlue[0], colors.primaryBlue[1], colors.primaryBlue[2])
-		pdf.setLineWidth(1)
-		pdf.circle(30, 27, 14, 'S')
-		
-		// "AL" text instead of flag emoji
-		pdf.setFontSize(16)
-		pdf.setFont('helvetica', 'bold')
-		pdf.setTextColor(colors.primaryBlue[0], colors.primaryBlue[1], colors.primaryBlue[2])
-		pdf.text('AL', 30, 30, { align: 'center' })
-
-		// Title
-		pdf.setFontSize(26)
-		pdf.setFont('helvetica', 'bold')
-		pdf.setTextColor(colors.white[0], colors.white[1], colors.white[2])
-		pdf.text('RAPORTI I PËRDORUESIT', 50, 20)
-		
-		// Subtitle line
-		pdf.setFontSize(10)
-		pdf.setFont('helvetica', 'normal')
-		pdf.text('Analizë e Detajuar e Performancës', 50, 28)
-
-		// Username & Email with better styling
-		pdf.setFontSize(15)
-		pdf.setFont('helvetica', 'bold')
-		pdf.text(username, 50, 38)
-		
-		pdf.setFontSize(10)
-		pdf.setFont('helvetica', 'normal')
-		pdf.text('Email: ' + (email || 'Jo i specifikuar'), 50, 45)
-
-		// Date in a box
 		const currentDate = new Date().toLocaleDateString('sq-AL', {
 			year: 'numeric',
 			month: 'long',
-			day: 'numeric'
-		})
-		
-		const dateBoxWidth = 50
-		pdf.setFillColor(colors.white[0], colors.white[1], colors.white[2])
-		pdf.setGState(new pdf.GState({ opacity: 0.9 }))
-		pdf.roundedRect(pageWidth - margin - dateBoxWidth, 12, dateBoxWidth, 18, 2, 2, 'F')
-		pdf.setGState(new pdf.GState({ opacity: 1 }))
-		
-		pdf.setFontSize(8)
-		pdf.setFont('helvetica', 'normal')
-		pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2])
-		pdf.text('DATA E RAPORTIT', pageWidth - margin - dateBoxWidth / 2, 18, { align: 'center' })
-		pdf.setFontSize(9)
-		pdf.setFont('helvetica', 'bold')
-		pdf.text(currentDate, pageWidth - margin - dateBoxWidth / 2, 26, { align: 'center' })
-
-		yPosition = headerHeight + 20
-
-		// ==========================================
-		// SECTION 1: KEY METRICS
-		// ==========================================
-		yPosition = addSectionTitle('METRIKS KRYESORE', yPosition, '1')
-
-		// Metrics Grid (2x3) with enhanced design
-		const metrics = [
-			{ icon: 'U', label: 'Ushtrime Totale', value: reportData.metrics.totalExercises, color: colors.primaryBlue },
-			{ icon: '✓', label: 'Të sakta', value: reportData.metrics.completedExercises, color: colors.successGreen },
-			{ icon: '%', label: 'Pikë Mesatare', value: `${reportData.metrics.averageScore}%`, color: colors.accentYellow },
-			{ icon: 'T', label: 'Kohë Totale', value: `${Math.round(reportData.metrics.totalTimeMinutes / 60)}h`, color: colors.warningOrange },
-			{ icon: 'D', label: 'Ditë radhazi', value: `${reportData.metrics.currentStreak}`, color: [239, 68, 68] },
-			{ icon: 'A', label: 'Arritje', value: reportData.metrics.achievements, color: [168, 85, 247] }
-		]
-
-		const boxWidth = (contentWidth - 12) / 3
-		const boxHeight = 28
-		let metricX = margin
-		let metricY = yPosition
-
-		metrics.forEach((metric, index) => {
-			// Shadow effect
-			pdf.setFillColor(0, 0, 0)
-			pdf.setGState(new pdf.GState({ opacity: 0.05 }))
-			pdf.roundedRect(metricX + 1, metricY + 1, boxWidth, boxHeight, 3, 3, 'F')
-			pdf.setGState(new pdf.GState({ opacity: 1 }))
-			
-			// Main box with gradient simulation
-			pdf.setFillColor(colors.white[0], colors.white[1], colors.white[2])
-			pdf.setDrawColor(colors.border[0], colors.border[1], colors.border[2])
-			pdf.setLineWidth(0.5)
-			pdf.roundedRect(metricX, metricY, boxWidth, boxHeight, 3, 3, 'FD')
-			
-			// Colored accent bar
-			pdf.setFillColor(metric.color[0], metric.color[1], metric.color[2])
-			pdf.roundedRect(metricX, metricY, boxWidth, 4, 3, 3, 'F')
-
-			// Icon background circle
-			pdf.setFillColor(colors.bgLight[0], colors.bgLight[1], colors.bgLight[2])
-			pdf.circle(metricX + 8, metricY + 15, 6, 'F')
-			
-			// Icon
-			pdf.setFontSize(14)
-			pdf.text(metric.icon, metricX + 5, metricY + 18)
-
-			// Value
-			pdf.setFontSize(18)
-			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(metric.color[0], metric.color[1], metric.color[2])
-			pdf.text(String(metric.value), metricX + 18, metricY + 14)
-
-			// Label
-			pdf.setFontSize(7.5)
-			pdf.setFont('helvetica', 'normal')
-			pdf.setTextColor(colors.textLight[0], colors.textLight[1], colors.textLight[2])
-			const labelLines = pdf.splitTextToSize(metric.label, boxWidth - 20)
-			pdf.text(labelLines, metricX + 18, metricY + 21)
-
-			// Move to next position
-			if ((index + 1) % 3 === 0) {
-				metricX = margin
-				metricY += boxHeight + 6
-			} else {
-				metricX += boxWidth + 6
-			}
+			day: 'numeric',
 		})
 
-		yPosition = metricY + 12
-
-		// ==========================================
-		// SECTION 2: STRENGTHS & WEAKNESSES
-		// ==========================================
-		if (yPosition > pageHeight - 70) {
-			pdf.addPage()
-			yPosition = margin + 10
-		}
-
-		yPosition = addSectionTitle('ANALIZA E PERFORMANCËS', yPosition, '2')
-
-		// Two-column layout
-		const colWidth = (contentWidth - 10) / 2
-
-		// Strengths Column
-		const strengthX = margin
-		let strengthY = yPosition
-		
-		// Strengths box
-		pdf.setFillColor(240, 253, 244) // Light green
-		pdf.setDrawColor(colors.successGreen[0], colors.successGreen[1], colors.successGreen[2])
-		pdf.setLineWidth(1.5)
-		pdf.roundedRect(strengthX, strengthY, colWidth, 50, 4, 4, 'FD')
-		
-		strengthY += 8
-		pdf.setFontSize(12)
-		pdf.setFont('helvetica', 'bold')
-		pdf.setTextColor(colors.successGreen[0], colors.successGreen[1], colors.successGreen[2])
-		pdf.text('PIKAT E FORTA', strengthX + 5, strengthY)
-		strengthY += 8
-
-		reportData.strengths.forEach((strength, idx) => {
-			// Badge number
-			pdf.setFillColor(colors.successGreen[0], colors.successGreen[1], colors.successGreen[2])
-			pdf.circle(strengthX + 8, strengthY - 1, 3, 'F')
-			pdf.setFontSize(8)
-			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.white[0], colors.white[1], colors.white[2])
-			pdf.text(String(idx + 1), strengthX + 8, strengthY + 0.5, { align: 'center' })
-			
-			// Text
-			pdf.setFontSize(9.5)
-			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2])
-			pdf.text(strength.area, strengthX + 14, strengthY)
-			
-			pdf.setFont('helvetica', 'normal')
-			pdf.setFontSize(8.5)
-			pdf.setTextColor(colors.textLight[0], colors.textLight[1], colors.textLight[2])
-			pdf.text(`${strength.score}% • ${strength.exercises} ushtrime`, strengthX + 14, strengthY + 4.5)
-			
-			strengthY += 10
-		})
-
-		// Weaknesses Column
-		const weaknessX = margin + colWidth + 10
-		let weaknessY = yPosition
-		
-		// Weaknesses box
-		pdf.setFillColor(255, 247, 237) // Light orange
-		pdf.setDrawColor(colors.warningOrange[0], colors.warningOrange[1], colors.warningOrange[2])
-		pdf.setLineWidth(1.5)
-		pdf.roundedRect(weaknessX, weaknessY, colWidth, 50, 4, 4, 'FD')
-		
-		weaknessY += 8
-		pdf.setFontSize(12)
-		pdf.setFont('helvetica', 'bold')
-		pdf.setTextColor(colors.warningOrange[0], colors.warningOrange[1], colors.warningOrange[2])
-		pdf.text('PIKAT E DOBËTA', weaknessX + 5, weaknessY)
-		weaknessY += 8
-
-		reportData.weaknesses.forEach((weakness, idx) => {
-			// Badge number
-			pdf.setFillColor(colors.warningOrange[0], colors.warningOrange[1], colors.warningOrange[2])
-			pdf.circle(weaknessX + 8, weaknessY - 1, 3, 'F')
-			pdf.setFontSize(8)
-			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.white[0], colors.white[1], colors.white[2])
-			pdf.text(String(idx + 1), weaknessX + 8, weaknessY + 0.5, { align: 'center' })
-			
-			// Text
-			pdf.setFontSize(9.5)
-			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2])
-			pdf.text(weakness.area, weaknessX + 14, weaknessY)
-			
-			pdf.setFont('helvetica', 'normal')
-			pdf.setFontSize(8.5)
-			pdf.setTextColor(colors.textLight[0], colors.textLight[1], colors.textLight[2])
-			pdf.text(`${weakness.score}% • ${weakness.exercises} ushtrime`, weaknessX + 14, weaknessY + 4.5)
-			
-			weaknessY += 10
-		})
-
-		yPosition = yPosition + 50 + 15
-
-		// ==========================================
-		// SECTION 3: LEARNING STYLE
-		// ==========================================
-		if (yPosition > pageHeight - 80) {
-			pdf.addPage()
-			yPosition = margin + 10
-		}
-
-		yPosition = addSectionTitle('STILI I MËSIMIT & PREFERENCAT', yPosition, '3')
-
-		const learningData = [
-			{ icon: '•', label: 'Koha e Preferuar', value: reportData.learningStyle.preferredTime, color: [147, 51, 234] },
-			{ icon: '•', label: 'Gjatësia Mesatare', value: reportData.learningStyle.averageSessionLength, color: [59, 130, 246] },
-			{ icon: '•', label: 'Frekuenca', value: reportData.learningStyle.studyFrequency, color: [16, 185, 129] },
-			{ icon: '•', label: 'Dita më e Mirë', value: reportData.learningStyle.bestPerformanceDay, color: [245, 158, 11] },
-			{ icon: '•', label: 'Shkalla e Përfundimit', value: `${reportData.learningStyle.completionRate}%`, color: [239, 68, 68] }
-		]
-
-		learningData.forEach((item, idx) => {
-			// Alternating background
-			if (idx % 2 === 0) {
-				pdf.setFillColor(colors.bgLight[0], colors.bgLight[1], colors.bgLight[2])
-			} else {
-				pdf.setFillColor(colors.white[0], colors.white[1], colors.white[2])
-			}
-			pdf.setDrawColor(colors.border[0], colors.border[1], colors.border[2])
-			pdf.setLineWidth(0.3)
-			pdf.roundedRect(margin, yPosition, contentWidth, 12, 2, 2, 'FD')
-			
-			// Colored left border
-			pdf.setFillColor(item.color[0], item.color[1], item.color[2])
-			pdf.roundedRect(margin, yPosition, 3, 12, 2, 2, 'F')
-
-			// Icon with background
-			pdf.setFillColor(item.color[0], item.color[1], item.color[2])
-			pdf.setGState(new pdf.GState({ opacity: 0.15 }))
-			pdf.circle(margin + 9, yPosition + 6, 5, 'F')
-			pdf.setGState(new pdf.GState({ opacity: 1 }))
-			
-			pdf.setFontSize(11)
-			pdf.text(item.icon, margin + 6.5, yPosition + 8.5)
-
-			// Label
-			pdf.setFontSize(9.5)
-			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2])
-			pdf.text(item.label, margin + 18, yPosition + 7.5)
-
-			// Value
-			pdf.setFont('helvetica', 'normal')
-			pdf.setFontSize(9)
-			pdf.setTextColor(item.color[0], item.color[1], item.color[2])
-			pdf.text(item.value, margin + contentWidth - 5, yPosition + 7.5, { align: 'right' })
-
-			yPosition += 13
-		})
-
-		yPosition += 10
-
-		// ==========================================
-		// SECTION 4: RECOMMENDATIONS
-		// ==========================================
-		if (yPosition > pageHeight - 90) {
-			pdf.addPage()
-			yPosition = margin + 10
-		}
-
-		yPosition = addSectionTitle('REKOMANDIME TË PERSONALIZUARA', yPosition, '4')
-
-		reportData.recommendations.forEach((rec, index) => {
-			// Check if we need a new page
-			if (yPosition > pageHeight - 35) {
+		const ensureSpace = (needed: number) => {
+			if (y + needed > pageHeight - footerReserve) {
 				pdf.addPage()
-				yPosition = margin + 10
+				y = margin + 8
 			}
-
-			// Recommendation box with shadow
-			const boxHeight = Math.ceil(rec.length / 70) * 5 + 10
-			
-			// Shadow
-			pdf.setFillColor(0, 0, 0)
-			pdf.setGState(new pdf.GState({ opacity: 0.05 }))
-			pdf.roundedRect(margin + 1, yPosition + 1, contentWidth, boxHeight, 3, 3, 'F')
-			pdf.setGState(new pdf.GState({ opacity: 1 }))
-			
-			// Main box
-			pdf.setFillColor(255, 251, 235) // Light yellow
-			pdf.setDrawColor(colors.accentYellow[0], colors.accentYellow[1], colors.accentYellow[2])
-			pdf.setLineWidth(0.8)
-			pdf.roundedRect(margin, yPosition, contentWidth, boxHeight, 3, 3, 'FD')
-			
-			// Number badge with gradient effect
-			const badgeX = margin + 8
-			const badgeY = yPosition + boxHeight / 2
-			
-			// Outer circle (shadow)
-			pdf.setFillColor(colors.accentYellow[0] - 30, colors.accentYellow[1] - 30, colors.accentYellow[2] - 30)
-			pdf.circle(badgeX, badgeY, 4.5, 'F')
-			
-			// Inner circle
-			pdf.setFillColor(colors.accentYellow[0], colors.accentYellow[1], colors.accentYellow[2])
-			pdf.circle(badgeX, badgeY, 4, 'F')
-			
-			// Number
-			pdf.setFontSize(10)
-			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.white[0], colors.white[1], colors.white[2])
-			pdf.text(String(index + 1), badgeX, badgeY + 1, { align: 'center' })
-
-			// Priority indicator (if first 2 recommendations)
-			if (index < 2) {
-				pdf.setFontSize(7)
-				pdf.setFont('helvetica', 'bold')
-				pdf.setTextColor(colors.accentYellow[0], colors.accentYellow[1], colors.accentYellow[2])
-				pdf.text('PRIORITET I LARTË', margin + 16, yPosition + 5)
-			}
-
-			// Recommendation text
-			pdf.setFontSize(9.5)
-			pdf.setFont('helvetica', 'normal')
-			pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2])
-			const recLines = pdf.splitTextToSize(rec, contentWidth - 28)
-			pdf.text(recLines, margin + 16, yPosition + (index < 2 ? 10 : 7))
-
-			yPosition += boxHeight + 5
-		})
-
-		yPosition += 8
-
-		// ==========================================
-		// SECTION 5: SUMMARY
-		// ==========================================
-		if (yPosition > pageHeight - 80) {
-			pdf.addPage()
-			yPosition = margin + 10
 		}
 
-		yPosition = addSectionTitle('PËRMBLEDHJE E PLOTË', yPosition, '5')
+		const sectionTitle = (title: string) => {
+			ensureSpace(16)
+			pdf.setFont('helvetica', 'bold')
+			pdf.setFontSize(12)
+			pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+			pdf.text(title, margin, y)
+			y += 2
+			pdf.setDrawColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+			pdf.setLineWidth(0.6)
+			pdf.line(margin, y, margin + 42, y)
+			y += 8
+		}
 
-		// Enhanced summary box with gradient
-		const summaryHeight = 62
-		
-		// Shadow
-		pdf.setFillColor(0, 0, 0)
-		pdf.setGState(new pdf.GState({ opacity: 0.08 }))
-		pdf.roundedRect(margin + 2, yPosition + 2, contentWidth, summaryHeight, 5, 5, 'F')
-		pdf.setGState(new pdf.GState({ opacity: 1 }))
-		
-		// Gradient background (simulated)
-		pdf.setFillColor(236, 253, 245) // Very light green
-		pdf.roundedRect(margin, yPosition, contentWidth, summaryHeight, 5, 5, 'F')
-		
-		pdf.setFillColor(240, 253, 244) // Light green
-		pdf.roundedRect(margin, yPosition, contentWidth, 8, 5, 5, 'F')
-		
-		// Border
-		pdf.setDrawColor(colors.successGreen[0], colors.successGreen[1], colors.successGreen[2])
-		pdf.setLineWidth(1.5)
-		pdf.roundedRect(margin, yPosition, contentWidth, summaryHeight, 5, 5, 'S')
+		const wrapText = (text: string, maxW: number, fontSize: number) => {
+			pdf.setFontSize(fontSize)
+			return pdf.splitTextToSize(text, maxW) as string[]
+		}
 
-		// Header
-		pdf.setFontSize(11)
+		// ── Header ──
+		const headerH = 42
+		pdf.setFillColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+		pdf.rect(0, 0, pageWidth, headerH, 'F')
+		pdf.setFillColor(BRAND.sky[0], BRAND.sky[1], BRAND.sky[2])
+		pdf.rect(0, headerH - 4, pageWidth, 4, 'F')
+
+		// Logo mark
+		pdf.setFillColor(BRAND.white[0], BRAND.white[1], BRAND.white[2])
+		pdf.circle(margin + 8, 18, 9, 'F')
 		pdf.setFont('helvetica', 'bold')
-		pdf.setTextColor(colors.successGreen[0], colors.successGreen[1], colors.successGreen[2])
-		pdf.text('GJENDJA E PËRGJITHSHME', margin + contentWidth / 2, yPosition + 6, { align: 'center' })
+		pdf.setFontSize(9)
+		pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+		pdf.text('AL', margin + 8, 20.5, { align: 'center' })
 
-		yPosition += 14
+		pdf.setFontSize(11)
+		pdf.setTextColor(BRAND.white[0], BRAND.white[1], BRAND.white[2])
+		pdf.text('ALBLingo', margin + 22, 14)
 
-		const summaryItems = [
-			{ icon: '•', label: 'Niveli Aktual', value: reportData.metrics.level, color: [147, 51, 234] },
-			{ icon: '•', label: 'Progres', value: `${reportData.metrics.totalExercises} ushtrime (${reportData.metrics.totalExercises > 0 ? Math.round((reportData.metrics.completedExercises / reportData.metrics.totalExercises) * 100) : 0}% të sakta)`, color: colors.primaryBlue },
-			{ icon: '•', label: 'Kohë Totale', value: `${Math.round(reportData.metrics.totalTimeMinutes / 60)}h ${reportData.metrics.totalTimeMinutes % 60}min`, color: colors.warningOrange },
-			{ icon: '•', label: 'Më së shumti ditë radhazi', value: `${reportData.metrics.longestStreak} ditë`, color: [239, 68, 68] },
-			{ icon: '•', label: 'Fusha më e fortë', value: reportData.strengths[0] ? `${reportData.strengths[0].area} (${reportData.strengths[0].score}%)` : 'Pa të dhëna', color: colors.successGreen },
-			{ icon: '•', label: 'Për përmirësim', value: reportData.weaknesses[0] ? `${reportData.weaknesses[0].area} (${reportData.weaknesses[0].score}%)` : 'Pa të dhëna', color: colors.warningOrange }
+		pdf.setFontSize(16)
+		pdf.text('User Progress Report', margin + 22, 24)
+
+		pdf.setFont('helvetica', 'normal')
+		pdf.setFontSize(9)
+		pdf.text('Educational Progress Report', margin + 22, 32)
+
+		pdf.setFontSize(8)
+		pdf.text(`Gjeneruar: ${currentDate}`, pageWidth - margin, 18, { align: 'right' })
+
+		y = headerH + 12
+
+		// ── User information ──
+		sectionTitle('Informacioni i përdoruesit')
+		pdf.setFillColor(BRAND.bg[0], BRAND.bg[1], BRAND.bg[2])
+		pdf.setDrawColor(BRAND.border[0], BRAND.border[1], BRAND.border[2])
+		pdf.setLineWidth(0.4)
+		pdf.roundedRect(margin, y, contentWidth, 22, 2, 2, 'FD')
+
+		pdf.setFont('helvetica', 'bold')
+		pdf.setFontSize(11)
+		pdf.setTextColor(BRAND.text[0], BRAND.text[1], BRAND.text[2])
+		pdf.text(username || '—', margin + 6, y + 9)
+
+		pdf.setFont('helvetica', 'normal')
+		pdf.setFontSize(9)
+		pdf.setTextColor(BRAND.muted[0], BRAND.muted[1], BRAND.muted[2])
+		pdf.text(email || 'Email jo i specifikuar', margin + 6, y + 16)
+
+		pdf.setFont('helvetica', 'bold')
+		pdf.setFontSize(9)
+		pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+		pdf.text(`Niveli: ${reportData.metrics.level}`, pageWidth - margin - 6, y + 12, { align: 'right' })
+		y += 28
+
+		// ── Overall Progress ──
+		sectionTitle('Overall Progress')
+		const metrics = [
+			{ label: 'Ushtrime', value: String(reportData.metrics.totalExercises) },
+			{ label: 'Saktësi', value: `${reportData.metrics.averageScore}%` },
+			{ label: 'Të sakta', value: String(reportData.metrics.completedExercises) },
+			{ label: 'Kohë', value: formatTimeSpent(reportData.metrics.totalTimeMinutes) },
+			{ label: 'Ditë radhazi', value: String(reportData.metrics.currentStreak) },
+			{ label: 'Rekord', value: String(reportData.metrics.longestStreak) },
 		]
 
-		summaryItems.forEach((item, idx) => {
-			const itemY = yPosition + (idx * 9)
-			
-			// Icon
-			pdf.setFontSize(10)
-			pdf.text(item.icon, margin + 5, itemY)
-			
-			// Label
-			pdf.setFontSize(9)
+		const cols = 3
+		const gap = 4
+		const boxW = (contentWidth - gap * (cols - 1)) / cols
+		const boxH = 20
+
+		metrics.forEach((m, i) => {
+			const col = i % cols
+			const row = Math.floor(i / cols)
+			if (col === 0) ensureSpace(boxH + 6)
+			const x = margin + col * (boxW + gap)
+			const by = y + row * (boxH + gap)
+
+			pdf.setFillColor(BRAND.white[0], BRAND.white[1], BRAND.white[2])
+			pdf.setDrawColor(BRAND.border[0], BRAND.border[1], BRAND.border[2])
+			pdf.setLineWidth(0.4)
+			pdf.roundedRect(x, by, boxW, boxH, 2, 2, 'FD')
+			pdf.setFillColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+			pdf.rect(x, by, 2.2, boxH, 'F')
+
 			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.textDark[0], colors.textDark[1], colors.textDark[2])
-			pdf.text(item.label + ':', margin + 13, itemY)
-			
-			// Value with color
+			pdf.setFontSize(13)
+			pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+			pdf.text(m.value, x + 6, by + 9)
+
 			pdf.setFont('helvetica', 'normal')
-			pdf.setTextColor(item.color[0], item.color[1], item.color[2])
-			const valueText = pdf.splitTextToSize(item.value, contentWidth - 55)
-			pdf.text(valueText, margin + 48, itemY)
+			pdf.setFontSize(7.5)
+			pdf.setTextColor(BRAND.muted[0], BRAND.muted[1], BRAND.muted[2])
+			pdf.text(m.label, x + 6, by + 15)
+		})
+		y += Math.ceil(metrics.length / cols) * (boxH + gap) + 4
+
+		// ── Learning Performance (categories) ──
+		const categories = reportData.categoryPerformance || []
+		if (categories.length > 0) {
+			sectionTitle('Learning Performance')
+			ensureSpace(14)
+			// Table header
+			pdf.setFillColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+			pdf.roundedRect(margin, y, contentWidth, 8, 1, 1, 'F')
+			pdf.setFont('helvetica', 'bold')
+			pdf.setFontSize(8)
+			pdf.setTextColor(BRAND.white[0], BRAND.white[1], BRAND.white[2])
+			pdf.text('Kategoria', margin + 3, y + 5.5)
+			pdf.text('Të sakta', margin + contentWidth * 0.48, y + 5.5)
+			pdf.text('Totali', margin + contentWidth * 0.66, y + 5.5)
+			pdf.text('Saktësi', margin + contentWidth * 0.84, y + 5.5)
+			y += 9
+
+			categories.forEach((cat, idx) => {
+				ensureSpace(10)
+				if (idx % 2 === 0) {
+					pdf.setFillColor(BRAND.bg[0], BRAND.bg[1], BRAND.bg[2])
+					pdf.rect(margin, y - 4, contentWidth, 9, 'F')
+				}
+				pdf.setFont('helvetica', 'normal')
+				pdf.setFontSize(8)
+				pdf.setTextColor(BRAND.text[0], BRAND.text[1], BRAND.text[2])
+				const nameLines = wrapText(String(cat.category || ''), contentWidth * 0.42, 8)
+				pdf.text(nameLines[0] || '—', margin + 3, y + 1.5)
+				pdf.text(String(cat.completed ?? 0), margin + contentWidth * 0.48, y + 1.5)
+				pdf.text(String(cat.total ?? 0), margin + contentWidth * 0.66, y + 1.5)
+				pdf.setFont('helvetica', 'bold')
+				pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+				pdf.text(`${cat.percentage ?? 0}%`, margin + contentWidth * 0.84, y + 1.5)
+				y += 9
+			})
+			y += 4
+		}
+
+		// ── Strengths ──
+		sectionTitle('Strengths')
+		if (!reportData.strengths?.length) {
+			pdf.setFont('helvetica', 'normal')
+			pdf.setFontSize(9)
+			pdf.setTextColor(BRAND.muted[0], BRAND.muted[1], BRAND.muted[2])
+			pdf.text('Nuk ka ende të dhëna të mjaftueshme.', margin, y)
+			y += 10
+		} else {
+			reportData.strengths.forEach((s, i) => {
+				ensureSpace(12)
+				pdf.setFillColor(240, 253, 244)
+				pdf.setDrawColor(BRAND.success[0], BRAND.success[1], BRAND.success[2])
+				pdf.setLineWidth(0.5)
+				pdf.roundedRect(margin, y, contentWidth, 11, 2, 2, 'FD')
+				pdf.setFont('helvetica', 'bold')
+				pdf.setFontSize(9)
+				pdf.setTextColor(BRAND.text[0], BRAND.text[1], BRAND.text[2])
+				pdf.text(`${i + 1}. ${s.area}`, margin + 4, y + 7)
+				pdf.setFont('helvetica', 'normal')
+				pdf.setTextColor(BRAND.success[0], BRAND.success[1], BRAND.success[2])
+				pdf.text(`${s.score}%  ·  ${s.exercises} ushtrime`, pageWidth - margin - 4, y + 7, { align: 'right' })
+				y += 13
+			})
+		}
+
+		// ── Areas for Improvement ──
+		sectionTitle('Areas for Improvement')
+		if (!reportData.weaknesses?.length) {
+			pdf.setFont('helvetica', 'normal')
+			pdf.setFontSize(9)
+			pdf.setTextColor(BRAND.muted[0], BRAND.muted[1], BRAND.muted[2])
+			pdf.text('Nuk është identifikuar ende ndonjë fushë e dobët.', margin, y)
+			y += 10
+		} else {
+			reportData.weaknesses.forEach((w, i) => {
+				ensureSpace(12)
+				pdf.setFillColor(255, 247, 237)
+				pdf.setDrawColor(BRAND.warning[0], BRAND.warning[1], BRAND.warning[2])
+				pdf.setLineWidth(0.5)
+				pdf.roundedRect(margin, y, contentWidth, 11, 2, 2, 'FD')
+				pdf.setFont('helvetica', 'bold')
+				pdf.setFontSize(9)
+				pdf.setTextColor(BRAND.text[0], BRAND.text[1], BRAND.text[2])
+				pdf.text(`${i + 1}. ${w.area}`, margin + 4, y + 7)
+				pdf.setFont('helvetica', 'normal')
+				pdf.setTextColor(BRAND.warning[0], BRAND.warning[1], BRAND.warning[2])
+				pdf.text(`${w.score}%  ·  ${w.exercises} ushtrime`, pageWidth - margin - 4, y + 7, { align: 'right' })
+				y += 13
+			})
+		}
+
+		// ── Learning preferences (existing data) ──
+		sectionTitle('Stili i mësimit')
+		const styleRows = [
+			['Koha e preferuar', reportData.learningStyle.preferredTime],
+			['Gjatësia mesatare', reportData.learningStyle.averageSessionLength],
+			['Frekuenca', reportData.learningStyle.studyFrequency],
+			['Dita më e mirë', reportData.learningStyle.bestPerformanceDay],
+			['Shkalla e përfundimit', `${reportData.learningStyle.completionRate}%`],
+		]
+		styleRows.forEach(([label, value], idx) => {
+			ensureSpace(10)
+			if (idx % 2 === 0) {
+				pdf.setFillColor(BRAND.bg[0], BRAND.bg[1], BRAND.bg[2])
+				pdf.rect(margin, y - 3.5, contentWidth, 9, 'F')
+			}
+			pdf.setFont('helvetica', 'bold')
+			pdf.setFontSize(8.5)
+			pdf.setTextColor(BRAND.text[0], BRAND.text[1], BRAND.text[2])
+			pdf.text(label, margin + 3, y + 2)
+			pdf.setFont('helvetica', 'normal')
+			pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+			const valLines = wrapText(String(value || '—'), contentWidth * 0.48, 8.5)
+			pdf.text(valLines[0], pageWidth - margin - 3, y + 2, { align: 'right' })
+			y += 9
+		})
+		y += 4
+
+		// ── Recommendations ──
+		sectionTitle('Recommendations')
+		const recs = reportData.recommendations || []
+		if (!recs.length) {
+			pdf.setFont('helvetica', 'normal')
+			pdf.setFontSize(9)
+			pdf.setTextColor(BRAND.muted[0], BRAND.muted[1], BRAND.muted[2])
+			pdf.text('Nuk ka rekomandime për momentin.', margin, y)
+			y += 10
+		} else {
+			recs.forEach((rec, i) => {
+				const lines = wrapText(rec, contentWidth - 14, 9)
+				const boxH = Math.max(12, lines.length * 4.2 + 6)
+				ensureSpace(boxH + 4)
+				pdf.setFillColor(BRAND.bg[0], BRAND.bg[1], BRAND.bg[2])
+				pdf.setDrawColor(BRAND.border[0], BRAND.border[1], BRAND.border[2])
+				pdf.setLineWidth(0.4)
+				pdf.roundedRect(margin, y, contentWidth, boxH, 2, 2, 'FD')
+				pdf.setFillColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+				pdf.circle(margin + 6, y + boxH / 2, 3.2, 'F')
+				pdf.setFont('helvetica', 'bold')
+				pdf.setFontSize(8)
+				pdf.setTextColor(BRAND.white[0], BRAND.white[1], BRAND.white[2])
+				pdf.text(String(i + 1), margin + 6, y + boxH / 2 + 1, { align: 'center' })
+				pdf.setFont('helvetica', 'normal')
+				pdf.setFontSize(9)
+				pdf.setTextColor(BRAND.text[0], BRAND.text[1], BRAND.text[2])
+				pdf.text(lines, margin + 12, y + 5.5)
+				y += boxH + 4
+			})
+		}
+
+		// ── Summary ──
+		sectionTitle('Përmbledhje')
+		const accuracyPct =
+			reportData.metrics.totalExercises > 0
+				? Math.round(
+						(reportData.metrics.completedExercises / reportData.metrics.totalExercises) * 100
+					)
+				: 0
+		const summaryLines = [
+			`Niveli aktual: ${reportData.metrics.level}`,
+			`Ushtrime totale: ${reportData.metrics.totalExercises} (${accuracyPct}% të sakta)`,
+			`Koha totale: ${formatTimeSpent(reportData.metrics.totalTimeMinutes)}`,
+			`Numri më i madh i ditëve radhazi: ${reportData.metrics.longestStreak} ditë`,
+			`Më i fortë në: ${
+				reportData.strengths[0]
+					? `${reportData.strengths[0].area} (${reportData.strengths[0].score}%)`
+					: 'Nuk ka ende të dhëna të mjaftueshme'
+			}`,
+			`Duhet të përmirësojë: ${
+				reportData.weaknesses[0]
+					? `${reportData.weaknesses[0].area} (${reportData.weaknesses[0].score}%)`
+					: 'Nuk është identifikuar ende'
+			}`,
+		]
+		ensureSpace(summaryLines.length * 7 + 8)
+		pdf.setFillColor(236, 253, 245)
+		pdf.setDrawColor(BRAND.success[0], BRAND.success[1], BRAND.success[2])
+		pdf.setLineWidth(0.6)
+		const sumH = summaryLines.length * 6.5 + 8
+		pdf.roundedRect(margin, y, contentWidth, sumH, 2, 2, 'FD')
+		let sy = y + 7
+		summaryLines.forEach((line) => {
+			pdf.setFont('helvetica', 'normal')
+			pdf.setFontSize(9)
+			pdf.setTextColor(BRAND.text[0], BRAND.text[1], BRAND.text[2])
+			pdf.text(line, margin + 5, sy)
+			sy += 6.5
 		})
 
-		yPosition += summaryHeight + 5
-
-		// ==========================================
-		// FOOTER - Enhanced for all pages
-		// ==========================================
+		// ── Footer on every page ──
 		const totalPages = pdf.getNumberOfPages()
-		
 		for (let i = 1; i <= totalPages; i++) {
 			pdf.setPage(i)
-			
-			const footerY = pageHeight - 18
-			
-			// Footer background
-			pdf.setFillColor(colors.bgLight[0], colors.bgLight[1], colors.bgLight[2])
-			pdf.rect(0, footerY - 2, pageWidth, 18, 'F')
-			
-			// Top border line with gradient effect
-			pdf.setDrawColor(colors.primaryBlue[0], colors.primaryBlue[1], colors.primaryBlue[2])
-			pdf.setLineWidth(1)
-			pdf.line(margin, footerY, pageWidth - margin, footerY)
-			
-			// Left side - Logo and branding
-			pdf.setFontSize(7)
+			const fy = pageHeight - 14
+			pdf.setDrawColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+			pdf.setLineWidth(0.5)
+			pdf.line(margin, fy - 4, pageWidth - margin, fy - 4)
+
 			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.primaryBlue[0], colors.primaryBlue[1], colors.primaryBlue[2])
-			pdf.text('AlbLingo', margin, footerY + 6)
-			
+			pdf.setFontSize(7.5)
+			pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+			pdf.text('ALBLingo', margin, fy)
+
 			pdf.setFont('helvetica', 'normal')
-			pdf.setFontSize(6.5)
-			pdf.setTextColor(colors.textLight[0], colors.textLight[1], colors.textLight[2])
-			pdf.text('Platformë Edukative për Gjuhën Shqipe', margin, footerY + 10)
-			
-			// Center - Generation date
 			pdf.setFontSize(7)
-			pdf.setFont('helvetica', 'normal')
-			pdf.setTextColor(colors.textLight[0], colors.textLight[1], colors.textLight[2])
-			pdf.text(`Gjeneruar: ${currentDate}`, pageWidth / 2, footerY + 8, { align: 'center' })
-			
-			// Right side - Page number with style
-			pdf.setFillColor(colors.primaryBlue[0], colors.primaryBlue[1], colors.primaryBlue[2])
-			pdf.setGState(new pdf.GState({ opacity: 0.1 }))
-			pdf.circle(pageWidth - margin - 10, footerY + 8, 8, 'F')
-			pdf.setGState(new pdf.GState({ opacity: 1 }))
-			
-			pdf.setFontSize(8)
-			pdf.setFont('helvetica', 'bold')
-			pdf.setTextColor(colors.primaryBlue[0], colors.primaryBlue[1], colors.primaryBlue[2])
-			pdf.text(`${i}`, pageWidth - margin - 10, footerY + 9, { align: 'center' })
-			
-			pdf.setFontSize(6)
-			pdf.setFont('helvetica', 'normal')
-			pdf.text(`nga ${totalPages}`, pageWidth - margin - 10, footerY + 12, { align: 'center' })
-			
-			// Confidentiality notice (on last page only)
-			if (i === totalPages) {
-				pdf.setFontSize(6)
-				pdf.setFont('helvetica', 'italic')
-				pdf.setTextColor(colors.textLight[0], colors.textLight[1], colors.textLight[2])
-				pdf.text('© 2026 AlbLingo • Dokument Konfidencial', pageWidth / 2, pageHeight - 5, { align: 'center' })
-			}
+			pdf.setTextColor(BRAND.muted[0], BRAND.muted[1], BRAND.muted[2])
+			pdf.text(`Gjeneruar: ${currentDate}`, pageWidth / 2, fy, { align: 'center' })
+			pdf.text(`Faqe ${i} / ${totalPages}`, pageWidth - margin, fy, { align: 'right' })
 		}
 
-		// Save the PDF
-		const fileName = `Raport_${username.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
+		const safeName = (username || 'user').replace(/[^\w\-]+/g, '_').slice(0, 40)
+		const fileName = `AlbLingo_Raport_${safeName}_${new Date().toISOString().split('T')[0]}.pdf`
 		pdf.save(fileName)
-
-		console.log('PDF u gjenerua me sukses:', fileName)
 	} catch (error) {
 		console.error('Gabim në gjenerimin e PDF:', error)
 		throw error
@@ -602,7 +421,6 @@ export async function exportUserReportToPDF(
 
 /**
  * Alternative: Export report by capturing DOM elements as images
- * This is more accurate for complex layouts with charts
  */
 export async function exportUserReportWithChartsToPDF(
 	modalElement: HTMLElement,
@@ -613,62 +431,49 @@ export async function exportUserReportWithChartsToPDF(
 			import('html2canvas'),
 			import('jspdf'),
 		])
-		// Hide buttons and non-essential elements
 		const exportBtn = modalElement.querySelector('.export-report-btn') as HTMLElement
 		const closeBtn = modalElement.querySelector('.modal-close') as HTMLElement
-		
+
 		if (exportBtn) exportBtn.style.display = 'none'
 		if (closeBtn) closeBtn.style.display = 'none'
 
-		// Wait a bit for styles to apply
-		await new Promise(resolve => setTimeout(resolve, 100))
+		await new Promise((resolve) => setTimeout(resolve, 100))
 
-		// Capture the modal content
 		const canvas = await html2canvas(modalElement, {
-			scale: 2, // Higher quality
+			scale: 2,
 			useCORS: true,
 			logging: false,
-			backgroundColor: '#ffffff'
+			backgroundColor: '#ffffff',
 		})
 
-		// Restore buttons
 		if (exportBtn) exportBtn.style.display = ''
 		if (closeBtn) closeBtn.style.display = ''
 
-		// Create PDF
 		const pdf = new jsPDF('p', 'mm', 'a4')
 		const pageWidth = pdf.internal.pageSize.getWidth()
 		const pageHeight = pdf.internal.pageSize.getHeight()
 
-		// Calculate dimensions
-		const imgWidth = pageWidth - 20 // 10mm margin on each side
+		const imgWidth = pageWidth - 20
 		const imgHeight = (canvas.height * imgWidth) / canvas.width
 
 		let heightLeft = imgHeight
-		let position = 10 // Top margin
+		let position = 10
 
-		// Add image data
 		const imgData = canvas.toDataURL('image/png')
-
-		// Add first page
 		pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight)
-		heightLeft -= pageHeight
+		heightLeft -= pageHeight - 20
 
-		// Add additional pages if needed
-		while (heightLeft >= 0) {
+		while (heightLeft > 0) {
 			position = heightLeft - imgHeight + 10
 			pdf.addPage()
 			pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight)
-			heightLeft -= pageHeight
+			heightLeft -= pageHeight - 20
 		}
 
-		// Save
-		const fileName = `Raport_${username.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
-		pdf.save(fileName)
-
-		console.log('PDF me charts u gjenerua me sukses:', fileName)
+		const safeName = (username || 'user').replace(/[^\w\-]+/g, '_').slice(0, 40)
+		pdf.save(`AlbLingo_Raport_${safeName}_${new Date().toISOString().split('T')[0]}.pdf`)
 	} catch (error) {
-		console.error('Gabim në gjenerimin e PDF me charts:', error)
+		console.error('Gabim në gjenerimin e PDF me grafikë:', error)
 		throw error
 	}
 }

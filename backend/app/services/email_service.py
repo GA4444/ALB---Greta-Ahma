@@ -182,18 +182,18 @@ _BASE_STYLE = """
   .row strong { display: block; color: #1e293b; margin-bottom: 2px; font-size: 14px; }
   .row span   { color: #64748b; font-size: 13px; }
   .btn { display: inline-block; padding: 14px 32px; border-radius: 10px; color: #fff !important;
-         font-weight: 700; font-size: 15px; text-decoration: none;
-         box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+         font-weight: 700; font-size: 15px; text-decoration: none; background: #1F6F8B;
+         box-shadow: 0 4px 12px rgba(31,111,139,.25); }
   .center { text-align: center; margin: 28px 0; }
   .ftr { background: #f8fafc; border-top: 1px solid #e2e8f0;
          padding: 22px 30px; text-align: center; color: #94a3b8; font-size: 13px; }
-  .ftr a { color: #4A9FD4; text-decoration: none; }
+  .ftr a { color: #1F6F8B; text-decoration: none; }
   .box-warn { background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 8px;
               padding: 16px; margin: 16px 0; color: #7f1d1d; font-size: 14px; }
   .stat-grid { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
   .stat-box  { flex: 1 1 120px; background: #f8fafc; border: 1px solid #e2e8f0;
                border-radius: 10px; padding: 14px; text-align: center; }
-  .stat-box .num { font-size: 28px; font-weight: 800; color: #2563eb; }
+  .stat-box .num { font-size: 28px; font-weight: 800; color: #1F6F8B; }
   .stat-box .lbl { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; }
 </style>
 """
@@ -366,7 +366,7 @@ def send_weekly_report_email(
     blocking: bool = False,
     user_id: Optional[int] = None,
 ) -> bool:
-    app_url = _cfg("APP_URL", "http://localhost:5173")
+    app_url = _cfg("APP_URL", "http://localhost:5173").rstrip("/")
     exercises = stats.get("exercises_completed", 0)
     avg_score = stats.get("avg_score", 0)
     time_spent = stats.get("time_spent_minutes", 0)
@@ -375,72 +375,137 @@ def send_weekly_report_email(
     weaknesses = stats.get("weaknesses", [])
 
     if avg_score >= 85:
-        perf_msg, perf_color = "Arritjet tuaja këtë javë kanë qenë të shkëlqyera! 🌟", "#10b981"
+        perf_msg = "Arritjet tuaja këtë javë kanë qenë të shkëlqyera."
+        perf_bg = "#ecfdf5"
+        perf_border = "#5BBD6C"
+        perf_color = "#166534"
     elif avg_score >= 70:
-        perf_msg, perf_color = "Keni bërë përparim të mirë këtë javë! 👍", "#3b82f6"
+        perf_msg = "Keni bërë përparim të mirë këtë javë."
+        perf_bg = "#f0f9ff"
+        perf_border = "#4A9FD4"
+        perf_color = "#1F6F8B"
     else:
-        perf_msg, perf_color = "Vazhdoni të ushtroni dhe rezultatet do të përmirësohen! 💪", "#f59e0b"
+        perf_msg = "Vazhdoni të ushtroni dhe rezultatet do të përmirësohen."
+        perf_bg = "#fffbeb"
+        perf_border = "#D97706"
+        perf_color = "#92400e"
 
     strengths_html = "".join(
-        f'<div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:6px;'
-        f'padding:10px 14px;margin:6px 0;font-size:14px;">{s}</div>'
+        f'<tr><td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:#1e293b;">{s}</td></tr>'
         for s in strengths[:3]
     )
     weaknesses_html = "".join(
-        f'<div style="background:#fff7ed;border-left:4px solid #f59e0b;border-radius:6px;'
-        f'padding:10px 14px;margin:6px 0;font-size:14px;">{w}</div>'
+        f'<tr><td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:#1e293b;">{w}</td></tr>'
         for w in weaknesses[:2]
     )
 
-    subject = f"Raporti juaj javor në AlbLingo — {username}"
+    subject = f"Raporti juaj javor — AlbLingo ({username})"
 
     html = f"""<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-{_BASE_STYLE}</head><body>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Raporti javor AlbLingo</title>
+{_BASE_STYLE}
+<style>
+  .wrap {{ max-width: 600px; margin: 24px auto; background: #fff;
+           border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.08); }}
+  .hdr {{ background: #1F6F8B; padding: 28px 24px; text-align: center; color: #fff; }}
+  .hdr .brand {{ font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.9; margin: 0 0 8px; }}
+  .hdr h1 {{ margin: 0; font-size: 22px; font-weight: 800; line-height: 1.3; }}
+  .body {{ padding: 28px 24px; }}
+  .body h2 {{ color: #0f172a; font-size: 16px; margin: 22px 0 10px; }}
+  .body p {{ color: #475569; font-size: 15px; margin: 0 0 14px; line-height: 1.6; }}
+  .stat-grid {{ width: 100%; border-collapse: separate; border-spacing: 8px; margin: 8px 0 16px; }}
+  .stat-grid td {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+                   padding: 14px 10px; text-align: center; width: 50%; vertical-align: top; }}
+  .stat-grid .num {{ font-size: 24px; font-weight: 800; color: #1F6F8B; line-height: 1.2; }}
+  .stat-grid .lbl {{ font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;
+                     letter-spacing: 0.04em; margin-top: 4px; }}
+  .perf {{ background: {perf_bg}; border: 1px solid {perf_border}; border-radius: 10px;
+           padding: 14px 16px; text-align: center; font-weight: 600; font-size: 14px;
+           color: {perf_color}; margin: 8px 0 18px; }}
+  .sect-table {{ width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;
+                 border-radius: 10px; overflow: hidden; }}
+  .sect-table th {{ background: #f1f5f9; text-align: left; padding: 10px 12px; font-size: 12px;
+                    color: #1F6F8B; text-transform: uppercase; letter-spacing: 0.04em; }}
+  .btn {{ display: inline-block; padding: 16px 28px; border-radius: 10px; background: #1F6F8B !important;
+          color: #fff !important; font-weight: 700; font-size: 16px; text-decoration: none;
+          line-height: 1.2; min-width: 200px; text-align: center; }}
+  .center {{ text-align: center; margin: 28px 0 12px; }}
+  .ftr {{ background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 24px;
+          text-align: center; color: #94a3b8; font-size: 12px; line-height: 1.6; }}
+  @media only screen and (max-width: 480px) {{
+    .wrap {{ margin: 0; border-radius: 0; }}
+    .body {{ padding: 22px 16px; }}
+    .hdr {{ padding: 24px 16px; }}
+    .stat-grid .num {{ font-size: 22px; }}
+    .btn {{ display: block; width: 100%; box-sizing: border-box; padding: 16px 12px; }}
+  }}
+</style>
+</head>
+<body style="margin:0;padding:0;background:#f8fafc;">
 <div class="wrap">
-  <div class="hdr" style="background:linear-gradient(135deg,#7c3aed 0%,#6366f1 100%)">
-    <span class="ico">📊</span>
-    <h1>Raporti juaj javor</h1>
+  <div class="hdr">
+    <p class="brand">ALBLingo</p>
+    <h1>Raporti juaj javor është gati</h1>
   </div>
   <div class="body">
-    <h2>Përshëndetje, {username}!</h2>
-    <p>Ja çfarë keni arritur këtë javë në AlbLingo:</p>
+    <p>Përshëndetje, <strong>{username}</strong>,</p>
+    <p>Raporti juaj javor i progresit në AlbLingo është gjeneruar. Ja një përmbledhje e shkurtër:</p>
 
-    <div class="stat-grid">
-      <div class="stat-box"><div class="num">{exercises}</div><div class="lbl">Ushtrime</div></div>
-      <div class="stat-box"><div class="num">{avg_score}%</div><div class="lbl">Saktësi</div></div>
-      <div class="stat-box"><div class="num">{time_spent} min</div><div class="lbl">Koha e mësimit</div></div>
-      <div class="stat-box"><div class="num">{streak}🔥</div><div class="lbl">Ditë radhazi</div></div>
-    </div>
+    <table class="stat-grid" role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td>
+          <div class="num">{exercises}</div>
+          <div class="lbl">Ushtrime</div>
+        </td>
+        <td>
+          <div class="num">{avg_score}%</div>
+          <div class="lbl">Saktësi</div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="num">{time_spent}</div>
+          <div class="lbl">Minuta</div>
+        </td>
+        <td>
+          <div class="num">{streak}</div>
+          <div class="lbl">Ditë radhazi</div>
+        </td>
+      </tr>
+    </table>
 
-    <div style="background:{perf_color};color:#fff;border-radius:10px;
-                padding:16px;text-align:center;font-weight:700;font-size:15px;margin:16px 0;">
-      {perf_msg}
-    </div>
+    <div class="perf">{perf_msg}</div>
 
-    {"<h2>Pikat e forta</h2>" + strengths_html if strengths_html else ""}
-    {"<h2>Fushat që kërkojnë përmirësim</h2>" + weaknesses_html if weaknesses_html else ""}
+    {"<h2>Pikat e forta</h2><table class='sect-table' role='presentation'><thead><tr><th>Fusha</th></tr></thead><tbody>" + strengths_html + "</tbody></table>" if strengths_html else ""}
+    {"<h2>Fushat që kërkojnë përmirësim</h2><table class='sect-table' role='presentation'><thead><tr><th>Fusha</th></tr></thead><tbody>" + weaknesses_html + "</tbody></table>" if weaknesses_html else ""}
 
     <div class="center">
-      <a href="{app_url}" class="btn" style="background:#7c3aed">Vazhdoni mësimin</a>
+      <a href="{app_url}" class="btn" target="_blank" rel="noopener noreferrer">Hap AlbLingo</a>
     </div>
-
-    <p style="text-align:center;color:#94a3b8;font-size:13px;">
-      <em>"Çdo ditë ushtrimesh ju afron më shumë drejt qëllimit tuaj!"</em>
+    <p style="text-align:center;color:#94a3b8;font-size:13px;margin:0;">
+      Hapni platformën për të vazhduar mësimin dhe për të parë progresin tuaj.
     </p>
   </div>
   {_footer_html()}
 </div>
-</body></html>"""
+</body>
+</html>"""
 
     text = (
-        f"Raporti juaj javor — {username}\n\n"
+        f"ALBLingo — Raporti juaj javor\n\n"
+        f"Përshëndetje, {username},\n\n"
+        f"Raporti juaj javor është gati.\n\n"
         f"Ushtrime: {exercises}\n"
         f"Saktësi: {avg_score}%\n"
         f"Koha e mësimit: {time_spent} min\n"
         f"Ditë radhazi: {streak}\n\n"
         f"{perf_msg}\n\n"
-        f"Vazhdoni mësimin: {app_url}\n\n"
+        f"Hap AlbLingo: {app_url}\n\n"
         "Ekipi i AlbLingo"
     )
 
