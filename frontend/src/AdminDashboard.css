@@ -1047,7 +1047,27 @@
 
 .report-brand-logo {
 	flex-shrink: 0;
-	filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.18));
+	display: block;
+}
+
+.report-logo-badge {
+	flex-shrink: 0;
+	width: 64px;
+	height: 64px;
+	border-radius: 16px;
+	background: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.report-header-actions {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
 }
 
 .report-brand-eyebrow {
@@ -1080,7 +1100,6 @@
 	font-size: 1.1rem;
 	font-weight: 700;
 	margin: 0 0 0.25rem 0;
-	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .report-email {
@@ -1095,41 +1114,43 @@
 	background: white;
 	color: #1F6F8B;
 	border: none;
-	padding: 0.85rem 1.35rem;
+	padding: 0.85rem 1.25rem;
 	border-radius: 12px;
 	font-weight: 700;
 	font-size: 0.95rem;
 	cursor: pointer;
-	transition: all 0.25s ease;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
 	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 0.5rem;
+	gap: 0.55rem;
 	position: relative;
 	z-index: 1;
-	overflow: hidden;
-	min-height: 44px;
+	min-height: 48px;
 	white-space: nowrap;
 }
 
-.export-report-btn::before {
-	content: '';
-	position: absolute;
-	inset: 0;
-	background: linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, transparent 100%);
-	opacity: 0;
-	transition: opacity 0.3s;
+.export-report-btn-logo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 8px;
+	background: #f0f7fa;
+	flex-shrink: 0;
 }
 
-.export-report-btn:hover::before {
-	opacity: 1;
+.export-report-btn-logo .brand-logo {
+	width: 20px !important;
+	height: 20px !important;
 }
 
 .export-report-btn:hover {
-	background: white;
-	transform: translateY(-3px);
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+	background: #fff;
+	transform: translateY(-2px);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
 }
 
 .export-report-btn:disabled {
@@ -1146,11 +1167,61 @@
 	box-shadow: none;
 }
 
+.report-download-bar {
+	margin-top: 1.5rem;
+	padding: 1rem 1.15rem;
+	border: 1px solid #dbe7ee;
+	border-radius: 14px;
+	background: linear-gradient(180deg, #f7fbfd 0%, #ffffff 100%);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.report-download-brand {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	min-width: 0;
+}
+
+.report-download-brand strong {
+	display: block;
+	color: #1F6F8B;
+	font-size: 1rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+}
+
+.report-download-brand span {
+	display: block;
+	color: #64748b;
+	font-size: 0.85rem;
+	font-weight: 500;
+}
+
+.export-report-btn-footer {
+	box-shadow: 0 4px 12px rgba(31, 111, 139, 0.18);
+	background: #1F6F8B;
+	color: #fff;
+}
+
+.export-report-btn-footer .export-report-btn-logo {
+	background: #fff;
+}
+
+.export-report-btn-footer:hover {
+	background: #185a72;
+	color: #fff;
+}
+
 .report-content {
 	padding: 1.5rem 1.75rem;
 	overflow-y: auto;
 	max-height: calc(92vh - 170px);
-	background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+	background: #f8fafc;
 }
 
 /* Custom scrollbar pentru report content */
@@ -1175,15 +1246,20 @@
 
 .report-section {
 	margin-bottom: 1.75rem;
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 16px;
+	padding: 1.15rem 1.25rem;
+	box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .report-section-title {
-	font-size: 1.1rem;
+	font-size: 1.05rem;
 	font-weight: 800;
 	color: #0f172a;
-	margin-bottom: 1rem;
+	margin: 0 0 1rem;
 	padding-bottom: 0.65rem;
-	border-bottom: 2px solid #e2e8f0;
+	border-bottom: 1px solid #e2e8f0;
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
@@ -1194,9 +1270,9 @@
 .report-section-title::after {
 	content: '';
 	position: absolute;
-	bottom: -2px;
+	bottom: -1px;
 	left: 0;
-	width: 56px;
+	width: 48px;
 	height: 2px;
 	background: #1F6F8B;
 }
@@ -1689,6 +1765,16 @@ textarea:focus-visible {
 
 	.export-report-btn {
 		width: 100%;
+		justify-content: center;
+	}
+
+	.report-download-bar {
+		flex-direction: column;
+		align-items: stretch;
+		text-align: center;
+	}
+
+	.report-download-brand {
 		justify-content: center;
 	}
 

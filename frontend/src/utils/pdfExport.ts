@@ -53,13 +53,32 @@ function formatTimeSpent(totalMinutes: number): string {
 	return `${hours}h ${minutes}min`
 }
 
+async function loadAlbLingoLogoDataUrl(): Promise<string | null> {
+	try {
+		const response = await fetch('/alblingo.png')
+		if (!response.ok) return null
+		const blob = await response.blob()
+		return await new Promise((resolve, reject) => {
+			const reader = new FileReader()
+			reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null)
+			reader.onerror = () => reject(reader.error)
+			reader.readAsDataURL(blob)
+		})
+	} catch {
+		return null
+	}
+}
+
 export async function exportUserReportToPDF(
 	username: string,
 	email: string,
 	reportData: UserReportData
 ): Promise<void> {
 	try {
-		const { default: jsPDF } = await import('jspdf')
+		const [{ default: jsPDF }, logoDataUrl] = await Promise.all([
+			import('jspdf'),
+			loadAlbLingoLogoDataUrl(),
+		])
 		const pdf = new jsPDF({
 			orientation: 'p',
 			unit: 'mm',
@@ -69,9 +88,9 @@ export async function exportUserReportToPDF(
 
 		const pageWidth = pdf.internal.pageSize.getWidth()
 		const pageHeight = pdf.internal.pageSize.getHeight()
-		const margin = 18
+		const margin = 16
 		const contentWidth = pageWidth - 2 * margin
-		const footerReserve = 22
+		const footerReserve = 24
 		let y = margin
 
 		const currentDate = new Date().toLocaleDateString('sq-AL', {
@@ -79,6 +98,16 @@ export async function exportUserReportToPDF(
 			month: 'long',
 			day: 'numeric',
 		})
+
+		const drawLogo = (x: number, cy: number, size: number) => {
+			if (!logoDataUrl) return false
+			try {
+				pdf.addImage(logoDataUrl, 'PNG', x, cy - size / 2, size, size)
+				return true
+			} catch {
+				return false
+			}
+		}
 
 		const ensureSpace = (needed: number) => {
 			if (y + needed > pageHeight - footerReserve) {
@@ -90,13 +119,16 @@ export async function exportUserReportToPDF(
 		const sectionTitle = (title: string) => {
 			ensureSpace(16)
 			pdf.setFont('helvetica', 'bold')
-			pdf.setFontSize(12)
+			pdf.setFontSize(11)
 			pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
 			pdf.text(title, margin, y)
-			y += 2
+			y += 2.2
 			pdf.setDrawColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
-			pdf.setLineWidth(0.6)
-			pdf.line(margin, y, margin + 42, y)
+			pdf.setLineWidth(0.7)
+			pdf.line(margin, y, margin + 36, y)
+			pdf.setDrawColor(BRAND.border[0], BRAND.border[1], BRAND.border[2])
+			pdf.setLineWidth(0.3)
+			pdf.line(margin + 36, y, pageWidth - margin, y)
 			y += 8
 		}
 
@@ -105,34 +137,43 @@ export async function exportUserReportToPDF(
 			return pdf.splitTextToSize(text, maxW) as string[]
 		}
 
-		// ── Header ──
-		const headerH = 42
+		// ── Header with real ALBLingo logo ──
+		const headerH = 46
 		pdf.setFillColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
 		pdf.rect(0, 0, pageWidth, headerH, 'F')
 		pdf.setFillColor(BRAND.sky[0], BRAND.sky[1], BRAND.sky[2])
-		pdf.rect(0, headerH - 4, pageWidth, 4, 'F')
+		pdf.rect(0, headerH - 3, pageWidth, 3, 'F')
 
-		// Logo mark
+		const logoSize = 22
+		const logoX = margin
+		const logoCY = 21
 		pdf.setFillColor(BRAND.white[0], BRAND.white[1], BRAND.white[2])
-		pdf.circle(margin + 8, 18, 9, 'F')
+		pdf.roundedRect(logoX - 1.5, logoCY - logoSize / 2 - 1.5, logoSize + 3, logoSize + 3, 3, 3, 'F')
+		const hasLogo = drawLogo(logoX, logoCY, logoSize)
+		if (!hasLogo) {
+			pdf.setFont('helvetica', 'bold')
+			pdf.setFontSize(10)
+			pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
+			pdf.text('AL', logoX + logoSize / 2, logoCY + 1.5, { align: 'center' })
+		}
+
+		const textX = logoX + logoSize + 8
 		pdf.setFont('helvetica', 'bold')
-		pdf.setFontSize(9)
-		pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
-		pdf.text('AL', margin + 8, 20.5, { align: 'center' })
-
-		pdf.setFontSize(11)
+		pdf.setFontSize(10)
 		pdf.setTextColor(BRAND.white[0], BRAND.white[1], BRAND.white[2])
-		pdf.text('ALBLingo', margin + 22, 14)
+		pdf.text('ALBLingo', textX, 14)
 
-		pdf.setFontSize(16)
-		pdf.text('User Progress Report', margin + 22, 24)
+		pdf.setFontSize(15)
+		pdf.text('Raporti i Progresit', textX, 24)
 
 		pdf.setFont('helvetica', 'normal')
-		pdf.setFontSize(9)
-		pdf.text('Educational Progress Report', margin + 22, 32)
+		pdf.setFontSize(8.5)
+		pdf.text('Platformë edukative për gjuhën shqipe', textX, 32)
 
 		pdf.setFontSize(8)
 		pdf.text(`Gjeneruar: ${currentDate}`, pageWidth - margin, 18, { align: 'right' })
+		pdf.setFont('helvetica', 'normal')
+		pdf.text('Educational Progress Report', pageWidth - margin, 26, { align: 'right' })
 
 		y = headerH + 12
 
@@ -160,7 +201,7 @@ export async function exportUserReportToPDF(
 		y += 28
 
 		// ── Overall Progress ──
-		sectionTitle('Overall Progress')
+		sectionTitle('Progresi i përgjithshëm')
 		const metrics = [
 			{ label: 'Ushtrime', value: String(reportData.metrics.totalExercises) },
 			{ label: 'Saktësi', value: `${reportData.metrics.averageScore}%` },
@@ -204,7 +245,7 @@ export async function exportUserReportToPDF(
 		// ── Learning Performance (categories) ──
 		const categories = reportData.categoryPerformance || []
 		if (categories.length > 0) {
-			sectionTitle('Learning Performance')
+			sectionTitle('Performanca në mësim')
 			ensureSpace(14)
 			// Table header
 			pdf.setFillColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
@@ -240,7 +281,7 @@ export async function exportUserReportToPDF(
 		}
 
 		// ── Strengths ──
-		sectionTitle('Strengths')
+		sectionTitle('Pikat e forta')
 		if (!reportData.strengths?.length) {
 			pdf.setFont('helvetica', 'normal')
 			pdf.setFontSize(9)
@@ -266,7 +307,7 @@ export async function exportUserReportToPDF(
 		}
 
 		// ── Areas for Improvement ──
-		sectionTitle('Areas for Improvement')
+		sectionTitle('Fushat për përmirësim')
 		if (!reportData.weaknesses?.length) {
 			pdf.setFont('helvetica', 'normal')
 			pdf.setFontSize(9)
@@ -319,7 +360,7 @@ export async function exportUserReportToPDF(
 		y += 4
 
 		// ── Recommendations ──
-		sectionTitle('Recommendations')
+		sectionTitle('Rekomandime')
 		const recs = reportData.recommendations || []
 		if (!recs.length) {
 			pdf.setFont('helvetica', 'normal')
@@ -389,19 +430,23 @@ export async function exportUserReportToPDF(
 			sy += 6.5
 		})
 
-		// ── Footer on every page ──
+		// ── Footer on every page (with logo) ──
 		const totalPages = pdf.getNumberOfPages()
 		for (let i = 1; i <= totalPages; i++) {
 			pdf.setPage(i)
-			const fy = pageHeight - 14
+			const fy = pageHeight - 12
 			pdf.setDrawColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
-			pdf.setLineWidth(0.5)
-			pdf.line(margin, fy - 4, pageWidth - margin, fy - 4)
+			pdf.setLineWidth(0.45)
+			pdf.line(margin, fy - 6, pageWidth - margin, fy - 6)
+
+			const footerLogoSize = 7
+			const footerLogoDrawn = drawLogo(margin, fy - 0.5, footerLogoSize)
+			const brandX = footerLogoDrawn ? margin + footerLogoSize + 2.5 : margin
 
 			pdf.setFont('helvetica', 'bold')
 			pdf.setFontSize(7.5)
 			pdf.setTextColor(BRAND.primary[0], BRAND.primary[1], BRAND.primary[2])
-			pdf.text('ALBLingo', margin, fy)
+			pdf.text('ALBLingo', brandX, fy)
 
 			pdf.setFont('helvetica', 'normal')
 			pdf.setFontSize(7)

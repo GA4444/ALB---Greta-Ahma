@@ -3087,23 +3087,30 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 				<header className="report-header">
 					<div className="report-header-content">
-						<BrandLogo size={48} className="report-brand-logo" decorative />
+						<div className="report-logo-badge">
+							<BrandLogo size={52} className="report-brand-logo" decorative />
+						</div>
 						<div>
 							<p className="report-brand-eyebrow">ALBLingo</p>
-							<h2>User Progress Report</h2>
+							<h2>Raporti i Progresit</h2>
 							<p className="report-username">{user.username}</p>
 							<p className="report-email">{user.email || 'Email jo i specifikuar'}</p>
 							<p className="report-meta">Gjeneruar: {generatedLabel}</p>
 						</div>
 					</div>
-					<button
-						type="button"
-						className="export-report-btn"
-						onClick={handleExportPDF}
-						disabled={isExporting}
-					>
-						{isExporting ? 'Duke shkarkuar…' : 'Shkarko raportin'}
-					</button>
+					<div className="report-header-actions">
+						<button
+							type="button"
+							className="export-report-btn"
+							onClick={handleExportPDF}
+							disabled={isExporting}
+						>
+							<span className="export-report-btn-logo" aria-hidden="true">
+								<BrandLogo size={22} decorative />
+							</span>
+							{isExporting ? 'Duke shkarkuar…' : 'Shkarko raportin'}
+						</button>
+					</div>
 				</header>
 
 				<div className="report-content">
@@ -3142,7 +3149,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 					{/* Overall Progress */}
 					<section className="report-section">
-						<h3 className="report-section-title">Overall Progress</h3>
+						<h3 className="report-section-title">Progresi i përgjithshëm</h3>
 						<div className="metrics-grid">
 							<div className="metric-card">
 								<div className="metric-value">{metrics.totalExercises ?? 0}</div>
@@ -3179,7 +3186,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 					{/* Learning Performance */}
 					<section className="report-section">
-						<h3 className="report-section-title">Learning Performance</h3>
+						<h3 className="report-section-title">Performanca në mësim</h3>
 						{categoryPerformance.length === 0 ? (
 							<p className="report-empty">Nuk ka ende të dhëna për kategori.</p>
 						) : (
@@ -3234,7 +3241,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 					{/* Strengths */}
 					<section className="report-section">
-						<h3 className="report-section-title">Strengths</h3>
+						<h3 className="report-section-title">Pikat e forta</h3>
 						<div className="chart-card">
 							{strengths.length > 0 && (
 								<ResponsiveContainer width="100%" height={220}>
@@ -3263,7 +3270,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 					{/* Areas for Improvement */}
 					<section className="report-section">
-						<h3 className="report-section-title">Areas for Improvement</h3>
+						<h3 className="report-section-title">Fushat për përmirësim</h3>
 						<div className="chart-card">
 							{weaknesses.length > 0 && (
 								<ResponsiveContainer width="100%" height={220}>
@@ -3292,7 +3299,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 					{/* Recent Activity */}
 					<section className="report-section">
-						<h3 className="report-section-title">Recent Activity</h3>
+						<h3 className="report-section-title">Aktiviteti</h3>
 						<div className="chart-card">
 							<h4 className="chart-subtitle">Aktiviteti sipas ditëve të javës</h4>
 							<ResponsiveContainer width="100%" height={280}>
@@ -3330,7 +3337,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 					{/* Progress over time */}
 					<section className="report-section">
-						<h3 className="report-section-title">Progress over time</h3>
+						<h3 className="report-section-title">Përparimi në kohë</h3>
 						<div className="chart-card">
 							<h4 className="chart-subtitle">Përparimi në kohë (6 muaj)</h4>
 							<ResponsiveContainer width="100%" height={280}>
@@ -3377,7 +3384,7 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 
 					{/* Recommendations */}
 					<section className="report-section">
-						<h3 className="report-section-title">Recommendations</h3>
+						<h3 className="report-section-title">Rekomandime</h3>
 						<div className="recommendations-list">
 							{recommendations.length === 0 && (
 								<p className="report-empty">Nuk ka rekomandime për momentin.</p>
@@ -3421,6 +3428,27 @@ function UserReportModal({ user, reportData, onClose }: { user: any, reportData:
 							</p>
 						</div>
 					</div>
+
+					<footer className="report-download-bar">
+						<div className="report-download-brand">
+							<BrandLogo size={40} decorative />
+							<div>
+								<strong>ALBLingo</strong>
+								<span>Educational Progress Report</span>
+							</div>
+						</div>
+						<button
+							type="button"
+							className="export-report-btn export-report-btn-footer"
+							onClick={handleExportPDF}
+							disabled={isExporting}
+						>
+							<span className="export-report-btn-logo" aria-hidden="true">
+								<BrandLogo size={20} decorative />
+							</span>
+							{isExporting ? 'Duke shkarkuar…' : 'Shkarko raportin'}
+						</button>
+					</footer>
 				</div>
 			</div>
 		</div>
