@@ -7,8 +7,7 @@ from datetime import datetime, timedelta
 import logging
 
 from ..database import SessionLocal
-from ..models import User, Attempt, Exercise, EmailLog
-from .category_labels import category_label_sq
+from ..models import User, EmailLog
 from .email_service import email_service
 
 logger = logging.getLogger(__name__)
@@ -76,12 +75,15 @@ class EmailScheduler:
     def send_weekly_reports():
         """
         Dërgon raporte javore të personalizuara
-        Ekzekutohet çdo të dielë në mbrëmje
+        Ekzekutohet çdo të dielë në mbrëmje.
+        Stats are computed live from Attempt rows for the last 7 days.
         """
+        from .period_stats import compute_user_period_stats, period_bounds, utcnow
+
         db = SessionLocal()
         try:
-            now = datetime.utcnow()
-            period_start = now - timedelta(days=7)
+            now = utcnow()
+            period_start, _ = period_bounds("weekly", now)
 
             users = db.query(User).filter(
                 User.is_active == True,
@@ -94,68 +96,19 @@ class EmailScheduler:
                 if user.last_weekly_report_at and user.last_weekly_report_at >= period_start:
                     continue
 
-                attempts = (
-                    db.query(Attempt, Exercise)
-                    .join(Exercise, Exercise.id == Attempt.exercise_id)
-                    .filter(
-                        Attempt.user_id == str(user.id),
-                        Attempt.created_at >= period_start,
-                        Attempt.created_at <= now,
-                    )
-                    .all()
-                )
-
-                total = len(attempts)
-                correct = sum(1 for attempt, _ in attempts if attempt.is_correct)
-                avg_score = round((correct / total) * 100) if total else 0
-                # New clients report exact duration. For legacy attempts, use a
-                # conservative one-minute estimate instead of fabricated totals.
-                total_seconds = sum(
-                    attempt.duration_seconds
-                    if attempt.duration_seconds is not None
-                    else 60
-                    for attempt, _ in attempts
-                )
-
-                category_stats = {}
-                for attempt, exercise in attempts:
-                    label = exercise.category.value if hasattr(exercise.category, "value") else str(exercise.category)
-                    bucket = category_stats.setdefault(label, [0, 0])
-                    bucket[0] += 1
-                    bucket[1] += int(bool(attempt.is_correct))
-
-                ranked = sorted(
-                    (
-                        (category, round(correct_count / count * 100), count)
-                        for category, (count, correct_count) in category_stats.items()
-                    ),
-                    key=lambda row: (row[1], row[2]),
-                    reverse=True,
-                )
-                strengths = [
-                    f"{category_label_sq(category)} — {accuracy}% saktësi"
-                    for category, accuracy, _ in ranked[:3]
-                    if accuracy >= 70
-                ]
-                weaknesses = [
-                    f"{category_label_sq(category)} — {accuracy}% saktësi"
-                    for category, accuracy, _ in sorted(ranked, key=lambda row: row[1])[:2]
-                    if accuracy < 70
-                ]
-
-                stats = {
-                    "exercises_completed": total,
-                    "avg_score": avg_score,
-                    "time_spent_minutes": round(total_seconds / 60),
-                    "current_streak": user.current_streak,
-                    "strengths": strengths,
-                    "weaknesses": weaknesses,
-                }
+                stats = compute_user_period_stats(db, user.id, "weekly", now)
 
                 success = email_service.send_weekly_personalized_email(
                     user.email,
                     user.username,
-                    stats,
+                    {
+                        "exercises_completed": stats["exercises_completed"],
+                        "avg_score": stats["avg_score"],
+                        "time_spent_minutes": stats["time_spent_minutes"],
+                        "current_streak": stats["current_streak"],
+                        "strengths": stats["strengths"],
+                        "weaknesses": stats["weaknesses"],
+                    },
                     user_id=user.id,
                 )
 

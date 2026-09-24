@@ -3,6 +3,7 @@ import PageLoading from './components/PageLoading'
 import React, { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import {
 	getAdminStats,
+	getAdminPeriodStats,
 	getAllUsers,
 	getAllClasses,
 	getAllLevels,
@@ -52,6 +53,7 @@ import {
 	getTrainingCommands,
 	type UserOut,
 	type AdminStats,
+	type AdminPeriodStats,
 	type ClassData,
 	type LevelOut,
 	type ExerciseOut,
@@ -104,6 +106,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 	const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'classes' | 'levels' | 'exercises' | 'corpus' | 'research'>('stats')
 	const [timeRange, setTimeRange] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
 	const [stats, setStats] = useState<AdminStats | null>(null)
+	const [periodStats, setPeriodStats] = useState<AdminPeriodStats | null>(null)
+	const [periodLoading, setPeriodLoading] = useState(false)
 	const [users, setUsers] = useState<UserOut[]>([])
 	const [classes, setClasses] = useState<ClassData[]>([])
 	const [levels, setLevels] = useState<LevelOut[]>([])
@@ -170,6 +174,27 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 		void loadData()
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeTab, selectedClass, selectedLevel])
+
+	useEffect(() => {
+		if (activeTab !== 'stats') return
+		let cancelled = false
+		const loadPeriod = async () => {
+			setPeriodLoading(true)
+			try {
+				const data = await getAdminPeriodStats(userId, timeRange)
+				if (!cancelled) setPeriodStats(data)
+			} catch (error) {
+				console.error('Gabim në ngarkimin e statistikave të periudhës:', error)
+				if (!cancelled) setPeriodStats(null)
+			} finally {
+				if (!cancelled) setPeriodLoading(false)
+			}
+		}
+		void loadPeriod()
+		return () => {
+			cancelled = true
+		}
+	}, [activeTab, timeRange, userId])
 
 	useEffect(() => {
 		if (activeTab !== 'corpus') return
@@ -587,76 +612,54 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			throw new Error('Statistikat nuk janë të disponueshme')
 		}
 
-		// Prepare platform statistics
+		const summary = periodStats?.summary
 		const platformStats = {
 			total_users: stats.total_users,
-			active_users: Math.round(stats.total_users * 0.75), // Mock: 75% active rate
+			active_users: summary?.active_users ?? 0,
 			total_classes: stats.total_classes,
 			total_courses: stats.total_courses,
 			total_levels: stats.total_levels,
 			total_exercises: stats.total_exercises,
-			total_attempts: stats.total_attempts,
-			average_score: 78, // Mock për tani
-			completion_rate: 82, // Mock për tani
-			total_time: stats.total_attempts * 180 // Mock: ~3 min per attempt
+			total_attempts: summary?.total_attempts ?? stats.total_attempts,
+			average_score: summary?.avg_score ?? 0,
+			completion_rate: summary?.success_rate ?? 0,
+			total_time: (summary?.time_spent_minutes ?? 0) * 60,
+			period_start: periodStats?.period_start,
+			period_end: periodStats?.period_end,
+			data_source: periodStats?.data_source || 'attempts',
+			realtime: periodStats?.realtime ?? true,
 		}
 
-		// Prepare user statistics (mock data - do të zëvendësohet me të dhëna reale)
+		// User list export: identity fields only (no invented per-user period metrics)
 		const userStats = users.map(user => ({
 			id: user.id,
 			username: user.username,
 			email: user.email,
 			age: user.age,
-			exercises: Math.floor(Math.random() * 50) + 10,
-			avg_score: Math.floor(Math.random() * 30) + 70,
-			time_spent: Math.floor(Math.random() * 500) + 100,
-			streak: Math.floor(Math.random() * 30),
-			level: `Klasa ${Math.floor(Math.random() * 3) + 1}`
+			exercises: '',
+			avg_score: '',
+			time_spent: '',
+			streak: user.current_streak ?? '',
+			level: '',
 		}))
 
-		// Prepare content statistics (mock)
-		const contentStats = [
-			{ class_name: 'Klasa 1', courses: 5, levels: 25, exercises: 125, completion_rate: 85 },
-			{ class_name: 'Klasa 2', courses: 5, levels: 25, exercises: 125, completion_rate: 78 },
-			{ class_name: 'Klasa 3', courses: 5, levels: 25, exercises: 125, completion_rate: 72 }
-		]
+		const contentStats = (periodStats?.categories || []).map((cat) => ({
+			class_name: cat.category,
+			courses: '',
+			levels: '',
+			exercises: cat.total,
+			completion_rate: cat.percentage,
+		}))
 
-		// Prepare activity statistics based on time range
-		let activityStats: any[] = []
-		
-		if (timeRange === 'weekly') {
-			activityStats = [
-				{ period: 'E Hënë', users: Math.round(stats.total_users * 0.15), sessions: Math.round(stats.total_attempts * 0.12), exercises: Math.round(stats.total_exercises * 0.12), avg_score: 83, time_hours: 42, success_rate: 85 },
-				{ period: 'E Martë', users: Math.round(stats.total_users * 0.18), sessions: Math.round(stats.total_attempts * 0.15), exercises: Math.round(stats.total_exercises * 0.15), avg_score: 87, time_hours: 51, success_rate: 88 },
-				{ period: 'E Mërkurë', users: Math.round(stats.total_users * 0.20), sessions: Math.round(stats.total_attempts * 0.18), exercises: Math.round(stats.total_exercises * 0.18), avg_score: 89, time_hours: 58, success_rate: 90 },
-				{ period: 'E Enjte', users: Math.round(stats.total_users * 0.17), sessions: Math.round(stats.total_attempts * 0.16), exercises: Math.round(stats.total_exercises * 0.16), avg_score: 88, time_hours: 54, success_rate: 89 },
-				{ period: 'E Premte', users: Math.round(stats.total_users * 0.14), sessions: Math.round(stats.total_attempts * 0.14), exercises: Math.round(stats.total_exercises * 0.14), avg_score: 85, time_hours: 48, success_rate: 86 },
-				{ period: 'E Shtunë', users: Math.round(stats.total_users * 0.10), sessions: Math.round(stats.total_attempts * 0.13), exercises: Math.round(stats.total_exercises * 0.13), avg_score: 81, time_hours: 38, success_rate: 82 },
-				{ period: 'E Diel', users: Math.round(stats.total_users * 0.08), sessions: Math.round(stats.total_attempts * 0.12), exercises: Math.round(stats.total_exercises * 0.12), avg_score: 79, time_hours: 35, success_rate: 80 }
-			]
-		} else if (timeRange === 'monthly') {
-			activityStats = [
-				{ period: 'Java 1', users: Math.round(stats.total_users * 0.22), sessions: Math.round(stats.total_attempts * 0.23), exercises: Math.round(stats.total_exercises * 0.24), avg_score: 82, time_hours: 280, success_rate: 84 },
-				{ period: 'Java 2', users: Math.round(stats.total_users * 0.26), sessions: Math.round(stats.total_attempts * 0.27), exercises: Math.round(stats.total_exercises * 0.28), avg_score: 85, time_hours: 320, success_rate: 87 },
-				{ period: 'Java 3', users: Math.round(stats.total_users * 0.28), sessions: Math.round(stats.total_attempts * 0.29), exercises: Math.round(stats.total_exercises * 0.29), avg_score: 87, time_hours: 340, success_rate: 89 },
-				{ period: 'Java 4', users: Math.round(stats.total_users * 0.24), sessions: Math.round(stats.total_attempts * 0.21), exercises: Math.round(stats.total_exercises * 0.19), avg_score: 84, time_hours: 300, success_rate: 86 }
-			]
-		} else if (timeRange === 'yearly') {
-			activityStats = [
-				{ period: 'Janar', users: Math.round(stats.total_users * 0.08), sessions: Math.round(stats.total_attempts * 0.08), exercises: Math.round(stats.total_exercises * 0.08), avg_score: 78, time_hours: 980, success_rate: 80 },
-				{ period: 'Shkurt', users: Math.round(stats.total_users * 0.07), sessions: Math.round(stats.total_attempts * 0.07), exercises: Math.round(stats.total_exercises * 0.07), avg_score: 79, time_hours: 920, success_rate: 81 },
-				{ period: 'Mars', users: Math.round(stats.total_users * 0.09), sessions: Math.round(stats.total_attempts * 0.09), exercises: Math.round(stats.total_exercises * 0.09), avg_score: 81, time_hours: 1050, success_rate: 83 },
-				{ period: 'Prill', users: Math.round(stats.total_users * 0.08), sessions: Math.round(stats.total_attempts * 0.08), exercises: Math.round(stats.total_exercises * 0.08), avg_score: 80, time_hours: 980, success_rate: 82 },
-				{ period: 'Maj', users: Math.round(stats.total_users * 0.09), sessions: Math.round(stats.total_attempts * 0.09), exercises: Math.round(stats.total_exercises * 0.09), avg_score: 82, time_hours: 1020, success_rate: 84 },
-				{ period: 'Qershor', users: Math.round(stats.total_users * 0.08), sessions: Math.round(stats.total_attempts * 0.08), exercises: Math.round(stats.total_exercises * 0.08), avg_score: 81, time_hours: 960, success_rate: 83 },
-				{ period: 'Korrik', users: Math.round(stats.total_users * 0.07), sessions: Math.round(stats.total_attempts * 0.07), exercises: Math.round(stats.total_exercises * 0.07), avg_score: 79, time_hours: 880, success_rate: 81 },
-				{ period: 'Gusht', users: Math.round(stats.total_users * 0.07), sessions: Math.round(stats.total_attempts * 0.07), exercises: Math.round(stats.total_exercises * 0.07), avg_score: 78, time_hours: 850, success_rate: 80 },
-				{ period: 'Shtator', users: Math.round(stats.total_users * 0.10), sessions: Math.round(stats.total_attempts * 0.11), exercises: Math.round(stats.total_exercises * 0.11), avg_score: 83, time_hours: 1180, success_rate: 85 },
-				{ period: 'Tetor', users: Math.round(stats.total_users * 0.09), sessions: Math.round(stats.total_attempts * 0.10), exercises: Math.round(stats.total_exercises * 0.10), avg_score: 82, time_hours: 1100, success_rate: 84 },
-				{ period: 'Nëntor', users: Math.round(stats.total_users * 0.09), sessions: Math.round(stats.total_attempts * 0.09), exercises: Math.round(stats.total_exercises * 0.09), avg_score: 81, time_hours: 1030, success_rate: 83 },
-				{ period: 'Dhjetor', users: Math.round(stats.total_users * 0.09), sessions: Math.round(stats.total_attempts * 0.09), exercises: Math.round(stats.total_exercises * 0.09), avg_score: 80, time_hours: 1000, success_rate: 82 }
-			]
-		}
+		const activityStats = (periodStats?.series || []).map((row) => ({
+			period: row.period || row.ditë || row.muaj || '',
+			users: row.users ?? row.përdorues ?? 0,
+			sessions: row.sessions ?? row.attempts ?? row.përpjekje ?? 0,
+			exercises: row.exercises ?? row.ushtrime ?? row.attempts ?? 0,
+			avg_score: row.avg_score ?? row.sukseRate ?? 0,
+			time_hours: row.time_hours ?? 0,
+			success_rate: row.success_rate ?? row.sukseRate ?? 0,
+		}))
 
 		return {
 			timeRange,
@@ -664,7 +667,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			userStats,
 			contentStats,
 			activityStats,
-			performanceStats: [] // Placeholder
+			performanceStats: periodStats?.categories || [],
 		}
 	}
 
@@ -938,6 +941,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 							<AdminCharts
 								kind="stats"
 								stats={stats}
+								periodStats={periodStats}
+								periodLoading={periodLoading}
 								timeRange={timeRange}
 								onTimeRangeChange={setTimeRange}
 								isExporting={isExporting}

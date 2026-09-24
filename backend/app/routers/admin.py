@@ -775,3 +775,24 @@ def get_admin_stats(user_id: int, db: Session = Depends(get_db)):
 		"total_attempts": total_attempts
 	}
 
+
+@router.get("/stats/period")
+def get_admin_period_stats(
+	user_id: int,
+	range: str = "weekly",
+	db: Session = Depends(get_db),
+):
+	"""
+	Live weekly / monthly / yearly platform analytics from Attempt rows.
+	Always recomputed from the database at request time (no stored snapshots).
+	"""
+	verify_admin(user_id, db)
+	normalized = (range or "weekly").strip().lower()
+	if normalized not in ("weekly", "monthly", "yearly"):
+		raise HTTPException(status_code=400, detail="range must be weekly, monthly, or yearly")
+
+	from ..services.period_stats import compute_platform_period_stats
+
+	return compute_platform_period_stats(db, normalized)  # type: ignore[arg-type]
+
+

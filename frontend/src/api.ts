@@ -439,6 +439,35 @@ export interface AdminStats {
 	total_attempts: number
 }
 
+export type AdminPeriodRange = 'weekly' | 'monthly' | 'yearly'
+
+export interface AdminPeriodStats {
+	range: AdminPeriodRange
+	period_start: string
+	period_end: string
+	generated_at: string
+	data_source: string
+	realtime: boolean
+	summary: {
+		active_users: number
+		total_attempts: number
+		correct_attempts: number
+		avg_score: number
+		time_spent_minutes: number
+		success_rate: number
+	}
+	series: Array<Record<string, string | number>>
+	peak_hours: Array<{ orë: string; aktivitet: number }>
+	categories: Array<{
+		category: string
+		kategori: string
+		total: number
+		correct: number
+		percentage: number
+		pikë: number
+	}>
+}
+
 export async function createAdminUser(userData: { username: string; email: string; password: string; age?: number }) {
 	const { data } = await client.post('/api/admin/create-admin-user', userData)
 	return data
@@ -446,6 +475,13 @@ export async function createAdminUser(userData: { username: string; email: strin
 
 export async function getAdminStats(userId: number) {
 	const { data } = await client.get<AdminStats>(`/api/admin/stats?user_id=${userId}`)
+	return data
+}
+
+export async function getAdminPeriodStats(userId: number, range: AdminPeriodRange) {
+	const { data } = await client.get<AdminPeriodStats>(
+		`/api/admin/stats/period?user_id=${userId}&range=${encodeURIComponent(range)}`
+	)
 	return data
 }
 
