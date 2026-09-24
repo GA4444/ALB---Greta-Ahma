@@ -530,11 +530,10 @@
   .admin-dashboard .admin-tabs {
     position: sticky;
     top: 0.35rem;
-    overflow-x: auto;
-    flex-wrap: nowrap !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 0.35rem !important;
+    overflow: visible !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.4rem !important;
     padding: 0.45rem !important;
   }
 
@@ -543,11 +542,13 @@
   }
 
   .admin-dashboard .admin-tabs button {
-    flex: 0 0 auto !important;
-    white-space: nowrap !important;
-    min-width: max-content;
-    padding: 0.65rem 0.9rem !important;
+    flex: none !important;
+    width: 100% !important;
+    white-space: normal !important;
+    min-width: 0 !important;
+    padding: 0.65rem 0.75rem !important;
     font-size: 0.82rem !important;
+    text-align: center !important;
   }
 
   .admin-dashboard .admin-content {
@@ -667,12 +668,23 @@
 .admin-dashboard .admin-tabs {
   display: flex !important;
   flex-wrap: wrap !important;
+  gap: 0.45rem !important;
   margin-bottom: 1rem !important;
+  overflow: visible !important;
 }
 
 @media (max-width: 1024px) {
   .admin-dashboard .admin-tabs {
-    flex-wrap: nowrap !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    flex-wrap: unset !important;
+    overflow: visible !important;
+  }
+
+  .admin-dashboard .admin-tabs button {
+    width: 100% !important;
+    white-space: normal !important;
+    text-align: center !important;
   }
 }
 
@@ -1143,16 +1155,16 @@
 /* ---------- Tablet ≤1024 ---------- */
 @media (max-width: 1024px) {
   .admin-dashboard .admin-tabs {
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    overflow: visible !important;
     gap: 0.4rem !important;
   }
 
   .admin-dashboard .admin-tabs button {
-    flex: 0 0 auto !important;
-    white-space: nowrap !important;
+    width: 100% !important;
+    white-space: normal !important;
+    text-align: center !important;
   }
 
   .admin-dashboard .stats-grid {
@@ -1197,18 +1209,16 @@
     padding: 0.45rem 0.85rem !important;
   }
 
-  /* Tabs act as mobile top nav (collapsible-feel via horizontal chip strip) */
+  /* Tabs: all visible, stacked in a grid — no horizontal scroll */
   .admin-dashboard .admin-tabs {
-    position: sticky !important;
-    top: 0.35rem;
-    z-index: 35;
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 0.35rem !important;
-    padding: 0.4rem !important;
+    position: relative !important;
+    top: auto;
+    z-index: 1;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    overflow: visible !important;
+    gap: 0.4rem !important;
+    padding: 0.45rem !important;
     margin-bottom: 0.75rem !important;
     background: rgba(255, 255, 255, 0.96) !important;
     border: 1px solid var(--adm-line) !important;
@@ -1221,11 +1231,14 @@
   }
 
   .admin-dashboard .admin-tabs button {
-    flex: 0 0 auto !important;
+    width: 100% !important;
+    flex: none !important;
     min-height: var(--adm-touch) !important;
-    padding: 0.55rem 0.85rem !important;
-    font-size: 0.8rem !important;
+    padding: 0.65rem 0.85rem !important;
+    font-size: 0.88rem !important;
     border-radius: 10px !important;
+    white-space: normal !important;
+    text-align: center !important;
   }
 
   .admin-dashboard .admin-content {
@@ -1478,5 +1491,31 @@
   .admin-dashboard .modal,
   .admin-dashboard .modal-content {
     max-height: calc(100dvh - 12px) !important;
+  }
+}
+
+/* Final: admin tabs always visible, stacked — never horizontal scroll */
+.admin-dashboard .admin-tabs {
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+
+@media (max-width: 1024px) {
+  .admin-dashboard .admin-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    overflow: visible !important;
+  }
+
+  .admin-dashboard .admin-tabs button {
+    width: 100% !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard .admin-tabs {
+    grid-template-columns: 1fr !important;
   }
 }
