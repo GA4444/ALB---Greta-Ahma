@@ -34,12 +34,20 @@ def _init_database_async() -> None:
 
 
 def _start_background_tasks() -> None:
-	enabled = os.getenv("ENABLE_BACKGROUND_TASKS", "false").lower() in ("true", "1", "yes")
+	from pathlib import Path
+	from dotenv import dotenv_values
+
+	env_path = Path(__file__).resolve().parent.parent / ".env"
+	env_vals = dotenv_values(env_path) if env_path.exists() else {}
+	flag = (env_vals.get("ENABLE_BACKGROUND_TASKS") or os.getenv("ENABLE_BACKGROUND_TASKS", "false") or "false")
+	enabled = flag.strip().lower() in ("true", "1", "yes")
 	if not enabled:
+		logger.info("Background tasks disabled (ENABLE_BACKGROUND_TASKS=%s)", flag)
 		return
 	try:
 		from .background_tasks import start_background_tasks
 		start_background_tasks()
+		logger.info("Background tasks started (ENABLE_BACKGROUND_TASKS=%s)", flag)
 	except Exception as exc:
 		logger.warning("Background tasks not started: %s", exc)
 
@@ -147,26 +155,45 @@ def email_status():
 	smtp_user = _live_cfg("SMTP_USER")
 	smtp_pass = _live_cfg("SMTP_PASSWORD")
 	configured = bool(smtp_user and smtp_pass)
+	placeholder = (
+		"your-gmail" in (smtp_user or "").lower()
+		or "your-email@" in (smtp_user or "").lower()
+		or "your-app-password" in (smtp_pass or "").lower()
+	)
+	configured = configured and not placeholder
 	scheduler_running = False
+	weekly_info = {}
 	try:
-		from .background_tasks import scheduler
+		from .background_tasks import scheduler, weekly_send_window, WEEKLY_TZ, WEEKLY_HOUR, WEEKLY_MINUTE
 		scheduler_running = getattr(scheduler, "running", False)
-	except Exception:
-		pass
+		should_run, week_id, sunday_20 = weekly_send_window()
+		weekly_info = {
+			"timezone": WEEKLY_TZ.key,
+			"sunday_local_time": f"{WEEKLY_HOUR:02d}:{WEEKLY_MINUTE:02d}",
+			"in_send_window_now": should_run,
+			"due_iso_week": week_id,
+			"sunday_20_local": sunday_20.isoformat() if sunday_20 else None,
+			"last_weekly_week": getattr(scheduler, "last_weekly_week", None),
+			"last_weekly_result": getattr(scheduler, "last_weekly_result", None),
+		}
+	except Exception as exc:
+		weekly_info = {"error": str(exc)[:200]}
 	return {
 		"smtp_configured": configured,
 		"smtp_user": (
 			f"{smtp_user[:2]}***@{smtp_user.split('@', 1)[1]}"
-			if configured and "@" in smtp_user else "(nuk është vendosur)"
+			if smtp_user and "@" in smtp_user and not placeholder else "(nuk është vendosur / placeholder)"
 		),
 		"env_file_found": _ENV_PATH.exists(),
 		"env_file_path": str(_ENV_PATH),
 		"welcome_email_on_register": True,
 		"background_scheduler_running": scheduler_running,
+		"weekly_reports": weekly_info,
 		"instructions": (
-			"Hapni backend/.env dhe vendosni SMTP_USER dhe SMTP_PASSWORD (Gmail App Password)."
+			"Vendosni SMTP_USER dhe SMTP_PASSWORD reale (Gmail App Password) në Render Environment "
+			"dhe/ose backend/.env. Scheduler-i dërgon çdo të diel në 20:00 Europe/Tirane."
 			if not configured else
-			"Konfigurimi SMTP duket i saktë. Provoni POST /api/email/test për të dërguar email testues."
+			"SMTP OK. Weekly reports: e diel 20:00 Europe/Tirane (+ catch-up 36h)."
 		),
 	}
 

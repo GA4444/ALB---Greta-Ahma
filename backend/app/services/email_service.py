@@ -69,7 +69,7 @@ def _send_email(
         logger.error("Email failed: SMTP credentials are not configured (type=%s)", email_type)
         _record_email_log(user_id, email_type, to_email, subject, False, "SMTP credentials missing")
         return False
-    if "your-gmail" in smtp_user.lower() or "your-app-password" in (smtp_pass or "").lower():
+    if "your-gmail" in smtp_user.lower() or "your-email@" in smtp_user.lower() or "your-app-password" in (smtp_pass or "").lower():
         logger.error("Email failed: SMTP credentials still contain placeholders (type=%s)", email_type)
         _record_email_log(user_id, email_type, to_email, subject, False, "SMTP placeholders configured")
         return False

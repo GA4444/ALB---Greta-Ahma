@@ -75,10 +75,26 @@ class EmailScheduler:
     def send_weekly_reports():
         """
         Dërgon raporte javore të personalizuara
-        Ekzekutohet çdo të dielë në mbrëmje.
+        Ekzekutohet çdo të dielë në 20:00 Europe/Tirane (+ catch-up).
         Stats are computed live from Attempt rows for the last 7 days.
         """
         from .period_stats import compute_user_period_stats, period_bounds, utcnow
+        from .email_service import _cfg
+
+        smtp_user = _cfg("SMTP_USER", "")
+        smtp_pass = _cfg("SMTP_PASSWORD", "")
+        if (
+            not smtp_user
+            or not smtp_pass
+            or "your-gmail" in smtp_user.lower()
+            or "your-email@" in smtp_user.lower()
+            or "your-app-password" in smtp_pass.lower()
+        ):
+            logger.error(
+                "Weekly reports aborted: SMTP_USER/SMTP_PASSWORD are missing or still placeholders. "
+                "Set real Gmail App Password in Render env / backend/.env"
+            )
+            return 0
 
         db = SessionLocal()
         try:
@@ -118,7 +134,7 @@ class EmailScheduler:
                     sent_count += 1
                     logger.info("Weekly report sent: user_id=%s", user.id)
             
-            logger.info("Weekly report run complete: sent=%s", sent_count)
+            logger.info("Weekly report run complete: sent=%s eligible_users=%s", sent_count, len(users))
             return sent_count
             
         except Exception as e:
@@ -162,10 +178,11 @@ def run_streak_check():
 
 
 def run_weekly_reports():
-    """Run weekly reports"""
-    print("📊 Running weekly reports...")
+    """Run weekly reports. Returns a small status dict for the scheduler."""
+    print("Running weekly reports...")
     count = email_scheduler.send_weekly_reports()
-    print(f"✅ Sent {count} weekly reports")
+    print(f"Sent {count} weekly reports")
+    return {"sent": count}
 
 
 def run_cleanup():
