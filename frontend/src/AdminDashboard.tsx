@@ -1536,11 +1536,11 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 					)}
 
 						{activeTab === 'users' && (
-							<div className="admin-table-container">
+							<div className="admin-table-container admin-table-container--cards">
 								<div className="table-header">
 									<h2>Përdoruesit</h2>
 								</div>
-								<table className="admin-table">
+								<table className="admin-table admin-table--cards">
 									<thead>
 										<tr>
 											<th>ID</th>
@@ -1556,17 +1556,19 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<tbody>
 										{users.map(user => (
 											<tr key={user.id}>
-												<td>{user.id}</td>
-												<td>{[user.first_name, user.last_name].filter(Boolean).join(' ') || '—'}</td>
-												<td>{user.username}</td>
-												<td>{user.email}</td>
-												<td>{user.age || '-'}</td>
-												<td>{user.is_active ? '✅ Aktiv' : '❌ Jo aktiv'}</td>
-												<td>{user.is_admin ? '🛡️ Administrator' : '👤 Përdorues'}</td>
-												<td>
-													<button onClick={() => handleGenerateUserReport(user)}>📊 Raport</button>
-													<button onClick={() => setEditingUser(user)}>✏️ Edito</button>
-													<button onClick={() => handleDeleteUser(user.id)}>🗑️ Fshi</button>
+												<td data-label="ID">{user.id}</td>
+												<td data-label="Emri / Mbiemri">{[user.first_name, user.last_name].filter(Boolean).join(' ') || '—'}</td>
+												<td data-label="Username">{user.username}</td>
+												<td data-label="Email">{user.email}</td>
+												<td data-label="Moshë">{user.age || '-'}</td>
+												<td data-label="Gjendja">{user.is_active ? '✅ Aktiv' : '❌ Jo aktiv'}</td>
+												<td data-label="Administrator">{user.is_admin ? '🛡️ Administrator' : '👤 Përdorues'}</td>
+												<td data-label="Veprime">
+													<div className="admin-actions">
+														<button type="button" onClick={() => handleGenerateUserReport(user)}>📊 Raport</button>
+														<button type="button" onClick={() => setEditingUser(user)}>✏️ Edito</button>
+														<button type="button" onClick={() => handleDeleteUser(user.id)}>🗑️ Fshi</button>
+													</div>
 												</td>
 											</tr>
 										))}
@@ -1576,12 +1578,12 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 						)}
 
 						{activeTab === 'classes' && (
-							<div className="admin-table-container">
+							<div className="admin-table-container admin-table-container--cards">
 								<div className="table-header">
 									<h2>Klasat</h2>
 									<button className="create-btn" onClick={() => setShowCreateModal('class')}>+ Shto Klasë</button>
 								</div>
-								<table className="admin-table">
+								<table className="admin-table admin-table--cards">
 									<thead>
 										<tr>
 											<th>ID</th>
@@ -1595,14 +1597,16 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<tbody>
 										{classes.map(cls => (
 											<tr key={cls.id}>
-												<td>{cls.id}</td>
-												<td>{cls.name}</td>
-												<td>{cls.description || '-'}</td>
-												<td>{(cls.courses || []).length}</td>
-												<td>{cls.enabled ? '✅ Aktiv' : '❌ Jo aktiv'}</td>
-												<td>
-													<button onClick={() => handleEditClass(cls)}>✏️ Edito</button>
-													<button onClick={() => handleDeleteClass(cls.id)}>🗑️ Fshi</button>
+												<td data-label="ID">{cls.id}</td>
+												<td data-label="Emër">{cls.name}</td>
+												<td data-label="Përshkrim">{cls.description || '-'}</td>
+												<td data-label="Kurse">{(cls.courses || []).length}</td>
+												<td data-label="Gjendja">{cls.enabled ? '✅ Aktiv' : '❌ Jo aktiv'}</td>
+												<td data-label="Veprime">
+													<div className="admin-actions">
+														<button type="button" onClick={() => handleEditClass(cls)}>✏️ Edito</button>
+														<button type="button" onClick={() => handleDeleteClass(cls.id)}>🗑️ Fshi</button>
+													</div>
 												</td>
 											</tr>
 										))}
@@ -1612,7 +1616,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 						)}
 
 						{activeTab === 'levels' && (
-							<div className="admin-table-container">
+							<div className="admin-table-container admin-table-container--cards">
 								<div className="table-header">
 									<h2>Nivelet</h2>
 									<div>
@@ -1625,7 +1629,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										<button className="create-btn" onClick={() => setShowCreateModal('level')}>+ Shto Nivel</button>
 									</div>
 								</div>
-								<table className="admin-table">
+								<table className="admin-table admin-table--cards">
 									<thead>
 										<tr>
 											<th>ID</th>
@@ -1640,15 +1644,17 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<tbody>
 										{levels.map(level => (
 											<tr key={level.id}>
-												<td>{level.id}</td>
-												<td>{getLevelDisplayName(level)}</td>
-												<td>{getLevelClassName(level)}</td>
-												<td>{level.description || '-'}</td>
-												<td>{level.course_id}</td>
-												<td>{level.enabled ? '✅ Aktiv' : '❌ Jo aktiv'}</td>
-												<td>
-													<button onClick={() => handleEditLevel(level)}>✏️ Edito</button>
-													<button onClick={() => handleDeleteLevel(level.id)}>🗑️ Fshi</button>
+												<td data-label="ID">{level.id}</td>
+												<td data-label="Emër">{getLevelDisplayName(level)}</td>
+												<td data-label="Klasa">{getLevelClassName(level)}</td>
+												<td data-label="Përshkrim">{level.description || '-'}</td>
+												<td data-label="Kurs ID">{level.course_id}</td>
+												<td data-label="Gjendja">{level.enabled ? '✅ Aktiv' : '❌ Jo aktiv'}</td>
+												<td data-label="Veprime">
+													<div className="admin-actions">
+														<button type="button" onClick={() => handleEditLevel(level)}>✏️ Edito</button>
+														<button type="button" onClick={() => handleDeleteLevel(level.id)}>🗑️ Fshi</button>
+													</div>
 												</td>
 											</tr>
 										))}
@@ -1658,7 +1664,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 						)}
 
 						{activeTab === 'exercises' && (
-							<div className="admin-table-container">
+							<div className="admin-table-container admin-table-container--cards">
 								<div className="table-header">
 									<h2>Ushtrimet</h2>
 									<div>
@@ -1673,7 +1679,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										<button className="create-btn" onClick={() => setShowCreateModal('exercise')}>+ Shto Ushtrim</button>
 									</div>
 								</div>
-								<table className="admin-table">
+								<table className="admin-table admin-table--cards">
 									<thead>
 										<tr>
 											<th>ID</th>
@@ -1687,14 +1693,16 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<tbody>
 										{exercises.map(exercise => (
 											<tr key={exercise.id}>
-												<td>{exercise.id}</td>
-												<td>{exercise.prompt.substring(0, 50)}...</td>
-												<td>{exercise.category}</td>
-												<td>{exercise.level_id}</td>
-												<td>{exercise.points}</td>
-												<td>
-													<button onClick={() => setEditingExercise(exercise)}>✏️ Edito</button>
-													<button onClick={() => handleDeleteExercise(exercise.id)}>🗑️ Fshi</button>
+												<td data-label="ID">{exercise.id}</td>
+												<td data-label="Prompt">{exercise.prompt.substring(0, 50)}...</td>
+												<td data-label="Kategori">{exercise.category}</td>
+												<td data-label="Nivel ID">{exercise.level_id}</td>
+												<td data-label="Pikë">{exercise.points}</td>
+												<td data-label="Veprime">
+													<div className="admin-actions">
+														<button type="button" onClick={() => setEditingExercise(exercise)}>✏️ Edito</button>
+														<button type="button" onClick={() => handleDeleteExercise(exercise.id)}>🗑️ Fshi</button>
+													</div>
 												</td>
 											</tr>
 										))}
