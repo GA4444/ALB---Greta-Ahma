@@ -7,6 +7,7 @@ import {
 	getAllClasses,
 	getAllLevels,
 	getAllExercises,
+	pingHealth,
 	getUserReport,
 	createClass,
 	createLevel,
@@ -161,77 +162,112 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 	})
 
 	useEffect(() => {
-		loadData()
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeTab, selectedClass, selectedLevel, corpusFilters, corpusPage])
+		// Warm API early so the first tab request is faster.
+		void pingHealth()
+	}, [])
 
-	const loadData = async () => {
-		setLoading(true)
-		setLoadError(null)
-		try {
-			if (activeTab === 'stats') {
-				const statsData = await getAdminStats(userId)
-				setStats(statsData)
-			} else if (activeTab === 'users') {
-				const usersData = await getAllUsers(userId)
-				setUsers(usersData)
-			} else if (activeTab === 'classes') {
-				const classesData = await getAllClasses(userId)
-				setClasses(classesData)
-			} else if (activeTab === 'levels') {
-				const levelsData = await getAllLevels(userId, selectedClass || undefined)
-				setLevels(levelsData)
-			} else if (activeTab === 'exercises') {
-				const exercisesData = await getAllExercises(userId, selectedLevel || undefined, selectedClass || undefined)
-				setExercises(exercisesData)
-			} else if (activeTab === 'corpus') {
-				const [statsRes, docsRes, fuseRes, classesRes] = await Promise.all([
-					getCorpusStats(userId),
-					getCorpusDocuments(userId, { ...corpusFilters, limit: 50, offset: corpusPage * 50 }),
-					getCorpusFuseCodes(userId),
-					getAllClasses(userId),
-				])
-				setCorpusStats(statsRes)
-				setCorpusDocs(docsRes.documents)
-				setCorpusTotal(docsRes.total)
-				setCorpusFuseCodes(fuseRes.codes)
-				setClasses(classesRes)
-			} else if (activeTab === 'research') {
-				const [overviewRes, datasetRes, irtRes, protocolRes, statusRes, commandsRes, ktRes, reviewRes] = await Promise.allSettled([
-					getResearchAIOverview(),
-					getInstructionDataset(12),
-					getIRTSummary(1),
-					getFinalExperimentProtocol(),
-					getModelTrainingStatus(),
-					getTrainingCommands(),
-					getKnowledgeTracing(String(userId)),
-					getTeacherReviewSummary(),
-				])
-				if (overviewRes.status === 'fulfilled') setResearchOverview(overviewRes.value)
-				if (datasetRes.status === 'fulfilled') setInstructionDataset(datasetRes.value)
-				if (irtRes.status === 'fulfilled') setIrtSummary(irtRes.value)
-				if (protocolRes.status === 'fulfilled') setFinalProtocol(protocolRes.value)
-				if (statusRes.status === 'fulfilled') setModelTrainingStatus(statusRes.value)
-				if (commandsRes.status === 'fulfilled') setTrainingCommands(commandsRes.value)
-				if (ktRes.status === 'fulfilled') setKtSummary(ktRes.value)
-				if (reviewRes.status === 'fulfilled') setTeacherReviewSummary(reviewRes.value)
-			}
-		} catch (error: any) {
-			console.error('Error loading data:', error)
-			const status = error?.response?.status
-			const detail = error?.response?.data?.detail
-			if (status === 403 || status === 401) {
-				onLogout()
-				return
-			}
-			setLoadError(
-				!error?.response
-					? 'Serveri po zgjohet. Prit 30 sekonda dhe rifresko faqen.'
-					: (typeof detail === 'string' ? detail : 'Gabim në ngarkimin e të dhënave')
-			)
-		} finally {
-			setLoading(false)
+	useEffect(() => {
+		void loadData()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeTab, selectedClass, selectedLevel])
+
+	useEffect(() => {
+		if (activeTab !== 'corpus') return
+		void loadData({ soft: true })
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [corpusFilters, corpusPage])
+
+	const loadedTabsRef = useRef<Set<string>>(new Set())
+
+	const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+	const fetchActiveTabData = async () => {
+		if (activeTab === 'stats') {
+			const statsData = await getAdminStats(userId)
+			setStats(statsData)
+		} else if (activeTab === 'users') {
+			const usersData = await getAllUsers(userId)
+			setUsers(usersData)
+		} else if (activeTab === 'classes') {
+			const classesData = await getAllClasses(userId)
+			setClasses(classesData)
+		} else if (activeTab === 'levels') {
+			const levelsData = await getAllLevels(userId, selectedClass || undefined)
+			setLevels(levelsData)
+		} else if (activeTab === 'exercises') {
+			const exercisesData = await getAllExercises(userId, selectedLevel || undefined, selectedClass || undefined)
+			setExercises(exercisesData)
+		} else if (activeTab === 'corpus') {
+			const [statsRes, docsRes, fuseRes, classesRes] = await Promise.all([
+				getCorpusStats(userId),
+				getCorpusDocuments(userId, { ...corpusFilters, limit: 50, offset: corpusPage * 50 }),
+				getCorpusFuseCodes(userId),
+				getAllClasses(userId),
+			])
+			setCorpusStats(statsRes)
+			setCorpusDocs(docsRes.documents)
+			setCorpusTotal(docsRes.total)
+			setCorpusFuseCodes(fuseRes.codes)
+			setClasses(classesRes)
+		} else if (activeTab === 'research') {
+			const [overviewRes, datasetRes, irtRes, protocolRes, statusRes, commandsRes, ktRes, reviewRes] = await Promise.allSettled([
+				getResearchAIOverview(),
+				getInstructionDataset(12),
+				getIRTSummary(1),
+				getFinalExperimentProtocol(),
+				getModelTrainingStatus(),
+				getTrainingCommands(),
+				getKnowledgeTracing(String(userId)),
+				getTeacherReviewSummary(),
+			])
+			if (overviewRes.status === 'fulfilled') setResearchOverview(overviewRes.value)
+			if (datasetRes.status === 'fulfilled') setInstructionDataset(datasetRes.value)
+			if (irtRes.status === 'fulfilled') setIrtSummary(irtRes.value)
+			if (protocolRes.status === 'fulfilled') setFinalProtocol(protocolRes.value)
+			if (statusRes.status === 'fulfilled') setModelTrainingStatus(statusRes.value)
+			if (commandsRes.status === 'fulfilled') setTrainingCommands(commandsRes.value)
+			if (ktRes.status === 'fulfilled') setKtSummary(ktRes.value)
+			if (reviewRes.status === 'fulfilled') setTeacherReviewSummary(reviewRes.value)
 		}
+	}
+
+	const loadData = async (opts?: { soft?: boolean }) => {
+		const soft = Boolean(opts?.soft) || loadedTabsRef.current.has(activeTab)
+		if (!soft) {
+			setLoading(true)
+		}
+		setLoadError(null)
+
+		let lastError: any = null
+		for (let attempt = 0; attempt < 3; attempt++) {
+			try {
+				if (attempt > 0) {
+					await pingHealth()
+					await sleep(600 * attempt)
+				}
+				await fetchActiveTabData()
+				loadedTabsRef.current.add(activeTab)
+				setLoadError(null)
+				setLoading(false)
+				return
+			} catch (error: any) {
+				lastError = error
+				console.error('Error loading data:', error)
+				const status = error?.response?.status
+				if (status === 403 || status === 401) {
+					onLogout()
+					setLoading(false)
+					return
+				}
+				const canRetry = !error?.response && attempt < 2
+				if (canRetry) continue
+				break
+			}
+		}
+
+		const detail = lastError?.response?.data?.detail
+		setLoadError(typeof detail === 'string' ? detail : 'Gabim në ngarkimin e të dhënave')
+		setLoading(false)
 	}
 
 	const loadCorpusWordFreqs = async () => {

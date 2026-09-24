@@ -449,6 +449,15 @@ export async function getAdminStats(userId: number) {
 	return data
 }
 
+/** Lightweight ping to warm the API host (errors ignored). */
+export async function pingHealth() {
+	try {
+		await client.get('/health', { timeout: 12000 })
+	} catch {
+		/* ignore — best-effort wake */
+	}
+}
+
 export async function getAllUsers(userId: number) {
 	const { data } = await client.get<UserOut[]>(`/api/admin/users?user_id=${userId}`)
 	return data

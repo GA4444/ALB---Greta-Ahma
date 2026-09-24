@@ -2,7 +2,7 @@
 import { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import type { ChangeEvent } from 'react'
 import type { CourseOut, LevelOut, ExerciseOut, ProgressOut, ClassData, AIPracticeExercise, AICoachResponse, UserAchievementsResponse, StreakData, DailyChallenge, SRSStatsResponse } from './api'
-import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, fetchUserTotals, login, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, getAdminStats, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument, generatePedagogicalFeedback, getAdaptiveNextItem } from './api'
+import { getClasses, getClassCourses, getCourseLevels, getLevelExercises, submitAnswer, fetchUserOverview, fetchUserTotals, login, getAIRecommendations, getAdaptiveDifficulty, getLearningPath, getProgressInsights, getLeaderboard, getUserRank, getPublicStats, fetchAIPersonalizedPractice, fetchAICoach, analyzeOCR, getUserAchievements, getUserStreak, getDailyChallenge, getSRSStats, getUserProfile, updateUserProfile, getAdminStats, type LeaderboardEntry, generateAdvancedPractice, browseCorpus, browseCorpusDocument, generatePedagogicalFeedback, getAdaptiveNextItem, pingHealth } from './api'
 import type { CorpusDocument } from './api'
 import { AppFooter, AppHeader } from './components/AppChrome'
 import LazyErrorBoundary from './components/LazyErrorBoundary'
@@ -171,6 +171,11 @@ function App() {
     useEffect(() => {
         exerciseStartedAtRef.current = Date.now()
     }, [currentExerciseIndex, exercises])
+
+    // Warm API host early (Render cold start) so loads feel faster.
+    useEffect(() => {
+        void pingHealth()
+    }, [])
     
     // Public stats for welcome screen
     const [publicStats, setPublicStats] = useState({
