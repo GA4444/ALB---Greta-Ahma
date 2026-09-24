@@ -6,7 +6,7 @@ classification, validation, duplicate detection, per-class statistics.
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from ..database import get_db
 from .. import models
 from pydantic import BaseModel
@@ -26,6 +26,27 @@ def verify_admin(user_id: int, db: Session):
     if not user or not user.is_admin:
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
+
+
+def _apply_corpus_search(q, search: Optional[str]):
+    """Case-insensitive partial match on existing corpus metadata fields."""
+    if not search or not str(search).strip():
+        return q
+    term = str(search).strip()
+    like = f"%{term}%"
+    clauses = [
+        models.CorpusDocument.title.ilike(like),
+        models.CorpusDocument.author.ilike(like),
+        models.CorpusDocument.genre.ilike(like),
+        models.CorpusDocument.source.ilike(like),
+        models.CorpusDocument.dialect.ilike(like),
+    ]
+    if term.isdigit():
+        try:
+            clauses.append(models.CorpusDocument.year == int(term))
+        except ValueError:
+            pass
+    return q.filter(or_(*clauses))
 
 
 # ---------------------------------------------------------------------------
@@ -157,7 +178,7 @@ def list_documents(
     if is_validated is not None:
         q = q.filter(models.CorpusDocument.is_validated == is_validated)
     if search:
-        q = q.filter(models.CorpusDocument.title.ilike(f"%{search}%"))
+        q = _apply_corpus_search(q, search)
     total = q.count()
     docs = q.order_by(models.CorpusDocument.id.desc()).offset(offset).limit(limit).all()
     return {"total": total, "documents": [_doc_to_dict(d) for d in docs]}
@@ -694,7 +715,7 @@ def browse_corpus(
     if dialect:
         q = q.filter(models.CorpusDocument.dialect == dialect)
     if search:
-        q = q.filter(models.CorpusDocument.title.ilike(f"%{search}%"))
+        q = _apply_corpus_search(q, search)
     total = q.count()
     docs = q.order_by(models.CorpusDocument.id.desc()).offset(offset).limit(limit).all()
     return {

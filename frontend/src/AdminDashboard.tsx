@@ -1,6 +1,6 @@
 import BrandLogo from './components/BrandLogo'
 import PageLoading from './components/PageLoading'
-import React, { lazy, Suspense, useState, useEffect, useRef } from 'react'
+import React, { lazy, Suspense, useState, useEffect, useRef, useMemo } from 'react'
 import {
 	getAdminStats,
 	getAdminPeriodStats,
@@ -69,6 +69,8 @@ import {
 import './AdminDashboard.css'
 import './AdminDashboard-pro.css'
 import type { ExportData } from './utils/dataExport'
+import AdminSearchBar from './admin/AdminSearchBar'
+import { filterBySearch } from './admin/adminSearch'
 
 const AdminCharts = lazy(() => import('./admin/AdminCharts'))
 const BarChart = lazy(() => import('./admin/AdminCharts').then(module => ({ default: module.BarChart })))
@@ -112,6 +114,13 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 	const [classes, setClasses] = useState<ClassData[]>([])
 	const [levels, setLevels] = useState<LevelOut[]>([])
 	const [exercises, setExercises] = useState<ExerciseOut[]>([])
+	const [usersSearch, setUsersSearch] = useState('')
+	const [classesSearch, setClassesSearch] = useState('')
+	const [levelsSearch, setLevelsSearch] = useState('')
+	const [exercisesSearch, setExercisesSearch] = useState('')
+	const [corpusSearchDraft, setCorpusSearchDraft] = useState('')
+	const [corpusPerClassSearch, setCorpusPerClassSearch] = useState('')
+	const [corpusWordsSearch, setCorpusWordsSearch] = useState('')
 	const [selectedClass, setSelectedClass] = useState<number | null>(null)
 	const [selectedLevel, setSelectedLevel] = useState<number | null>(null)
 	const [loading, setLoading] = useState(false)
@@ -885,6 +894,115 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 		return level.name
 	}
 
+	// Debounce corpus API search so typing does not spam requests
+	useEffect(() => {
+		if (activeTab !== 'corpus') return
+		const timer = window.setTimeout(() => {
+			const next = corpusSearchDraft.trim() || undefined
+			setCorpusFilters((prev) => {
+				if ((prev.search || undefined) === next) return prev
+				return { ...prev, search: next }
+			})
+			setCorpusPage(0)
+		}, 320)
+		return () => window.clearTimeout(timer)
+	}, [corpusSearchDraft, activeTab])
+
+	const filteredUsers = useMemo(
+		() =>
+			filterBySearch(users, usersSearch, (user) => [
+				user.id,
+				user.first_name,
+				user.last_name,
+				user.username,
+				user.email,
+				user.age,
+				user.is_active ? 'aktiv' : 'jo aktiv',
+				user.is_admin ? 'administrator' : 'perdorues',
+			]),
+		[users, usersSearch]
+	)
+
+	const filteredClasses = useMemo(
+		() =>
+			filterBySearch(classes, classesSearch, (cls) => [
+				cls.id,
+				cls.name,
+				cls.description,
+				cls.enabled ? 'aktiv' : 'jo aktiv',
+				(cls.courses || []).length,
+			]),
+		[classes, classesSearch]
+	)
+
+	const filteredLevels = useMemo(
+		() =>
+			filterBySearch(levels, levelsSearch, (level) => [
+				level.id,
+				level.name,
+				level.description,
+				level.course_id,
+				level.enabled ? 'aktiv' : 'jo aktiv',
+				getLevelDisplayName(level),
+				getLevelClassName(level),
+			]),
+		// helpers depend on classes; include classes so names stay in sync
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[levels, levelsSearch, classes]
+	)
+
+	const filteredExercises = useMemo(
+		() =>
+			filterBySearch(exercises, exercisesSearch, (exercise) => [
+				exercise.id,
+				exercise.prompt,
+				exercise.category,
+				exercise.level_id,
+				exercise.points,
+				(exercise as any).rule,
+				(exercise as any).type,
+			]),
+		[exercises, exercisesSearch]
+	)
+
+	const filteredCorpusByClass = useMemo(() => {
+		const rows = corpusStats?.by_class || []
+		return filterBySearch(rows, corpusPerClassSearch, (row) => [
+			row.class_id,
+			row.class_name,
+			row.documents,
+			row.tokens,
+			row.lemmas,
+		])
+	}, [corpusStats, corpusPerClassSearch])
+
+	const filteredShortWords = useMemo(
+		() =>
+			filterBySearch(linguisticMetrics?.top_short_words || [], corpusWordsSearch, (row) => [
+				row.word,
+				row.count,
+			]),
+		[linguisticMetrics, corpusWordsSearch]
+	)
+
+	const filteredLongWords = useMemo(
+		() =>
+			filterBySearch(linguisticMetrics?.top_long_words || [], corpusWordsSearch, (row) => [
+				row.word,
+				row.count,
+			]),
+		[linguisticMetrics, corpusWordsSearch]
+	)
+
+	const filteredWordFreqs = useMemo(
+		() =>
+			filterBySearch(corpusWordFreqs?.top_words || [], corpusWordsSearch, (row) => [
+				row.word,
+				row.count,
+			]),
+		[corpusWordFreqs, corpusWordsSearch]
+	)
+
 	return (
 		<div className="admin-dashboard">
 			<Suspense fallback={chartFallback}>
@@ -1581,6 +1699,14 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 								<div className="table-header">
 									<h2>Përdoruesit</h2>
 								</div>
+								<div className="admin-list-toolbar">
+									<AdminSearchBar
+										value={usersSearch}
+										onChange={setUsersSearch}
+										placeholder="Kërko përdorues…"
+										ariaLabel="Kërko përdorues"
+									/>
+								</div>
 								<table className="admin-table admin-table--cards">
 									<thead>
 										<tr>
@@ -1595,7 +1721,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										</tr>
 									</thead>
 									<tbody>
-										{users.map(user => (
+										{filteredUsers.map(user => (
 											<tr key={user.id}>
 												<td data-label="ID">{user.id}</td>
 												<td data-label="Emri / Mbiemri">{[user.first_name, user.last_name].filter(Boolean).join(' ') || '—'}</td>
@@ -1613,6 +1739,11 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												</td>
 											</tr>
 										))}
+										{filteredUsers.length === 0 && (
+											<tr>
+												<td colSpan={8} className="admin-search-empty">Nuk u gjetën rezultate</td>
+											</tr>
+										)}
 									</tbody>
 								</table>
 							</div>
@@ -1623,6 +1754,14 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 								<div className="table-header">
 									<h2>Klasat</h2>
 									<button className="create-btn" onClick={() => setShowCreateModal('class')}>+ Shto Klasë</button>
+								</div>
+								<div className="admin-list-toolbar">
+									<AdminSearchBar
+										value={classesSearch}
+										onChange={setClassesSearch}
+										placeholder="Kërko klasa…"
+										ariaLabel="Kërko klasa"
+									/>
 								</div>
 								<table className="admin-table admin-table--cards">
 									<thead>
@@ -1636,7 +1775,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										</tr>
 									</thead>
 									<tbody>
-										{classes.map(cls => (
+										{filteredClasses.map(cls => (
 											<tr key={cls.id}>
 												<td data-label="ID">{cls.id}</td>
 												<td data-label="Emër">{cls.name}</td>
@@ -1651,6 +1790,11 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												</td>
 											</tr>
 										))}
+										{filteredClasses.length === 0 && (
+											<tr>
+												<td colSpan={6} className="admin-search-empty">Nuk u gjetën rezultate</td>
+											</tr>
+										)}
 									</tbody>
 								</table>
 							</div>
@@ -1670,6 +1814,14 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										<button className="create-btn" onClick={() => setShowCreateModal('level')}>+ Shto Nivel</button>
 									</div>
 								</div>
+								<div className="admin-list-toolbar">
+									<AdminSearchBar
+										value={levelsSearch}
+										onChange={setLevelsSearch}
+										placeholder="Kërko nivele…"
+										ariaLabel="Kërko nivele"
+									/>
+								</div>
 								<table className="admin-table admin-table--cards">
 									<thead>
 										<tr>
@@ -1683,7 +1835,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										</tr>
 									</thead>
 									<tbody>
-										{levels.map(level => (
+										{filteredLevels.map(level => (
 											<tr key={level.id}>
 												<td data-label="ID">{level.id}</td>
 												<td data-label="Emër">{getLevelDisplayName(level)}</td>
@@ -1699,6 +1851,11 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												</td>
 											</tr>
 										))}
+										{filteredLevels.length === 0 && (
+											<tr>
+												<td colSpan={7} className="admin-search-empty">Nuk u gjetën rezultate</td>
+											</tr>
+										)}
 									</tbody>
 								</table>
 							</div>
@@ -1720,6 +1877,14 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										<button className="create-btn" onClick={() => setShowCreateModal('exercise')}>+ Shto Ushtrim</button>
 									</div>
 								</div>
+								<div className="admin-list-toolbar">
+									<AdminSearchBar
+										value={exercisesSearch}
+										onChange={setExercisesSearch}
+										placeholder="Kërko ushtrime…"
+										ariaLabel="Kërko ushtrime"
+									/>
+								</div>
 								<table className="admin-table admin-table--cards">
 									<thead>
 										<tr>
@@ -1732,7 +1897,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										</tr>
 									</thead>
 									<tbody>
-										{exercises.map(exercise => (
+										{filteredExercises.map(exercise => (
 											<tr key={exercise.id}>
 												<td data-label="ID">{exercise.id}</td>
 												<td data-label="Prompt">{exercise.prompt.substring(0, 50)}...</td>
@@ -1747,6 +1912,11 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												</td>
 											</tr>
 										))}
+										{filteredExercises.length === 0 && (
+											<tr>
+												<td colSpan={6} className="admin-search-empty">Nuk u gjetën rezultate</td>
+											</tr>
+										)}
 									</tbody>
 								</table>
 							</div>
@@ -1835,12 +2005,18 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 										</div>
 
 										<div className="corpus-filters">
-											<input type="text" placeholder="Kërko sipas titullit..." value={corpusFilters.search || ''} onChange={e => setCorpusFilters({...corpusFilters, search: e.target.value || undefined})} />
-											<select value={corpusFilters.class_id ?? ''} onChange={e => setCorpusFilters({...corpusFilters, class_id: e.target.value ? parseInt(e.target.value) : undefined})}>
+											<AdminSearchBar
+												value={corpusSearchDraft}
+												onChange={setCorpusSearchDraft}
+												placeholder="Kërko korpusin…"
+												ariaLabel="Kërko dokumente në korpus"
+												className="admin-search--grow"
+											/>
+											<select value={corpusFilters.class_id ?? ''} onChange={e => { setCorpusFilters({...corpusFilters, class_id: e.target.value ? parseInt(e.target.value) : undefined}); setCorpusPage(0) }}>
 												<option value="">Të gjitha klasat</option>
 												{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
 											</select>
-											<select value={corpusFilters.genre || ''} onChange={e => setCorpusFilters({...corpusFilters, genre: e.target.value || undefined})}>
+											<select value={corpusFilters.genre || ''} onChange={e => { setCorpusFilters({...corpusFilters, genre: e.target.value || undefined}); setCorpusPage(0) }}>
 												<option value="">Të gjithë zhanret</option>
 												<option value="shkencor">Shkencor</option>
 												<option value="letrar">Letrar</option>
@@ -1849,13 +2025,13 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												<option value="administrativ">Administrativ</option>
 												<option value="tjeter">Tjetër</option>
 											</select>
-											<select value={corpusFilters.dialect || ''} onChange={e => setCorpusFilters({...corpusFilters, dialect: e.target.value || undefined})}>
+											<select value={corpusFilters.dialect || ''} onChange={e => { setCorpusFilters({...corpusFilters, dialect: e.target.value || undefined}); setCorpusPage(0) }}>
 												<option value="">Të gjithë dialektet</option>
 												<option value="gege">Gegë</option>
 												<option value="toske">Toskë</option>
 												<option value="standarde">Standarde</option>
 											</select>
-											<select value={corpusFilters.source || ''} onChange={e => setCorpusFilters({...corpusFilters, source: e.target.value || undefined})}>
+											<select value={corpusFilters.source || ''} onChange={e => { setCorpusFilters({...corpusFilters, source: e.target.value || undefined}); setCorpusPage(0) }}>
 												<option value="">Të gjithë burimet</option>
 												<option value="media">Media</option>
 												<option value="libra">Libra</option>
@@ -1863,7 +2039,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												<option value="akademik">Akademik</option>
 												<option value="tjeter">Tjetër</option>
 											</select>
-											<button className="corpus-filter-clear" onClick={() => { setCorpusFilters({}); setCorpusPage(0) }}>Pastro filtrat</button>
+											<button className="corpus-filter-clear" onClick={() => { setCorpusFilters({}); setCorpusSearchDraft(''); setCorpusPage(0) }}>Pastro filtrat</button>
 										</div>
 
 										<table className="admin-table">
@@ -1925,6 +2101,14 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 								{corpusSubTab === 'linguistic' && (
 									<div className="corpus-linguistic-section">
 										<h2>Analiza Linguistike e Korpusit</h2>
+										<div className="admin-list-toolbar">
+											<AdminSearchBar
+												value={corpusWordsSearch}
+												onChange={setCorpusWordsSearch}
+												placeholder="Kërko fjalë…"
+												ariaLabel="Kërko fjalë në analizën linguistike"
+											/>
+										</div>
 										{corpusAnalysisLoading ? (
 											<PageLoading inline title="Duke analizuar korpusin..." />
 										) : corpusStats && corpusStats.total_documents === 0 ? (
@@ -1962,7 +2146,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 														<h3 className="corpus-section-title">Top 30 Fjalët Më të Shpeshta</h3>
 														<div className="chart-card chart-card-full">
 															<ResponsiveContainer width="100%" height={400}>
-																<BarChart data={corpusWordFreqs.top_words.slice(0, 30)} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+																<BarChart data={filteredWordFreqs.slice(0, 30)} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
 																	<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
 																	<XAxis dataKey="word" tick={{ fill: '#64748b', fontSize: 10 }} angle={-45} textAnchor="end" />
 																	<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
@@ -1980,7 +2164,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 														<h3 className="chart-title">Fjalët e Shkurtra (1–3 karaktere)</h3>
 														<div className="corpus-freq-table">
 															<table className="admin-table"><thead><tr><th>Fjala</th><th>Frekuenca</th></tr></thead><tbody>
-																{(linguisticMetrics.top_short_words || []).map(w => <tr key={w.word}><td><strong>{w.word}</strong></td><td>{w.count.toLocaleString()}</td></tr>)}
+																{filteredShortWords.map(w => <tr key={w.word}><td><strong>{w.word}</strong></td><td>{w.count.toLocaleString()}</td></tr>)}
+																{filteredShortWords.length === 0 && <tr><td colSpan={2} className="admin-search-empty">Nuk u gjetën rezultate</td></tr>}
 															</tbody></table>
 														</div>
 													</div>
@@ -1988,7 +2173,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 														<h3 className="chart-title">Fjalët e Gjata (8+ karaktere)</h3>
 														<div className="corpus-freq-table">
 															<table className="admin-table"><thead><tr><th>Fjala</th><th>Frekuenca</th></tr></thead><tbody>
-																{(linguisticMetrics.top_long_words || []).map(w => <tr key={w.word}><td><strong>{w.word}</strong></td><td>{w.count.toLocaleString()}</td></tr>)}
+																{filteredLongWords.map(w => <tr key={w.word}><td><strong>{w.word}</strong></td><td>{w.count.toLocaleString()}</td></tr>)}
+																{filteredLongWords.length === 0 && <tr><td colSpan={2} className="admin-search-empty">Nuk u gjetën rezultate</td></tr>}
 															</tbody></table>
 														</div>
 													</div>
@@ -2123,6 +2309,14 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 								{corpusSubTab === 'per_class' && corpusStats && (
 									<div className="corpus-per-class-section">
 										<h2>Shpërndarja e Korpusit Sipas Klasës</h2>
+										<div className="admin-list-toolbar">
+											<AdminSearchBar
+												value={corpusPerClassSearch}
+												onChange={setCorpusPerClassSearch}
+												placeholder="Kërko klasa…"
+												ariaLabel="Kërko statistika sipas klasës"
+											/>
+										</div>
 										{corpusStats.by_class.length > 0 ? (
 											<>
 												<div className="chart-card chart-card-full">
@@ -2153,7 +2347,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 														</tr>
 													</thead>
 													<tbody>
-														{corpusStats.by_class.map(c => {
+														{filteredCorpusByClass.map(c => {
 															const pct = corpusStats.total_documents > 0 ? Math.round((c.documents / corpusStats.total_documents) * 100) : 0
 															return (
 																<tr key={c.class_id}>
@@ -2170,7 +2364,12 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 																</tr>
 															)
 														})}
-														{corpusStats.unlinked_documents > 0 && (
+														{filteredCorpusByClass.length === 0 && (
+															<tr>
+																<td colSpan={6} className="admin-search-empty">Nuk u gjetën rezultate</td>
+															</tr>
+														)}
+														{!corpusPerClassSearch && corpusStats.unlinked_documents > 0 && (
 															<tr style={{color:'#94a3b8'}}>
 																<td><em>Pa klasë</em></td>
 																<td>{corpusStats.unlinked_documents}</td>
