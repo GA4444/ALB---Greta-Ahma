@@ -2388,6 +2388,150 @@ textarea:focus-visible {
 .corpus-badge.dialect-standarde { background: #dcfce7; color: #166534; }
 .corpus-badge.dialect-none { background: #f1f5f9; color: #64748b; }
 
+/* Documents table — laptop/desktop: no mid-word breaks, stable columns */
+.admin-dashboard .admin-table-container:has(.corpus-docs-table),
+.admin-table-container:has(.corpus-docs-table) {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.admin-dashboard table.corpus-docs-table,
+table.corpus-docs-table {
+	min-width: 1080px;
+	width: 100%;
+	table-layout: fixed;
+}
+
+.admin-dashboard table.corpus-docs-table th,
+.admin-dashboard table.corpus-docs-table td,
+table.corpus-docs-table th,
+table.corpus-docs-table td {
+	word-break: normal !important;
+	overflow-wrap: normal !important;
+	hyphens: none !important;
+	-webkit-hyphens: none !important;
+	white-space: nowrap;
+	vertical-align: middle;
+	line-height: 1.35;
+}
+
+.admin-dashboard table.corpus-docs-table th:nth-child(1),
+.admin-dashboard table.corpus-docs-table td[data-label="ID"] { width: 52px; }
+.admin-dashboard table.corpus-docs-table th:nth-child(2),
+.admin-dashboard table.corpus-docs-table td[data-label="Titulli"] { width: 22%; }
+.admin-dashboard table.corpus-docs-table th:nth-child(3),
+.admin-dashboard table.corpus-docs-table td[data-label="Klasa"] { width: 9%; }
+.admin-dashboard table.corpus-docs-table th:nth-child(4),
+.admin-dashboard table.corpus-docs-table td[data-label="Autori"] { width: 12%; }
+.admin-dashboard table.corpus-docs-table th:nth-child(5),
+.admin-dashboard table.corpus-docs-table td[data-label="Viti"] { width: 56px; }
+.admin-dashboard table.corpus-docs-table th:nth-child(6),
+.admin-dashboard table.corpus-docs-table td[data-label="Zhanri"] { width: 9%; }
+.admin-dashboard table.corpus-docs-table th:nth-child(7),
+.admin-dashboard table.corpus-docs-table td[data-label="Dialekti"] { width: 9%; }
+.admin-dashboard table.corpus-docs-table th:nth-child(8),
+.admin-dashboard table.corpus-docs-table td[data-label="Tokens"] { width: 72px; }
+.admin-dashboard table.corpus-docs-table th:nth-child(9),
+.admin-dashboard table.corpus-docs-table td[data-label="TTR"] { width: 64px; }
+.admin-dashboard table.corpus-docs-table th:nth-child(10),
+.admin-dashboard table.corpus-docs-table td[data-label="Gjendja"] { width: 96px; }
+.admin-dashboard table.corpus-docs-table th:nth-child(11),
+.admin-dashboard table.corpus-docs-table td[data-label="Veprime"] { width: 210px; }
+
+.admin-dashboard table.corpus-docs-table td[data-label="Titulli"],
+.admin-dashboard table.corpus-docs-table td[data-label="Autori"],
+.admin-dashboard table.corpus-docs-table td[data-label="Klasa"] {
+	white-space: normal;
+	overflow: hidden;
+}
+
+.admin-dashboard table.corpus-docs-table .corpus-docs-title {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	word-break: normal;
+	overflow-wrap: break-word;
+	hyphens: none;
+	line-height: 1.35;
+	max-width: 100%;
+}
+
+.admin-dashboard table.corpus-docs-table .corpus-badge {
+	display: inline-block;
+	white-space: nowrap;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+}
+
+.admin-dashboard table.corpus-docs-table .admin-actions {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 0.35rem;
+	align-items: center;
+}
+
+.admin-dashboard table.corpus-docs-table .admin-actions button {
+	white-space: nowrap;
+	flex-shrink: 0;
+	padding: 0.35rem 0.55rem;
+	font-size: 0.78rem;
+}
+
+@media (min-width: 769px) and (max-width: 1280px) {
+	.admin-dashboard table.corpus-docs-table,
+	table.corpus-docs-table {
+		min-width: 1120px;
+		font-size: 0.875rem;
+	}
+
+	.admin-dashboard table.corpus-docs-table th,
+	.admin-dashboard table.corpus-docs-table td {
+		padding: 0.7rem 0.65rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.admin-dashboard table.corpus-docs-table,
+	table.corpus-docs-table {
+		min-width: 0 !important;
+		table-layout: auto !important;
+	}
+
+	.admin-dashboard table.corpus-docs-table th,
+	.admin-dashboard table.corpus-docs-table td,
+	.admin-dashboard table.corpus-docs-table td[data-label="Titulli"],
+	.admin-dashboard table.corpus-docs-table td[data-label="Autori"],
+	.admin-dashboard table.corpus-docs-table td[data-label="Klasa"] {
+		width: auto !important;
+		white-space: normal !important;
+	}
+
+	.admin-dashboard table.corpus-docs-table .corpus-docs-title {
+		display: block;
+		-webkit-line-clamp: unset;
+		line-clamp: unset;
+		overflow: visible;
+		text-overflow: unset;
+		word-break: normal;
+		overflow-wrap: break-word;
+	}
+
+	.admin-dashboard table.corpus-docs-table .admin-actions {
+		flex-wrap: wrap;
+		width: 100%;
+	}
+
+	.admin-dashboard table.corpus-docs-table .admin-actions button {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+
 /* Actions cell */
 .corpus-actions-cell {
 	display: flex;

@@ -869,6 +869,12 @@
   word-break: break-word;
 }
 
+.admin-dashboard table.corpus-docs-table td {
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+}
+
 .admin-dashboard .admin-table tbody tr:hover {
   background: rgba(31, 111, 139, 0.04) !important;
 }

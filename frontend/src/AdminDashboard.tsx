@@ -2112,7 +2112,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											<button className="corpus-filter-clear" onClick={() => { setCorpusFilters({}); setCorpusSearchDraft(''); setCorpusPage(0) }}>Pastro filtrat</button>
 										</div>
 
-										<table className="admin-table admin-table--cards">
+										<table className="admin-table admin-table--cards corpus-docs-table">
 											<thead>
 												<tr>
 													<th>ID</th>
@@ -2132,7 +2132,9 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												{corpusDocs.map(doc => (
 													<tr key={doc.id}>
 														<td data-label="ID">{doc.id}</td>
-														<td data-label="Titulli" title={doc.title}>{doc.title}</td>
+														<td data-label="Titulli" title={doc.title}>
+															<span className="corpus-docs-title">{doc.title}</span>
+														</td>
 														<td data-label="Klasa">{doc.class_name || <span style={{color:'#94a3b8'}}>—</span>}</td>
 														<td data-label="Autori">{doc.author || '—'}</td>
 														<td data-label="Viti">{doc.year || '—'}</td>
