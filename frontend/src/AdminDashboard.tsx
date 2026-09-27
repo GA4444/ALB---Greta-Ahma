@@ -99,6 +99,72 @@ const chartFallback = (
 	<PageLoading inline title="Duke ngarkuar grafikët..." />
 )
 
+function corpusRecordEntries(record?: Record<string, number> | null): Array<{ key: string; label: string; value: number }> {
+	if (!record || typeof record !== 'object') return []
+	return Object.entries(record)
+		.map(([key, value]) => ({
+			key,
+			label: key === 'pa_klasifikim' ? 'Pa klasifikim' : key === 'pa_status' ? 'Pa status' : key,
+			value: Number(value) || 0,
+		}))
+		.filter((row) => row.value > 0)
+		.sort((a, b) => b.value - a.value)
+}
+
+function CorpusBreakdownList({
+	title,
+	record,
+	suffix = '',
+}: {
+	title: string
+	record?: Record<string, number> | null
+	suffix?: string
+}) {
+	const rows = corpusRecordEntries(record)
+	return (
+		<div className="corpus-breakdown-card">
+			<h3 className="chart-title">{title}</h3>
+			{rows.length === 0 ? (
+				<p className="corpus-breakdown-empty">Nuk ka të dhëna për këtë kategori.</p>
+			) : (
+				<ul className="corpus-breakdown-list">
+					{rows.map((row) => (
+						<li key={row.key}>
+							<span className="corpus-breakdown-label">{row.label}</span>
+							<strong className="corpus-breakdown-value">
+								{row.value.toLocaleString()}
+								{suffix}
+							</strong>
+						</li>
+					))}
+				</ul>
+			)}
+		</div>
+	)
+}
+
+class CorpusChartBoundary extends React.Component<
+	{ children: React.ReactNode },
+	{ hasError: boolean }
+> {
+	state = { hasError: false }
+
+	static getDerivedStateFromError() {
+		return { hasError: true }
+	}
+
+	render() {
+		if (this.state.hasError) {
+			return (
+				<p className="corpus-breakdown-empty" role="status">
+					Grafiku nuk mund të shfaqet në këtë pajisje. Lista e të dhënave më sipër mbetet e vlefshme.
+				</p>
+			)
+		}
+		return this.props.children
+	}
+}
+
 interface AdminDashboardProps {
 	userId: number
 	onLogout: () => void
@@ -232,17 +298,19 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 			const exercisesData = await getAllExercises(userId, selectedLevel || undefined, selectedClass || undefined)
 			setExercises(exercisesData)
 		} else if (activeTab === 'corpus') {
-			const [statsRes, docsRes, fuseRes, classesRes] = await Promise.all([
+			const [statsRes, docsRes, fuseRes, classesRes, dupRes] = await Promise.all([
 				getCorpusStats(userId),
 				getCorpusDocuments(userId, { ...corpusFilters, limit: 50, offset: corpusPage * 50 }),
 				getCorpusFuseCodes(userId),
 				getAllClasses(userId),
+				getCorpusDuplicates(userId).catch(() => ({ total_duplicate_groups: 0, groups: [] })),
 			])
 			setCorpusStats(statsRes)
 			setCorpusDocs(docsRes.documents)
 			setCorpusTotal(docsRes.total)
 			setCorpusFuseCodes(fuseRes.codes)
 			setClasses(classesRes)
+			setCorpusDuplicates(dupRes)
 		} else if (activeTab === 'research') {
 			const [overviewRes, datasetRes, irtRes, protocolRes, statusRes, commandsRes, ktRes, reviewRes] = await Promise.allSettled([
 				getResearchAIOverview(),
@@ -1932,7 +2000,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 									<button className={corpusSubTab === 'classification' ? 'active' : ''} onClick={() => setCorpusSubTab('classification')}>Klasifikimi & Segmentimi</button>
 									<button className={corpusSubTab === 'per_class' ? 'active' : ''} onClick={() => setCorpusSubTab('per_class')}>Statistika Sipas Klasës</button>
 									<button className={corpusSubTab === 'validation' ? 'active' : ''} onClick={() => setCorpusSubTab('validation')}>Kontrolli i Cilësisë</button>
-									<button className={corpusSubTab === 'duplicates' ? 'active' : ''} onClick={() => { setCorpusSubTab('duplicates'); if (!corpusDuplicates) loadCorpusDuplicates() }}>Integriteti i të Dhënave</button>
+									<button className={corpusSubTab === 'duplicates' ? 'active' : ''} onClick={() => { setCorpusSubTab('duplicates'); if (!corpusDuplicates) void loadCorpusDuplicates() }}>Integriteti i të Dhënave</button>
 								</div>
 
 								{/* ── 1. PASQYRË E PËRGJITHSHME ── */}
@@ -1998,7 +2066,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 
 								{/* ── 2. MENAXHIMI I DOKUMENTEVE ── */}
 								{corpusSubTab === 'documents' && (
-									<div className="admin-table-container">
+									<div className="admin-table-container admin-table-container--cards">
 										<div className="table-header">
 											<h2>Menaxhimi i Dokumenteve ({corpusTotal})</h2>
 											<button className="create-btn" onClick={() => setShowCorpusCreateModal(true)}>+ Shto Dokument</button>
@@ -2023,6 +2091,7 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												<option value="juridik">Juridik</option>
 												<option value="publicistik">Publicistik</option>
 												<option value="administrativ">Administrativ</option>
+												<option value="didaktik">Didaktik</option>
 												<option value="tjeter">Tjetër</option>
 											</select>
 											<select value={corpusFilters.dialect || ''} onChange={e => { setCorpusFilters({...corpusFilters, dialect: e.target.value || undefined}); setCorpusPage(0) }}>
@@ -2037,12 +2106,13 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 												<option value="libra">Libra</option>
 												<option value="dokumente_zyrtare">Dokumente Zyrtare</option>
 												<option value="akademik">Akademik</option>
+												<option value="platforma">Platforma</option>
 												<option value="tjeter">Tjetër</option>
 											</select>
 											<button className="corpus-filter-clear" onClick={() => { setCorpusFilters({}); setCorpusSearchDraft(''); setCorpusPage(0) }}>Pastro filtrat</button>
 										</div>
 
-										<table className="admin-table">
+										<table className="admin-table admin-table--cards">
 											<thead>
 												<tr>
 													<th>ID</th>
@@ -2061,25 +2131,27 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											<tbody>
 												{corpusDocs.map(doc => (
 													<tr key={doc.id}>
-														<td>{doc.id}</td>
-														<td title={doc.title}>{doc.title.length > 35 ? doc.title.substring(0, 35) + '…' : doc.title}</td>
-														<td>{doc.class_name || <span style={{color:'#94a3b8'}}>—</span>}</td>
-														<td>{doc.author || '—'}</td>
-														<td>{doc.year || '—'}</td>
-														<td><span className={`corpus-badge genre-${doc.genre || 'none'}`}>{doc.genre || '—'}</span></td>
-														<td><span className={`corpus-badge dialect-${doc.dialect || 'none'}`}>{doc.dialect || '—'}</span></td>
-														<td>{doc.token_count.toLocaleString()}</td>
-														<td>{doc.type_token_ratio?.toFixed(3) || '—'}</td>
-														<td>
+														<td data-label="ID">{doc.id}</td>
+														<td data-label="Titulli" title={doc.title}>{doc.title}</td>
+														<td data-label="Klasa">{doc.class_name || <span style={{color:'#94a3b8'}}>—</span>}</td>
+														<td data-label="Autori">{doc.author || '—'}</td>
+														<td data-label="Viti">{doc.year || '—'}</td>
+														<td data-label="Zhanri"><span className={`corpus-badge genre-${doc.genre || 'none'}`}>{doc.genre || '—'}</span></td>
+														<td data-label="Dialekti"><span className={`corpus-badge dialect-${doc.dialect || 'none'}`}>{doc.dialect || '—'}</span></td>
+														<td data-label="Tokens">{doc.token_count.toLocaleString()}</td>
+														<td data-label="TTR">{doc.type_token_ratio?.toFixed(3) || '—'}</td>
+														<td data-label="Gjendja">
 															{doc.is_validated
 																? <span className="corpus-badge validated">Validuar</span>
 																: <span className="corpus-badge pending">{doc.processing_status}</span>
 															}
 														</td>
-														<td className="corpus-actions-cell">
-															<button title="Valido" onClick={() => handleValidateDoc(doc.id)}>✅</button>
-															<button title="Edito" onClick={() => setEditingCorpusDoc(doc)}>✏️</button>
-															<button title="Fshi" onClick={() => handleDeleteCorpusDoc(doc.id)}>🗑️</button>
+														<td data-label="Veprime" className="corpus-actions-cell">
+															<div className="admin-actions">
+																<button type="button" title="Valido" onClick={() => handleValidateDoc(doc.id)}>✅ Valido</button>
+																<button type="button" title="Edito" onClick={() => setEditingCorpusDoc(doc)}>✏️ Edito</button>
+																<button type="button" title="Fshi" onClick={() => handleDeleteCorpusDoc(doc.id)}>🗑️ Fshi</button>
+															</div>
 														</td>
 													</tr>
 												))}
@@ -2203,89 +2275,102 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 								)}
 
 								{/* ── 4. KLASIFIKIMI & SEGMENTIMI ── */}
-								{corpusSubTab === 'classification' && corpusStats && (
+								{corpusSubTab === 'classification' && (
 									<div className="corpus-classification-section">
 										<h2>Klasifikimi & Segmentimi i Korpusit</h2>
-										{corpusStats.total_documents === 0 ? (
+										{!corpusStats ? (
+											<div className="admin-loading-wrap">
+												<PageLoading inline title="Duke ngarkuar klasifikimin..." />
+												<button type="button" className="corpus-action-btn primary" onClick={() => loadData()}>Provo përsëri</button>
+											</div>
+										) : corpusStats.total_documents === 0 ? (
 											renderCorpusEmptyState('Nuk ka dokumente për klasifikim')
 										) : (
 										<>
+										<div className="corpus-breakdown-grid">
+											<CorpusBreakdownList title="Sipas Zhanrit" record={corpusStats.by_genre} />
+											<CorpusBreakdownList title="Sipas Dialektit" record={corpusStats.by_dialect} />
+											<CorpusBreakdownList title="Sipas Burimit" record={corpusStats.by_source} />
+											<CorpusBreakdownList title="Tokens sipas Zhanrit" record={corpusStats.tokens_by_genre} />
+											{Object.keys(corpusStats.by_year || {}).length > 0 && (
+												<CorpusBreakdownList title="Sipas Vitit" record={corpusStats.by_year} />
+											)}
+											{Object.keys(corpusStats.top_authors || {}).length > 0 && (
+												<CorpusBreakdownList title="Top Autorë" record={corpusStats.top_authors} />
+											)}
+										</div>
+
 										<div className="charts-container">
 											<div className="chart-card">
 												<h3 className="chart-title">Sipas Zhanrit</h3>
-												<ResponsiveContainer width="100%" height={300}>
-													<PieChart>
-														<Pie data={Object.entries(corpusStats.by_genre).map(([k, v]) => ({ name: k === 'pa_klasifikim' ? 'Pa klasifikim' : k, value: v }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-															{Object.keys(corpusStats.by_genre).map((_, i) => <Cell key={i} fill={['#4A9FD4', '#5BBD6C', '#EF6461', '#FF9600', '#CE82FF', '#94a3b8'][i % 6]} />)}
-														</Pie>
-														<Tooltip /><Legend />
-													</PieChart>
-												</ResponsiveContainer>
+												<div className="chart-body">
+													<CorpusChartBoundary>
+														<Suspense fallback={chartFallback}>
+															<ResponsiveContainer width="100%" height="100%">
+																<PieChart>
+																	<Pie data={corpusRecordEntries(corpusStats.by_genre).map((r) => ({ name: r.label, value: r.value }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90}>
+																		{corpusRecordEntries(corpusStats.by_genre).map((_, i) => <Cell key={i} fill={['#4A9FD4', '#5BBD6C', '#EF6461', '#FF9600', '#CE82FF', '#94a3b8'][i % 6]} />)}
+																	</Pie>
+																	<Tooltip /><Legend />
+																</PieChart>
+															</ResponsiveContainer>
+														</Suspense>
+													</CorpusChartBoundary>
+												</div>
 											</div>
 											<div className="chart-card">
 												<h3 className="chart-title">Sipas Dialektit</h3>
-												<ResponsiveContainer width="100%" height={300}>
-													<PieChart>
-														<Pie data={Object.entries(corpusStats.by_dialect).map(([k, v]) => ({ name: k === 'pa_klasifikim' ? 'Pa klasifikim' : k, value: v }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-															{Object.keys(corpusStats.by_dialect).map((_, i) => <Cell key={i} fill={['#4A9FD4', '#EF6461', '#5BBD6C', '#94a3b8'][i % 4]} />)}
-														</Pie>
-														<Tooltip /><Legend />
-													</PieChart>
-												</ResponsiveContainer>
+												<div className="chart-body">
+													<CorpusChartBoundary>
+														<Suspense fallback={chartFallback}>
+															<ResponsiveContainer width="100%" height="100%">
+																<PieChart>
+																	<Pie data={corpusRecordEntries(corpusStats.by_dialect).map((r) => ({ name: r.label, value: r.value }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90}>
+																		{corpusRecordEntries(corpusStats.by_dialect).map((_, i) => <Cell key={i} fill={['#4A9FD4', '#EF6461', '#5BBD6C', '#94a3b8'][i % 4]} />)}
+																	</Pie>
+																	<Tooltip /><Legend />
+																</PieChart>
+															</ResponsiveContainer>
+														</Suspense>
+													</CorpusChartBoundary>
+												</div>
 											</div>
 											<div className="chart-card">
 												<h3 className="chart-title">Sipas Burimit</h3>
-												<ResponsiveContainer width="100%" height={300}>
-													<BarChart data={Object.entries(corpusStats.by_source).map(([k, v]) => ({ name: k === 'pa_klasifikim' ? 'Pa klasifikim' : k, count: v }))}>
-														<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-														<XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
-														<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-														<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-														<Bar dataKey="count" fill="#4A9FD4" radius={[8, 8, 0, 0]} name="Dokumente" />
-													</BarChart>
-												</ResponsiveContainer>
+												<div className="chart-body">
+													<CorpusChartBoundary>
+														<Suspense fallback={chartFallback}>
+															<ResponsiveContainer width="100%" height="100%">
+																<BarChart data={corpusRecordEntries(corpusStats.by_source).map((r) => ({ name: r.label, count: r.value }))}>
+																	<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+																	<XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
+																	<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+																	<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+																	<Bar dataKey="count" fill="#4A9FD4" radius={[8, 8, 0, 0]} name="Dokumente" />
+																</BarChart>
+															</ResponsiveContainer>
+														</Suspense>
+													</CorpusChartBoundary>
+												</div>
 											</div>
 											<div className="chart-card">
 												<h3 className="chart-title">Tokens sipas Zhanrit</h3>
-												<ResponsiveContainer width="100%" height={300}>
-													<BarChart data={Object.entries(corpusStats.tokens_by_genre).map(([k, v]) => ({ name: k === 'pa_klasifikim' ? 'Pa klasifikim' : k, tokens: v }))}>
-														<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-														<XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
-														<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-														<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-														<Bar dataKey="tokens" fill="#5BBD6C" radius={[8, 8, 0, 0]} name="Njësi teksti" />
-													</BarChart>
-												</ResponsiveContainer>
+												<div className="chart-body">
+													<CorpusChartBoundary>
+														<Suspense fallback={chartFallback}>
+															<ResponsiveContainer width="100%" height="100%">
+																<BarChart data={corpusRecordEntries(corpusStats.tokens_by_genre).map((r) => ({ name: r.label, tokens: r.value }))}>
+																	<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+																	<XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
+																	<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+																	<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+																	<Bar dataKey="tokens" fill="#5BBD6C" radius={[8, 8, 0, 0]} name="Njësi teksti" />
+																</BarChart>
+															</ResponsiveContainer>
+														</Suspense>
+													</CorpusChartBoundary>
+												</div>
 											</div>
-											{Object.keys(corpusStats.by_year).length > 0 && (
-												<div className="chart-card chart-card-full">
-													<h3 className="chart-title">Shpërndarja Kohore e Dokumenteve</h3>
-													<ResponsiveContainer width="100%" height={300}>
-														<AreaChart data={Object.entries(corpusStats.by_year).map(([y, c]) => ({ year: y, count: c }))}>
-															<defs><linearGradient id="colorCorpusYear" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#4A9FD4" stopOpacity={0.8}/><stop offset="95%" stopColor="#4A9FD4" stopOpacity={0.1}/></linearGradient></defs>
-															<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-															<XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 11 }} />
-															<YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-															<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-															<Area type="monotone" dataKey="count" stroke="#4A9FD4" fillOpacity={1} fill="url(#colorCorpusYear)" name="Dokumente" />
-														</AreaChart>
-													</ResponsiveContainer>
-												</div>
-											)}
-											{Object.keys(corpusStats.top_authors).length > 0 && (
-												<div className="chart-card chart-card-full">
-													<h3 className="chart-title">Top Autorë</h3>
-													<ResponsiveContainer width="100%" height={300}>
-														<BarChart data={Object.entries(corpusStats.top_authors).slice(0, 10).map(([a, c]) => ({ author: a, count: c }))} layout="vertical">
-															<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-															<XAxis type="number" tick={{ fill: '#64748b', fontSize: 12 }} />
-															<YAxis dataKey="author" type="category" width={140} tick={{ fill: '#64748b', fontSize: 11 }} />
-															<Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
-															<Bar dataKey="count" fill="#CE82FF" radius={[0, 8, 8, 0]} name="Dokumente" />
-														</BarChart>
-													</ResponsiveContainer>
-												</div>
-											)}
 										</div>
 										{corpusFuseCodes.length > 0 && (
 											<div className="corpus-fuse-section">
@@ -2386,9 +2471,16 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 								)}
 
 								{/* ── 6. KONTROLLI I CILËSISË ── */}
-								{corpusSubTab === 'validation' && corpusStats && (
+								{corpusSubTab === 'validation' && (
 									<div className="corpus-validation-section">
 										<h2>Kontrolli i Cilësisë & Validimi</h2>
+										{!corpusStats ? (
+											<div className="admin-loading-wrap">
+												<PageLoading inline title="Duke ngarkuar kontrollin e cilësisë..." />
+												<button type="button" className="corpus-action-btn primary" onClick={() => loadData()}>Provo përsëri</button>
+											</div>
+										) : (
+										<>
 										<div className="stats-grid">
 											<div className="stat-card"><div className="stat-icon">✅</div><div className="stat-value">{corpusStats.validated_count}</div><div className="stat-label">Të validuara</div></div>
 											<div className="stat-card"><div className="stat-icon">⏳</div><div className="stat-value">{corpusStats.unvalidated_count}</div><div className="stat-label">Në pritje</div></div>
@@ -2396,28 +2488,45 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											<div className="stat-card"><div className="stat-icon">🔗</div><div className="stat-value">{corpusStats.unlinked_documents}</div><div className="stat-label">Pa klasë</div></div>
 										</div>
 
+										<div className="corpus-breakdown-grid">
+											<CorpusBreakdownList title="Pipeline i Përpunimit" record={corpusStats.by_status} />
+											<CorpusBreakdownList title="Balanca Dialektore (tokens)" record={corpusStats.tokens_by_dialect} />
+										</div>
+
 										<div className="charts-container">
 											<div className="chart-card">
 												<h3 className="chart-title">Pipeline i Përpunimit</h3>
-												<ResponsiveContainer width="100%" height={300}>
-													<PieChart>
-														<Pie data={Object.entries(corpusStats.by_status).map(([k, v]) => ({ name: k === 'pa_klasifikim' ? 'Pa status' : k, value: v }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-															{Object.keys(corpusStats.by_status).map((_, i) => <Cell key={i} fill={['#5BBD6C', '#4A9FD4', '#FF9600', '#CE82FF', '#EF6461', '#94a3b8'][i % 6]} />)}
-														</Pie>
-														<Tooltip /><Legend />
-													</PieChart>
-												</ResponsiveContainer>
+												<div className="chart-body">
+													<CorpusChartBoundary>
+														<Suspense fallback={chartFallback}>
+															<ResponsiveContainer width="100%" height="100%">
+																<PieChart>
+																	<Pie data={corpusRecordEntries(corpusStats.by_status).map((r) => ({ name: r.label, value: r.value }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90}>
+																		{corpusRecordEntries(corpusStats.by_status).map((_, i) => <Cell key={i} fill={['#5BBD6C', '#4A9FD4', '#FF9600', '#CE82FF', '#EF6461', '#94a3b8'][i % 6]} />)}
+																	</Pie>
+																	<Tooltip /><Legend />
+																</PieChart>
+															</ResponsiveContainer>
+														</Suspense>
+													</CorpusChartBoundary>
+												</div>
 											</div>
 											<div className="chart-card">
 												<h3 className="chart-title">Balanca Dialektore</h3>
-												<ResponsiveContainer width="100%" height={300}>
-													<PieChart>
-														<Pie data={Object.entries(corpusStats.tokens_by_dialect).map(([k, v]) => ({ name: k === 'pa_klasifikim' ? 'Pa klasifikim' : k, value: v }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-															{Object.keys(corpusStats.tokens_by_dialect).map((_, i) => <Cell key={i} fill={['#4A9FD4', '#EF6461', '#5BBD6C', '#94a3b8'][i % 4]} />)}
-														</Pie>
-														<Tooltip /><Legend />
-													</PieChart>
-												</ResponsiveContainer>
+												<div className="chart-body">
+													<CorpusChartBoundary>
+														<Suspense fallback={chartFallback}>
+															<ResponsiveContainer width="100%" height="100%">
+																<PieChart>
+																	<Pie data={corpusRecordEntries(corpusStats.tokens_by_dialect).map((r) => ({ name: r.label, value: r.value }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90}>
+																		{corpusRecordEntries(corpusStats.tokens_by_dialect).map((_, i) => <Cell key={i} fill={['#4A9FD4', '#EF6461', '#5BBD6C', '#94a3b8'][i % 4]} />)}
+																	</Pie>
+																	<Tooltip /><Legend />
+																</PieChart>
+															</ResponsiveContainer>
+														</Suspense>
+													</CorpusChartBoundary>
+												</div>
 											</div>
 										</div>
 
@@ -2425,6 +2534,8 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 											<button className="corpus-action-btn primary" onClick={handleValidateAll}>Valido Të Gjitha Dokumentet</button>
 											<button className="corpus-action-btn" onClick={handleReprocessAll}>Ripërpuno (tokenizim, frekuenca)</button>
 										</div>
+										</>
+										)}
 									</div>
 								)}
 
@@ -2439,32 +2550,38 @@ export default function AdminDashboard({ userId, onLogout }: AdminDashboardProps
 													{corpusDuplicates.groups.map((group, gi) => (
 														<div key={gi} className="corpus-dup-group">
 															<h4>Grupi {gi + 1} — {group.count} dokumente identike</h4>
-															<table className="admin-table">
-																<thead><tr><th>ID</th><th>Titulli</th><th>Autori</th><th>Viti</th><th>Veprime</th></tr></thead>
-																<tbody>
-																	{group.documents.map(d => (
-																		<tr key={d.id}>
-																			<td>{d.id}</td>
-																			<td>{d.title}</td>
-																			<td>{d.author || '—'}</td>
-																			<td>{d.year || '—'}</td>
-																			<td><button onClick={() => handleDeleteCorpusDoc(d.id)}>🗑️ Fshi</button></td>
-																		</tr>
-																	))}
-																</tbody>
-															</table>
+															<div className="admin-table-container admin-table-container--cards">
+																<table className="admin-table admin-table--cards">
+																	<thead><tr><th>ID</th><th>Titulli</th><th>Autori</th><th>Viti</th><th>Veprime</th></tr></thead>
+																	<tbody>
+																		{group.documents.map(d => (
+																			<tr key={d.id}>
+																				<td data-label="ID">{d.id}</td>
+																				<td data-label="Titulli">{d.title}</td>
+																				<td data-label="Autori">{d.author || '—'}</td>
+																				<td data-label="Viti">{d.year || '—'}</td>
+																				<td data-label="Veprime">
+																					<button type="button" onClick={() => handleDeleteCorpusDoc(d.id)}>🗑️ Fshi</button>
+																				</td>
+																			</tr>
+																		))}
+																	</tbody>
+																</table>
+															</div>
 														</div>
 													))}
 												</>
 											) : (
 												<div className="corpus-no-duplicates">
 													<span className="corpus-no-dup-icon">✅</span>
-													<p>Nuk u gjetën dublikata në korpus.</p>
+													<p>Nuk u gjetën dublikata në korpus. Integriteti i të dhënave është në rregull.</p>
+													<button type="button" className="corpus-action-btn" onClick={() => loadCorpusDuplicates()}>Rikontrollo</button>
 												</div>
 											)
 										) : (
 											<div className="admin-loading-wrap">
 												<PageLoading inline title="Duke kontrolluar integritetin..." />
+												<button type="button" className="corpus-action-btn primary" onClick={() => loadCorpusDuplicates()}>Provo përsëri</button>
 											</div>
 										)}
 									</div>
