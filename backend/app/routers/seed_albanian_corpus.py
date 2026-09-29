@@ -476,7 +476,7 @@ def seed_first_class_exercises(db: Session):
             category=CategoryEnum.SPELLING_PUNCTUATION,
             course_id=course_10.id,
             level_id=level_by_course[course_10.id].id,
-            prompt=f"{incorrect}\nSaktë:",
+            prompt=incorrect,
             data=json.dumps({"incorrect": incorrect, "type": "spelling_punctuation"}),
             answer=correct,
                 points=1,
@@ -1008,7 +1008,7 @@ def seed_second_class_exercises(db: Session):
             category=CategoryEnum.SPELLING_PUNCTUATION,
             course_id=course_10.id,
             level_id=level_by_course[course_10.id].id,
-            prompt=f"{incorrect}\nSaktë:",
+            prompt=incorrect,
             data=json.dumps({"incorrect": incorrect, "type": "spelling_punctuation"}),
             answer=correct,
             points=1,
@@ -1471,7 +1471,7 @@ def seed_third_class_exercises(db: Session):
             CategoryEnum.SPELLING_PUNCTUATION,
             c10,
             l10,
-            f"{inc}\nSaktë:",
+            inc,
             {"incorrect": inc, "type": "spelling_punctuation"},
             corr,
             i,
@@ -1953,7 +1953,7 @@ def seed_fourth_class_exercises(db: Session):
             CategoryEnum.SPELLING_PUNCTUATION,
             c10,
             l10,
-            f"{inc}\nSaktë:",
+            inc,
             {"incorrect": inc, "type": "spelling_punctuation"},
             corr,
             i,
@@ -2251,7 +2251,7 @@ def seed_fifth_class_exercises(db: Session):
         ("teknologjia transformon komunikimin", "Teknologjia transformon komunikimin."),
     ]
     for i, (inc, corr) in enumerate(spellp_exercises, start=1):
-        add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, f"{inc}\nSaktë:", {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
+        add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, inc, {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
 
     # 11) ABSTRACT_CONCRETE – koncepte komplekse
     abscon_exercises = [
@@ -2507,7 +2507,7 @@ def seed_sixth_class_exercises(db: Session):
         ("teknologjia transformon komunikimin modern", "Teknologjia transformon komunikimin modern."),
     ]
     for i, (inc, corr) in enumerate(spellp_exercises, start=1):
-        add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, f"{inc}\nSaktë:", {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
+        add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, inc, {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
 
     # 11) ABSTRACT_CONCRETE – koncepte komplekse
     abscon_exercises = [
@@ -2764,7 +2764,7 @@ def seed_seventh_class_exercises(db: Session):
         ("teknologjia transformon komunikimin modern", "Teknologjia transformon komunikimin modern."),
     ]
     for i, (inc, corr) in enumerate(spellp_exercises, start=1):
-        add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, f"{inc}\nSaktë:", {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
+        add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, inc, {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
 
     # 11) ABSTRACT_CONCRETE – koncepte komplekse akademike
     abscon_exercises = [
@@ -3022,7 +3022,7 @@ def seed_eighth_class_exercises(db: Session):
         ("teknologjia transformon komunikimin modern", "Teknologjia transformon komunikimin modern."),
     ]
     for i, (inc, corr) in enumerate(spellp_exercises, start=1):
-        add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, f"{inc}\nSaktë:", {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
+        add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, inc, {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
 
     # 11) ABSTRACT_CONCRETE – koncepte komplekse akademike
     abscon_exercises = [

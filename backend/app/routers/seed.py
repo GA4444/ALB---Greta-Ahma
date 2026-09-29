@@ -443,7 +443,7 @@ def klasa1_add_courses_with_exercises():
             add_exercise(CategoryEnum.PHRASES, c9, l9, f"Përshkrimi: {d}\nFjala:", {"description": d, "type": "phrase"}, w, i)
         # 10) Drejtshkrim & Pikësim
         for i,(inc,corr) in enumerate(spellp, start=1):
-            add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, f"{inc}\nSaktë:", {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
+            add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, inc, {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
         # 11) Abstrakte vs Konkrete (remove explicit correct-answer hint from prompt)
         for i,(p,a,t) in enumerate(abscon, start=1):
             base = p.split("→")[0].strip()

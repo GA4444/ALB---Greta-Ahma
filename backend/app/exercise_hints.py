@@ -1,18 +1,22 @@
-"""Task hints (shown as «Këshillë») for Levels 10–12 across all classes.
+"""Task hints for Levels 10–12 across all classes (shown like other exercise tips).
 
-Does not change prompts or answers — only the instructional hint field (`rule`).
+Also cleans legacy prompt suffixes such as trailing «Saktë:».
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import re
 from typing import Any, Optional, Union
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
+
+# Legacy Level 10 prompts appended "\nSaktë:" as an answer blank label.
+_SAKTE_SUFFIX_RE = re.compile(r"(?:\r?\n|\s)+Saktë:\s*$", re.IGNORECASE)
 
 HINT_SPELLING_PUNCTUATION = (
 	"Rishkruaj fjalinë saktë."
@@ -87,6 +91,39 @@ def migrate_exercise_rule_column(engine: Engine) -> None:
 		elif dialect == "sqlite":
 			# SQLite stores type affinity loosely; recreate is unnecessary for length.
 			logger.info("SQLite exercises.rule length is not strictly enforced; model updated to 255")
+
+
+def clean_sakte_suffix(prompt: Optional[str]) -> Optional[str]:
+	"""Remove trailing «Saktë:» label from spelling/punctuation prompts."""
+	if prompt is None:
+		return None
+	cleaned = _SAKTE_SUFFIX_RE.sub("", str(prompt)).rstrip()
+	return cleaned
+
+
+def strip_sakte_from_spelling_prompts(db: Session) -> dict:
+	"""One-time cleanup: remove «Saktë:» from stored spelling_punctuation prompts."""
+	from . import models
+
+	updated = 0
+	skipped = 0
+	exercises = (
+		db.query(models.Exercise)
+		.filter(models.Exercise.category == models.CategoryEnum.SPELLING_PUNCTUATION)
+		.all()
+	)
+	for exercise in exercises:
+		original = exercise.prompt or ""
+		cleaned = clean_sakte_suffix(original) or ""
+		if cleaned == original:
+			skipped += 1
+			continue
+		exercise.prompt = cleaned
+		updated += 1
+
+	if updated:
+		db.commit()
+	return {"updated": updated, "skipped": skipped, "total": len(exercises)}
 
 
 def backfill_level_10_12_exercise_hints(db: Session) -> dict:

@@ -137,10 +137,16 @@ def init_database() -> None:
 		logger.exception("Email schema migration failed")
 
 	try:
-		from .exercise_hints import backfill_level_10_12_exercise_hints, migrate_exercise_rule_column
+		from .exercise_hints import (
+			backfill_level_10_12_exercise_hints,
+			migrate_exercise_rule_column,
+			strip_sakte_from_spelling_prompts,
+		)
 		migrate_exercise_rule_column(engine)
 		db = SessionLocal()
 		try:
+			prompt_result = strip_sakte_from_spelling_prompts(db)
+			logger.info("Spelling prompt «Saktë:» cleanup: %s", prompt_result)
 			result = backfill_level_10_12_exercise_hints(db)
 			logger.info("Level 10–12 exercise hints backfill: %s", result)
 		finally:

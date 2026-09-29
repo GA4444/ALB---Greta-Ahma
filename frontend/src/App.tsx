@@ -2564,6 +2564,12 @@ function MainContent({
         return null
     }
 
+    const getDisplayPrompt = (prompt?: string | null) => {
+        if (!prompt) return ''
+        // Legacy Level 10 prompts ended with "Saktë:" as a blank label — hide it in UI.
+        return String(prompt).replace(/(?:\r?\n|\s)+Saktë:\s*$/i, '').trim()
+    }
+
     // Mobile: open class/course/level as a dedicated top-of-screen view (not below the class list).
     useEffect(() => {
         if (!selectedClass) return
@@ -3272,9 +3278,9 @@ function MainContent({
                                     </div>
                                 </div>
                                 
-                                {/* Instruction text for synonyms/antonyms exercises */}
-                                {exercises.length > 0 && 
-                                 exercises[currentExerciseIndex] && 
+                                {/* Instruction tip before the task (same style as synonyms/antonyms) */}
+                                {exercises.length > 0 &&
+                                 exercises[currentExerciseIndex] &&
                                  exercises[currentExerciseIndex].category === 'synonyms_antonyms' && (
                                     <div className="exercise-instruction-text">
                                         {(() => {
@@ -3306,10 +3312,18 @@ function MainContent({
                                         })()}
                                     </div>
                                 )}
+                                {exercises.length > 0 &&
+                                 exercises[currentExerciseIndex] &&
+                                 getExerciseHint(exercises[currentExerciseIndex]) &&
+                                 exercises[currentExerciseIndex].category !== 'synonyms_antonyms' && (
+                                    <div className="exercise-instruction-text">
+                                        <p>💡 {getExerciseHint(exercises[currentExerciseIndex])}</p>
+                                    </div>
+                                )}
 
                                 <div className="exercise-content-modern">
                                     <div className="exercise-prompt-modern">
-                                        <h3 className="exercise-question">{exercises[currentExerciseIndex].prompt}</h3>
+                                        <h3 className="exercise-question">{getDisplayPrompt(exercises[currentExerciseIndex].prompt)}</h3>
                                     </div>
 
                                     {exercises[currentExerciseIndex].category === 'listen_write' && (
@@ -3333,14 +3347,6 @@ function MainContent({
                                                 >
                                                     <span>{isRecording ? 'Duke regjistruar...' : 'Regjistro'}</span>
                                                 </button>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {getExerciseHint(exercises[currentExerciseIndex]) && (
-                                        <div className="exercise-hint-modern">
-                                            <div className="hint-content">
-                                                <strong>Këshillë:</strong> {getExerciseHint(exercises[currentExerciseIndex])}
                                             </div>
                                         </div>
                                     )}
