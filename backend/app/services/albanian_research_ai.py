@@ -426,9 +426,9 @@ def pedagogical_feedback(student_answer: str, correct_answer: str, grade: int = 
         "digraph_reduction": "Disa tinguj shqip shkruhen me dy shkronja bashkë, si sh, dh, th, gj, nj, ll dhe rr.",
         "c_q_confusion": "Në shqip, ç dhe q janë shkronja të ndryshme dhe nuk zëvendësojnë njëra-tjetrën.",
         "case_ending_error": "Mbaresa e fjalës ndryshon sipas rasës dhe rolit që fjala ka në fjali.",
-        "letter_transposition": f"Radha e shkronjave në '{correct}' është {'-'.join(correct)}.",
+        "letter_transposition": "Kontrollo radhën e shkronjave: lexoje fjalën ngadalë, shkronjë për shkronjë.",
         "missing_letter": "Kontrollo çdo shkronjë me radhë që fjala të jetë e plotë.",
-        "extra_letter": "Fjala ka një shkronjë më tepër; lexoje ngadalë dhe krahasoje me formën e saktë.",
+        "extra_letter": "Fjala ka një shkronjë më tepër; lexoje ngadalë dhe shiko çfarë mund të jetë shtuar.",
         "wrong_letter": "Një shkronjë është zëvendësuar me një tjetër; krahaso fjalën shkronjë për shkronjë.",
     }
     why_map = {
@@ -438,21 +438,22 @@ def pedagogical_feedback(student_answer: str, correct_answer: str, grade: int = 
         "case_ending_error": "Në këtë fjali fjala ka nevojë për mbaresën e saktë që të lidhet mirë me fjalët e tjera.",
         "letter_transposition": "Shkronjat janë të sakta, por janë vendosur në rend të gabuar.",
     }
+    # Child-facing examples must NOT reveal the full correct answer.
     example_map = {
-        "missing_diacritic": f"Shembull: '{correct}' shkruhet me shenjën e duhur, jo si '{observed}'.",
+        "missing_diacritic": "Shembull: shiko nëse mungon një shenjë mbi shkronjë (si ë ose ç).",
         "digraph_reduction": "Shembull: tingulli 'sh' shkruhet me dy shkronja, jo vetëm me 's'.",
         "c_q_confusion": "Shembull: 'ç' dhe 'q' tingëllojnë ndryshe; prandaj fjala ndryshon kur i ndërrojmë.",
-        "case_ending_error": f"Shembull: në këtë rast forma që përshtatet është '{correct}'.",
-        "letter_transposition": f"Shembull: radha e saktë është {'-'.join(correct)}.",
-        "missing_letter": f"Shembull: fjala e plotë është '{correct}', pa hequr shkronja.",
-        "extra_letter": f"Shembull: '{correct}' nuk ka shkronjë shtesë.",
-        "wrong_letter": f"Shembull: krahaso '{observed}' me '{correct}' shkronjë për shkronjë.",
+        "case_ending_error": "Shembull: kontrollo mbaresën e fjalës që të lidhet mirë me fjalinë.",
+        "letter_transposition": "Shembull: shkronjat mund të jenë të sakta, por në rend të gabuar — lexoje ngadalë.",
+        "missing_letter": "Shembull: kontrollo nëse ke lënë jashtë ndonjë shkronjë.",
+        "extra_letter": "Shembull: kontrollo nëse ke shtuar ndonjë shkronjë më tepër.",
+        "wrong_letter": f"Shembull: krahaso fjalën tënde '{observed}' shkronjë për shkronjë me atë që dëgjove/lexove.",
         "correct": "Shembull: përgjigjja është në rregull.",
     }
     easier = _hide_letter(correct, "easy")
-    simple_rule = rule_map.get(label, "Krahaso fjalën tënde me formën e saktë dhe shiko ku ndryshojnë.")
+    simple_rule = rule_map.get(label, "Krahaso fjalën tënde me atë që kërkon ushtrimi dhe shiko ku ndryshojnë.")
     why = why_map.get(label, "Ky ndryshim e bën fjalën të pasaktë në drejtshkrimin standard shqip.")
-    example = example_map.get(label, f"Shembull: forma e saktë është '{correct}'.")
+    example = example_map.get(label, "Shembull: lexoje ngadalë dhe kontrollo çdo shkronjë.")
     child_message = _build_child_feedback_message(
         observed=observed,
         correct=correct,
@@ -510,20 +511,23 @@ def _build_child_feedback_message(
     easier: str,
     grade: int,
 ) -> Dict[str, str]:
+    """Build child-visible feedback without revealing the correct answer."""
     grade = max(1, min(8, int(grade or 1)))
     intro = "Mirë që provove. Le ta rregullojmë bashkë."
     if grade <= 2:
         intro = "Shumë mirë që provove. Tani e shohim bashkë."
+    # `correct` is kept as a parameter for API compatibility / teacher tooling,
+    # but must not appear in any child-visible string.
+    _ = correct
     return {
         "title": "Ndihmë",
         "what_you_wrote": f"Ti shkrove: {observed}",
-        "correct_form": f"Forma e saktë: {correct}",
         "rule": simple_rule,
         "why": why,
         "example": example,
         "try_next": f"Provo një më të lehtë: plotëso fjalën {easier}.",
         "full_text": (
-            f"{intro} Ti shkrove '{observed}', ndërsa forma e saktë është '{correct}'. "
+            f"{intro} Ti shkrove '{observed}'. "
             f"{simple_rule} {why} {example} Provo tani një më të lehtë: {easier}."
         ),
     }

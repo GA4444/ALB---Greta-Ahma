@@ -844,14 +844,13 @@ function App() {
                         child_message: {
                             title: 'Ndihmë',
                             what_you_wrote: `Ti shkrove: ${trimmedAnswer}`,
-                            correct_form: 'Kontrollo edhe një herë kërkesën e ushtrimit.',
-                            rule: currentExercises[currentIndex].rule || 'Lexoje pyetjen ngadalë dhe krahasoje përgjigjen me fjalën që kërkohet.',
+                            rule: currentExercises[currentIndex].rule || 'Lexoje pyetjen ngadalë dhe kontrollo çdo shkronjë.',
                             why: 'Gabimet janë pjesë e mësimit. Provo përsëri me kujdes.',
                             example: 'Shembull: kontrollo çdo shkronjë dhe çdo shenjë si ë/ç.',
                             try_next: 'Provo përsëri këtë ushtrim duke kontrolluar çdo shkronjë.',
                             full_text: 'Lexoje pyetjen ngadalë dhe provo përsëri.',
                         },
-                        simple_rule: currentExercises[currentIndex].rule || 'Lexoje pyetjen ngadalë dhe krahasoje përgjigjen me fjalën që kërkohet.',
+                        simple_rule: currentExercises[currentIndex].rule || 'Lexoje pyetjen ngadalë dhe kontrollo çdo shkronjë.',
                         why: 'Gabimet janë pjesë e mësimit. Provo përsëri me kujdes.',
                         next_practice: {
                             prompt: 'Provo përsëri këtë ushtrim duke kontrolluar çdo shkronjë.',
@@ -869,7 +868,8 @@ function App() {
     }
 
     const handleChildPracticeCheck = () => {
-        const expected = childFeedback?.next_practice?.answer || childFeedback?.correct_form
+        // Only use the scaffolded practice answer — never surface the main exercise key.
+        const expected = childFeedback?.next_practice?.answer
         if (!expected) {
             setChildPracticeMessage('Provo ta shkruash edhe një herë me kujdes.')
             return
@@ -877,7 +877,7 @@ function App() {
         if (normalizeText(childPracticeAnswer) === normalizeText(expected)) {
             setChildPracticeMessage('Saktë! Shumë mirë, tani provo përsëri ushtrimin kryesor. ✅')
         } else {
-            setChildPracticeMessage('Afër! Krahasoje me formën e saktë dhe provo edhe një herë. 💪')
+            setChildPracticeMessage('Afër! Lexoje ngadalë dhe provo edhe një herë. 💪')
         }
     }
 
@@ -3396,13 +3396,10 @@ function MainContent({
                                             <div className="child-feedback-header">
                                                 <strong>{childFeedback.child_message?.title || 'Ndihmë'}</strong>
                                             </div>
-                                            {(childFeedback.child_message?.what_you_wrote || childFeedback.comparison?.student_to_correct) && (
-                                                <p>
-                                                    <strong>Çfarë shkrove:</strong>{' '}
-                                                    {childFeedback.child_message?.what_you_wrote || childFeedback.comparison?.student_to_correct}
-                                                </p>
+                                            {childFeedback.child_message?.what_you_wrote && (
+                                                <p>{childFeedback.child_message.what_you_wrote}</p>
                                             )}
-                                            <p><strong>Forma e saktë:</strong> {childFeedback.child_message?.correct_form || childFeedback.correct_form}</p>
+                                            {/* Do not show the correct answer to children — only guidance. */}
                                             <p><strong>Rregulli:</strong> {childFeedback.child_message?.rule || childFeedback.simple_rule}</p>
                                             <p><strong>Pse?</strong> {childFeedback.child_message?.why || childFeedback.why}</p>
                                             {(childFeedback.child_message?.example || childFeedback.example) && (
