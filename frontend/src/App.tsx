@@ -2547,7 +2547,7 @@ function MainContent({
             exerciseType = ''
         }
         if (exercise.category === 'spelling_punctuation') {
-            return 'Rishkruaj fjalinë saktë: shkronjë e madhe në fillim dhe pikë në fund.'
+            return 'Rishkruaj fjalinë saktë.'
         }
         if (exercise.category === 'build_sentence') {
             return 'Rendit fjalët e dhëna dhe formo një fjali të saktë.'

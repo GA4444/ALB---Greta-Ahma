@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 logger = logging.getLogger(__name__)
 
 HINT_SPELLING_PUNCTUATION = (
-	"Rishkruaj fjalinë saktë: shkronjë e madhe në fillim dhe pikë në fund."
+	"Rishkruaj fjalinë saktë."
 )
 HINT_CONCRETE = (
 	"Zgjidh fjalën konkrete — diçka që mund ta shohësh ose ta prekësh."
