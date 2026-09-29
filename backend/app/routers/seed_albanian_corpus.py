@@ -471,6 +471,7 @@ def seed_first_class_exercises(db: Session):
     ]
     
     for i, (incorrect, correct) in enumerate(spelling_punctuation_exercises):
+        from app.exercise_hints import hint_for_exercise
         exercise = Exercise(
             category=CategoryEnum.SPELLING_PUNCTUATION,
             course_id=course_10.id,
@@ -479,7 +480,8 @@ def seed_first_class_exercises(db: Session):
             data=json.dumps({"incorrect": incorrect, "type": "spelling_punctuation"}),
             answer=correct,
                 points=1,
-            order_index=i + 1
+            order_index=i + 1,
+            rule=hint_for_exercise(CategoryEnum.SPELLING_PUNCTUATION, {"type": "spelling_punctuation"}),
         )
         exercises.append(exercise)
     
@@ -502,6 +504,7 @@ def seed_first_class_exercises(db: Session):
     for i, (prompt, answer, choices, exercise_type) in enumerate(abstract_concrete_exercises):
         # Remove explicit correct-answer hint from prompt text
         clean_prompt = prompt.split("→")[0].strip()
+        from app.exercise_hints import hint_for_exercise
         exercise = Exercise(
             category=CategoryEnum.ABSTRACT_CONCRETE,
             course_id=course_11.id,
@@ -510,7 +513,8 @@ def seed_first_class_exercises(db: Session):
             data=json.dumps({"choices": choices, "type": exercise_type}),
             answer=answer,
             points=1,
-            order_index=i + 1
+            order_index=i + 1,
+            rule=hint_for_exercise(CategoryEnum.ABSTRACT_CONCRETE, {"type": exercise_type}),
         )
         exercises.append(exercise)
     
@@ -524,6 +528,7 @@ def seed_first_class_exercises(db: Session):
     ]
     
     for i, (words, correct_sentence) in enumerate(build_sentence_exercises):
+        from app.exercise_hints import hint_for_exercise
         exercise = Exercise(
             category=CategoryEnum.BUILD_SENTENCE,
             course_id=course_12.id,
@@ -532,7 +537,8 @@ def seed_first_class_exercises(db: Session):
             data=json.dumps({"words": words, "type": "build_sentence"}),
             answer=correct_sentence,
             points=1,
-            order_index=i + 1
+            order_index=i + 1,
+            rule=hint_for_exercise(CategoryEnum.BUILD_SENTENCE, {"type": "build_sentence"}),
         )
         exercises.append(exercise)
     
@@ -997,6 +1003,7 @@ def seed_second_class_exercises(db: Session):
     ]
     
     for i, (incorrect, correct) in enumerate(spelling_punctuation_exercises):
+        from app.exercise_hints import hint_for_exercise
         exercise = Exercise(
             category=CategoryEnum.SPELLING_PUNCTUATION,
             course_id=course_10.id,
@@ -1005,7 +1012,8 @@ def seed_second_class_exercises(db: Session):
             data=json.dumps({"incorrect": incorrect, "type": "spelling_punctuation"}),
             answer=correct,
             points=1,
-            order_index=i + 1
+            order_index=i + 1,
+            rule=hint_for_exercise(CategoryEnum.SPELLING_PUNCTUATION, {"type": "spelling_punctuation"}),
         )
         exercises.append(exercise)
     
@@ -1027,6 +1035,7 @@ def seed_second_class_exercises(db: Session):
     
     for i, (prompt, answer, choices, exercise_type) in enumerate(abstract_concrete_exercises):
         clean_prompt = prompt.split("→")[0].strip()
+        from app.exercise_hints import hint_for_exercise
         exercise = Exercise(
             category=CategoryEnum.ABSTRACT_CONCRETE,
             course_id=course_11.id,
@@ -1035,7 +1044,8 @@ def seed_second_class_exercises(db: Session):
             data=json.dumps({"choices": choices, "type": exercise_type}),
             answer=answer,
             points=1,
-            order_index=i + 1
+            order_index=i + 1,
+            rule=hint_for_exercise(CategoryEnum.ABSTRACT_CONCRETE, {"type": exercise_type}),
         )
         exercises.append(exercise)
     
@@ -1049,6 +1059,7 @@ def seed_second_class_exercises(db: Session):
     ]
     
     for i, (words, correct_sentence) in enumerate(build_sentence_exercises):
+        from app.exercise_hints import hint_for_exercise
         exercise = Exercise(
             category=CategoryEnum.BUILD_SENTENCE,
             course_id=course_12.id,
@@ -1057,7 +1068,8 @@ def seed_second_class_exercises(db: Session):
             data=json.dumps({"words": words, "type": "build_sentence"}),
             answer=correct_sentence,
             points=1,
-            order_index=i + 1
+            order_index=i + 1,
+            rule=hint_for_exercise(CategoryEnum.BUILD_SENTENCE, {"type": "build_sentence"}),
         )
         exercises.append(exercise)
     
@@ -1166,6 +1178,7 @@ def seed_third_class_exercises(db: Session):
 
     # Short helper
     def add_exercise(cat, course, level, prompt, data_obj, answer, idx):
+        from app.exercise_hints import hint_for_exercise
         ex = Exercise(
             category=cat,
             course_id=course.id,
@@ -1175,6 +1188,7 @@ def seed_third_class_exercises(db: Session):
             answer=answer,
             points=1,
             order_index=idx,
+            rule=hint_for_exercise(cat, data_obj),
         )
         db.add(ex)
 
@@ -1609,6 +1623,7 @@ def seed_fourth_class_exercises(db: Session):
     db.flush()
 
     def add_exercise(cat, course, level, prompt, data_obj, answer, idx):
+        from app.exercise_hints import hint_for_exercise
         ex = Exercise(
             category=cat,
             course_id=course.id,
@@ -1618,6 +1633,7 @@ def seed_fourth_class_exercises(db: Session):
             answer=answer,
             points=1,
             order_index=idx,
+            rule=hint_for_exercise(cat, data_obj),
         )
         db.add(ex)
 
@@ -2103,6 +2119,7 @@ def seed_fifth_class_exercises(db: Session):
     db.flush()
 
     def add_exercise(cat, course, level, prompt, data_obj, answer, idx):
+        from app.exercise_hints import hint_for_exercise
         ex = Exercise(
             category=cat,
             course_id=course.id,
@@ -2112,6 +2129,7 @@ def seed_fifth_class_exercises(db: Session):
             answer=answer,
             points=1,
             order_index=idx,
+            rule=hint_for_exercise(cat, data_obj),
         )
         db.add(ex)
 
@@ -2357,6 +2375,7 @@ def seed_sixth_class_exercises(db: Session):
     db.flush()
 
     def add_exercise(cat, course, level, prompt, data_obj, answer, idx):
+        from app.exercise_hints import hint_for_exercise
         ex = Exercise(
             category=cat,
             course_id=course.id,
@@ -2366,6 +2385,7 @@ def seed_sixth_class_exercises(db: Session):
             answer=answer,
             points=1,
             order_index=idx,
+            rule=hint_for_exercise(cat, data_obj),
         )
         db.add(ex)
 
@@ -2612,6 +2632,7 @@ def seed_seventh_class_exercises(db: Session):
     db.flush()
 
     def add_exercise(cat, course, level, prompt, data_obj, answer, idx):
+        from app.exercise_hints import hint_for_exercise
         ex = Exercise(
             category=cat,
             course_id=course.id,
@@ -2621,6 +2642,7 @@ def seed_seventh_class_exercises(db: Session):
             answer=answer,
             points=1,
             order_index=idx,
+            rule=hint_for_exercise(cat, data_obj),
         )
         db.add(ex)
 
@@ -2867,6 +2889,7 @@ def seed_eighth_class_exercises(db: Session):
     db.flush()
 
     def add_exercise(cat, course, level, prompt, data_obj, answer, idx):
+        from app.exercise_hints import hint_for_exercise
         ex = Exercise(
             category=cat,
             course_id=course.id,
@@ -2876,6 +2899,7 @@ def seed_eighth_class_exercises(db: Session):
             answer=answer,
             points=1,
             order_index=idx,
+            rule=hint_for_exercise(cat, data_obj),
         )
         db.add(ex)
 

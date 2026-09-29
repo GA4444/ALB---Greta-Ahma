@@ -2531,7 +2531,37 @@ function MainContent({
     const getAnswerPlaceholder = () => {
         if (currentExercise?.category === 'listen_write') return 'Dëgjo, pastaj shkruaj këtu...'
         if (currentExercise?.category === 'synonyms_antonyms') return 'Zgjidh ose shkruaj përgjigjen...'
+        if (currentExercise?.category === 'spelling_punctuation') return 'Shkruaj fjalinë e saktë...'
+        if (currentExercise?.category === 'build_sentence') return 'Shkruaj fjalinë e formuar...'
+        if (currentExercise?.category === 'abstract_concrete') return 'Zgjidh ose shkruaj fjalën...'
         return 'Shkruaj përgjigjen këtu...'
+    }
+
+    const getExerciseHint = (exercise?: typeof currentExercise) => {
+        if (!exercise) return null
+        if (exercise.rule && String(exercise.rule).trim()) return String(exercise.rule).trim()
+        let exerciseType = ''
+        try {
+            exerciseType = String(JSON.parse(exercise.data || '{}')?.type || '')
+        } catch {
+            exerciseType = ''
+        }
+        if (exercise.category === 'spelling_punctuation') {
+            return 'Rishkruaj fjalinë saktë: shkronjë e madhe në fillim dhe pikë në fund.'
+        }
+        if (exercise.category === 'build_sentence') {
+            return 'Rendit fjalët e dhëna dhe formo një fjali të saktë.'
+        }
+        if (exercise.category === 'abstract_concrete') {
+            if (exerciseType === 'concrete') {
+                return 'Zgjidh fjalën konkrete — diçka që mund ta shohësh ose ta prekësh.'
+            }
+            if (exerciseType === 'abstract') {
+                return 'Zgjidh fjalën abstrakte — ndjenjë ose ide, jo objekt.'
+            }
+            return 'Zgjidh fjalën e duhur: konkrete (objekt) ose abstrakte (ndjenjë/ide).'
+        }
+        return null
     }
 
     // Mobile: open class/course/level as a dedicated top-of-screen view (not below the class list).
@@ -3307,10 +3337,10 @@ function MainContent({
                                         </div>
                                     )}
 
-                                    {exercises[currentExerciseIndex].rule && (
+                                    {getExerciseHint(exercises[currentExerciseIndex]) && (
                                         <div className="exercise-hint-modern">
                                             <div className="hint-content">
-                                                <strong>Këshillë:</strong> {exercises[currentExerciseIndex].rule}
+                                                <strong>Këshillë:</strong> {getExerciseHint(exercises[currentExerciseIndex])}
                                             </div>
                                         </div>
                                     )}

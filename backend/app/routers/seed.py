@@ -385,6 +385,7 @@ def klasa1_add_courses_with_exercises():
 
         # Helper to add exercises
         def add_exercise(cat, course, level, prompt, data_obj, answer, idx):
+            from app.exercise_hints import hint_for_exercise
             ex = models.Exercise(
                 category=cat,
                 course_id=course.id,
@@ -393,7 +394,8 @@ def klasa1_add_courses_with_exercises():
                 data=json.dumps(data_obj),
                 answer=answer,
                 points=1,
-                order_index=idx
+                order_index=idx,
+                rule=hint_for_exercise(cat, data_obj),
             )
             db.add(ex)
 

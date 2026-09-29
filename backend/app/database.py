@@ -136,6 +136,18 @@ def init_database() -> None:
 	except Exception:
 		logger.exception("Email schema migration failed")
 
+	try:
+		from .exercise_hints import backfill_level_10_12_exercise_hints, migrate_exercise_rule_column
+		migrate_exercise_rule_column(engine)
+		db = SessionLocal()
+		try:
+			result = backfill_level_10_12_exercise_hints(db)
+			logger.info("Level 10–12 exercise hints backfill: %s", result)
+		finally:
+			db.close()
+	except Exception:
+		logger.exception("Exercise hint migration/backfill failed")
+
 	ok, error = check_database()
 	if not ok:
 		raise RuntimeError(error or "Database became unreachable after schema setup")

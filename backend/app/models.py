@@ -107,7 +107,7 @@ class Exercise(Base):
 	order_index = Column(Integer, default=0, nullable=False)
 
 	# Rule-specific field (optional): e.g., pass threshold, max_errors
-	rule = Column(String(50), nullable=True)
+	rule = Column(String(255), nullable=True)
 
 	# Relationships
 	course = relationship("Course", back_populates="exercises")
