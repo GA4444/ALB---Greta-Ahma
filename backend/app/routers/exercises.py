@@ -102,20 +102,9 @@ async def submit_answer(
         if exercise_no_spaces == user_no_spaces and exercise_no_spaces:
             is_correct = True
     
-    # Calculate points — award once per exercise (no stacking on retries).
-    already_correct = False
-    if is_correct:
-        already_correct = (
-            db.query(Attempt.id)
-            .filter(
-                Attempt.user_id == request.user_id,
-                Attempt.exercise_id == exercise_id,
-                Attempt.is_correct == True,  # noqa: E712
-            )
-            .first()
-            is not None
-        )
-    points_earned = exercise.points if (is_correct and not already_correct) else 0
+    # Award points on every correct answer so learners can retry a level
+    # until they reach the required accuracy (e.g. 80%).
+    points_earned = exercise.points if is_correct else 0
     
     # Create attempt record for course progress tracking
     attempt = Attempt(
@@ -155,8 +144,7 @@ async def submit_answer(
     
     # Update progress
     if is_correct:
-        if points_earned:
-            progress.points += points_earned
+        progress.points += points_earned
         # Calculate stars based on accuracy
         if progress.errors == 0:
             progress.stars = 3
@@ -167,17 +155,13 @@ async def submit_answer(
     else:
         progress.errors += 1
     
-    # Cap level points at what the level can actually award (guards old bonus leaks).
+    # Level completion via aggregate points (no full exercise load)
     total_possible_points = (
         db.query(func.coalesce(func.sum(Exercise.points), 0))
         .filter(Exercise.level_id == exercise.level_id)
         .scalar()
         or 0
     )
-    if total_possible_points and progress.points > total_possible_points:
-        progress.points = int(total_possible_points)
-
-    # Level completion via aggregate points (no full exercise load)
     accuracy = (progress.points / total_possible_points) * 100 if total_possible_points > 0 else 0
     level_completed = accuracy >= 80
     if level_completed:
@@ -217,10 +201,8 @@ async def submit_answer(
             message = f"🎉 Kurs i përfunduar! Saktësia: {course_progress.accuracy_percentage:.1f}% - Kursi i ardhshëm u hap! 🚀"
         elif level_completed:
             message = f"🎉 Nivel i përfunduar! Saktësia: {accuracy:.1f}%"
-        elif points_earned:
-            message = f"✅ Përgjigje e saktë! +{points_earned} pikë"
         else:
-            message = "✅ Përgjigje e saktë! (këtë ushtrim e ke fituar më parë)"
+            message = f"✅ Përgjigje e saktë! +{points_earned} pikë"
     else:
         message = f"❌ Përgjigje e gabuar. Provoni sërish!"
     
