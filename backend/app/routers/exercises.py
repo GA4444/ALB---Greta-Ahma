@@ -102,10 +102,23 @@ async def submit_answer(
         if exercise_no_spaces == user_no_spaces and exercise_no_spaces:
             is_correct = True
     
-    # Award points on every correct answer so learners can retry a level
-    # until they reach the required accuracy (e.g. 80%).
-    points_earned = exercise.points if is_correct else 0
-    
+    # Level progress = distinct exercises answered correctly at least once.
+    # Retries are allowed, but repeating the same exercise does not stack
+    # completion credit (prevents farming one item to reach 80%).
+    already_correct = False
+    if is_correct:
+        already_correct = (
+            db.query(Attempt.id)
+            .filter(
+                Attempt.user_id == request.user_id,
+                Attempt.exercise_id == exercise_id,
+                Attempt.is_correct == True,  # noqa: E712
+            )
+            .first()
+            is not None
+        )
+    points_earned = exercise.points if (is_correct and not already_correct) else 0
+
     # Create attempt record for course progress tracking
     attempt = Attempt(
         exercise_id=exercise_id,
@@ -122,13 +135,14 @@ async def submit_answer(
         ),
     )
     db.add(attempt)
-    
+    db.flush()
+
     # Get or create progress record
     progress = db.query(Progress).filter(
         Progress.user_id == request.user_id,
         Progress.level_id == exercise.level_id
     ).first()
-    
+
     if not progress:
         progress = Progress(
             user_id=request.user_id,
@@ -141,11 +155,10 @@ async def submit_answer(
             completed=False
         )
         db.add(progress)
-    
-    # Update progress
+
     if is_correct:
-        progress.points += points_earned
-        # Calculate stars based on accuracy
+        if points_earned:
+            progress.points += points_earned
         if progress.errors == 0:
             progress.stars = 3
         elif progress.errors < 3:
@@ -154,15 +167,48 @@ async def submit_answer(
             progress.stars = 1
     else:
         progress.errors += 1
-    
-    # Level completion via aggregate points (no full exercise load)
-    total_possible_points = (
-        db.query(func.coalesce(func.sum(Exercise.points), 0))
+
+    # Completion: >= 80% of DISTINCT exercises in this level correct at least once.
+    total_exercises = (
+        db.query(func.count(Exercise.id))
         .filter(Exercise.level_id == exercise.level_id)
         .scalar()
         or 0
     )
-    accuracy = (progress.points / total_possible_points) * 100 if total_possible_points > 0 else 0
+    level_exercise_ids = [
+        row[0]
+        for row in db.query(Exercise.id).filter(Exercise.level_id == exercise.level_id).all()
+    ]
+    if level_exercise_ids:
+        correct_exercise_ids = [
+            row[0]
+            for row in (
+                db.query(Attempt.exercise_id)
+                .filter(
+                    Attempt.user_id == request.user_id,
+                    Attempt.is_correct == True,  # noqa: E712
+                    Attempt.exercise_id.in_(level_exercise_ids),
+                )
+                .distinct()
+                .all()
+            )
+        ]
+    else:
+        correct_exercise_ids = []
+
+    distinct_correct = len(correct_exercise_ids)
+    if correct_exercise_ids:
+        unique_points = (
+            db.query(func.coalesce(func.sum(Exercise.points), 0))
+            .filter(Exercise.id.in_(correct_exercise_ids))
+            .scalar()
+            or 0
+        )
+    else:
+        unique_points = 0
+    progress.points = int(unique_points)
+
+    accuracy = (distinct_correct / total_exercises) * 100 if total_exercises > 0 else 0
     level_completed = accuracy >= 80
     if level_completed:
         progress.completed = True
@@ -180,9 +226,9 @@ async def submit_answer(
         Progress.completed == True
     ).count()
     course_completed = total_levels > 0 and completed_levels == total_levels
-    
+
     db.commit()
-    
+
     # Update course progress (SQL aggregates; needed for unlock / course_completed flag)
     from .course_progression import update_course_progress
     course_progress = update_course_progress(db, int(request.user_id), exercise.course_id)
@@ -194,18 +240,20 @@ async def submit_answer(
         exercise_id,
         is_correct,
     )
-    
+
     # Prepare response message
     if is_correct:
         if course_progress.is_completed and not course_completed:
             message = f"🎉 Kurs i përfunduar! Saktësia: {course_progress.accuracy_percentage:.1f}% - Kursi i ardhshëm u hap! 🚀"
         elif level_completed:
             message = f"🎉 Nivel i përfunduar! Saktësia: {accuracy:.1f}%"
-        else:
+        elif points_earned:
             message = f"✅ Përgjigje e saktë! +{points_earned} pikë"
+        else:
+            message = "✅ Përgjigje e saktë! Provo ushtrimet e tjera për të arritur 80%."
     else:
         message = f"❌ Përgjigje e gabuar. Provoni sërish!"
-    
+
     return SubmitResult(
         exercise_id=exercise_id,
         is_correct=is_correct,
