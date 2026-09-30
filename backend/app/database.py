@@ -138,8 +138,9 @@ def init_database() -> None:
 
 	try:
 		from .exercise_hints import (
-			backfill_level_10_12_exercise_hints,
+			backfill_exercise_hints,
 			migrate_exercise_rule_column,
+			strip_fjala_from_phrase_prompts,
 			strip_sakte_from_spelling_prompts,
 		)
 		migrate_exercise_rule_column(engine)
@@ -147,8 +148,27 @@ def init_database() -> None:
 		try:
 			prompt_result = strip_sakte_from_spelling_prompts(db)
 			logger.info("Spelling prompt «Saktë:» cleanup: %s", prompt_result)
-			result = backfill_level_10_12_exercise_hints(db)
-			logger.info("Level 10–12 exercise hints backfill: %s", result)
+			phrase_result = strip_fjala_from_phrase_prompts(db)
+			logger.info("Phrase prompt «Fjala:» cleanup: %s", phrase_result)
+			result = backfill_exercise_hints(db)
+			logger.info("Exercise hints backfill: %s", result)
+			# Ensure Klasa 9 exists (grades go through 9; older DBs only had 1–8).
+			from . import models
+			has_class_9 = (
+				db.query(models.Course.id)
+				.filter(
+					models.Course.name == "Klasa 9",
+					models.Course.parent_class_id.is_(None),
+				)
+				.first()
+			)
+			if not has_class_9:
+				from .routers.seed_albanian_corpus import seed_ninth_class_exercises
+				seed_ninth_class_exercises(db)
+				logger.info("Seeded missing Klasa 9")
+				phrase_result = strip_fjala_from_phrase_prompts(db)
+				result = backfill_exercise_hints(db)
+				logger.info("Post Klasa 9 cleanup/hints: phrase=%s hints=%s", phrase_result, result)
 		finally:
 			db.close()
 	except Exception:

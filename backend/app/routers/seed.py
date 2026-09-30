@@ -16,6 +16,7 @@ from .seed_albanian_corpus import (
     seed_sixth_class_exercises,
     seed_seventh_class_exercises,
     seed_eighth_class_exercises,
+    seed_ninth_class_exercises,
 )
 
 # Must match auth.py - use pbkdf2_sha256 for password verification to work
@@ -440,7 +441,7 @@ def klasa1_add_courses_with_exercises():
             add_exercise(CategoryEnum.NUMBER_TO_WORD, c8, l8, f"{n} → _____", {"number": n, "type": "number_to_word"}, w, i)
         # 9) Shprehje
         for i,(d,w) in enumerate(phrases, start=1):
-            add_exercise(CategoryEnum.PHRASES, c9, l9, f"Përshkrimi: {d}\nFjala:", {"description": d, "type": "phrase"}, w, i)
+            add_exercise(CategoryEnum.PHRASES, c9, l9, d, {"description": d, "type": "phrase"}, w, i)
         # 10) Drejtshkrim & Pikësim
         for i,(inc,corr) in enumerate(spellp, start=1):
             add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, inc, {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
@@ -600,6 +601,29 @@ def seed_class_8():
         ).count()
         return {
             "message": "Successfully seeded 12 courses for Class 8",
+            "course_id": course_id,
+            "courses_count": 12,
+            "exercises_count": exercise_count,
+        }
+    except Exception as e:
+        db.rollback()
+        raise e
+
+
+@router.post("/seed-class-9")
+def seed_class_9():
+    """Seed Class 9 with advanced exercises following the same 12-level structure"""
+    db = next(get_db())
+
+    try:
+        course_id = seed_ninth_class_exercises(db)
+        exercise_count = db.query(models.Exercise).filter(
+            models.Exercise.course_id.in_(
+                db.query(models.Course.id).filter(models.Course.parent_class_id == course_id)
+            )
+        ).count()
+        return {
+            "message": "Successfully seeded 12 courses for Class 9",
             "course_id": course_id,
             "courses_count": 12,
             "exercises_count": exercise_count,

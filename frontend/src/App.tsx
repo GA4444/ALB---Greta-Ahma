@@ -2546,6 +2546,35 @@ function MainContent({
         } catch {
             exerciseType = ''
         }
+        if (exercise.category === 'listen_write') {
+            return 'Dëgjo me kujdes dhe shkruaj atë që dëgjon.'
+        }
+        if (exercise.category === 'word_from_description') {
+            return 'Lexo përshkrimin dhe zgjidh fjalën e duhur.'
+        }
+        if (exercise.category === 'synonyms_antonyms') {
+            if (exerciseType === 'synonym') return 'Gjej fjalën që ka kuptim të njëjtë ose të ngjashëm.'
+            if (exerciseType === 'antonym') return 'Gjej fjalën që ka kuptim të kundërt.'
+            return 'Gjej sinonimin ose antonimin e fjalës.'
+        }
+        if (exercise.category === 'albanian_or_loanword') {
+            return 'Vendos nëse fjala është shqipe apo huazim.'
+        }
+        if (exercise.category === 'missing_letter') {
+            return 'Plotëso shkronjën që mungon në fjalë.'
+        }
+        if (exercise.category === 'wrong_letter') {
+            return 'Gjej fjalën e gabuar dhe shkruaj formën e saktë.'
+        }
+        if (exercise.category === 'build_word') {
+            return 'Rendit shkronjat dhe formo fjalën e saktë.'
+        }
+        if (exercise.category === 'number_to_word') {
+            return 'Shkruaj numrin me fjalë.'
+        }
+        if (exercise.category === 'phrases') {
+            return 'Lexo përshkrimin dhe shkruaj fjalën që i përgjigjet.'
+        }
         if (exercise.category === 'spelling_punctuation') {
             return 'Rishkruaj fjalinë saktë.'
         }
@@ -2566,8 +2595,13 @@ function MainContent({
 
     const getDisplayPrompt = (prompt?: string | null) => {
         if (!prompt) return ''
+        let text = String(prompt)
         // Legacy Level 10 prompts ended with "Saktë:" as a blank label — hide it in UI.
-        return String(prompt).replace(/(?:\r?\n|\s)+Saktë:\s*$/i, '').trim()
+        text = text.replace(/(?:\r?\n|\s)+Saktë:\s*$/i, '')
+        // Legacy Level 9 prompts ended with "Fjala:" — hide it in UI.
+        text = text.replace(/(?:\r?\n|\s)+Fjala:\s*$/i, '')
+        text = text.replace(/^Përshkrimi:\s*/i, '')
+        return text.trim()
     }
 
     // Mobile: open class/course/level as a dedicated top-of-screen view (not below the class list).
@@ -3278,44 +3312,10 @@ function MainContent({
                                     </div>
                                 </div>
                                 
-                                {/* Instruction tip before the task (same style as synonyms/antonyms) */}
+                                {/* Instruction tip before the task (same style for every level) */}
                                 {exercises.length > 0 &&
                                  exercises[currentExerciseIndex] &&
-                                 exercises[currentExerciseIndex].category === 'synonyms_antonyms' && (
-                                    <div className="exercise-instruction-text">
-                                        {(() => {
-                                            // For Class 1, Niveli 3 (course): first 5 are antonyms, rest are synonyms
-                                            const isClass1 = getClassNumber(selectedClass, classes) === 1
-                                            const isLevel3 = getCurriculumLevelNumber(selectedCourse, selectedLevel) === 3
-                                            
-                                            if (isClass1 && isLevel3) {
-                                                // First 5 exercises (0-4) are antonyms
-                                                if (currentExerciseIndex < 5) {
-                                                    return <p>💡 Gjej fjalën që ka kuptim të kundërt.</p>
-                                                } else {
-                                                    // Rest (5+) are synonyms
-                                                    return <p>💡 Gjej fjalën që ka kuptim të njëjtë ose të ngjashëm.</p>
-                                                }
-                                            }
-                                            
-                                            // For other cases, determine based on exercise index
-                                            // First half = antonyms, second half = synonyms
-                                            const totalExercises = exercises.length
-                                            const midpoint = Math.ceil(totalExercises / 2)
-                                            const isFirstHalf = currentExerciseIndex < midpoint
-                                            
-                                            if (isFirstHalf) {
-                                                return <p>💡 Gjej fjalën që ka kuptim të kundërt.</p>
-                                            } else {
-                                                return <p>💡 Gjej fjalën që ka kuptim të njëjtë ose të ngjashëm.</p>
-                                            }
-                                        })()}
-                                    </div>
-                                )}
-                                {exercises.length > 0 &&
-                                 exercises[currentExerciseIndex] &&
-                                 getExerciseHint(exercises[currentExerciseIndex]) &&
-                                 exercises[currentExerciseIndex].category !== 'synonyms_antonyms' && (
+                                 getExerciseHint(exercises[currentExerciseIndex]) && (
                                     <div className="exercise-instruction-text">
                                         <p>💡 {getExerciseHint(exercises[currentExerciseIndex])}</p>
                                     </div>

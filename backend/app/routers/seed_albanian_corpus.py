@@ -453,7 +453,7 @@ def seed_first_class_exercises(db: Session):
             category=CategoryEnum.PHRASES,
             course_id=course_9.id,
             level_id=level_by_course[course_9.id].id,
-            prompt=f"Përshkrimi: {description}\nFjala:",
+            prompt=description,
             data=json.dumps({"description": description, "type": "phrase"}),
             answer=word,
             points=1,
@@ -985,7 +985,7 @@ def seed_second_class_exercises(db: Session):
             category=CategoryEnum.PHRASES,
             course_id=course_9.id,
             level_id=level_by_course[course_9.id].id,
-            prompt=f"Përshkrimi: {description}\nFjala:",
+            prompt=description,
             data=json.dumps({"description": description, "type": "phrase"}),
             answer=word,
             points=1,
@@ -1452,7 +1452,7 @@ def seed_third_class_exercises(db: Session):
             CategoryEnum.PHRASES,
             c9,
             l9,
-            f"Përshkrimi: {d}\nFjala:",
+            d,
             {"description": d, "type": "phrase"},
             w,
             i,
@@ -1919,7 +1919,7 @@ def seed_fourth_class_exercises(db: Session):
             CategoryEnum.PHRASES,
             c9,
             l9,
-            f"Përshkrimi: {d}\nFjala:",
+            d,
             {"description": d, "type": "phrase"},
             w,
             i,
@@ -2241,7 +2241,7 @@ def seed_fifth_class_exercises(db: Session):
         ("Ligjet që rregullojnë një shoqëri.", "legjislacion"),
     ]
     for i, (desc, word) in enumerate(phrase_exercises, start=1):
-        add_exercise(CategoryEnum.PHRASES, c9, l9, f"Përshkrimi: {desc}\nFjala:", {"description": desc, "type": "phrase"}, word, i)
+        add_exercise(CategoryEnum.PHRASES, c9, l9, desc, {"description": desc, "type": "phrase"}, word, i)
 
     # 10) SPELLING_PUNCTUATION – fjali komplekse
     spellp_exercises = [
@@ -2497,7 +2497,7 @@ def seed_sixth_class_exercises(db: Session):
         ("Tërësia e ligjeve që rregullojnë një shoqëri.", "legjislacion"),
     ]
     for i, (desc, word) in enumerate(phrase_exercises, start=1):
-        add_exercise(CategoryEnum.PHRASES, c9, l9, f"Përshkrimi: {desc}\nFjala:", {"description": desc, "type": "phrase"}, word, i)
+        add_exercise(CategoryEnum.PHRASES, c9, l9, desc, {"description": desc, "type": "phrase"}, word, i)
 
     # 10) SPELLING_PUNCTUATION – fjali komplekse
     spellp_exercises = [
@@ -2754,7 +2754,7 @@ def seed_seventh_class_exercises(db: Session):
         ("Tërësia e ligjeve që rregullojnë një shoqëri.", "legjislacion"),
     ]
     for i, (desc, word) in enumerate(phrase_exercises, start=1):
-        add_exercise(CategoryEnum.PHRASES, c9, l9, f"Përshkrimi: {desc}\nFjala:", {"description": desc, "type": "phrase"}, word, i)
+        add_exercise(CategoryEnum.PHRASES, c9, l9, desc, {"description": desc, "type": "phrase"}, word, i)
 
     # 10) SPELLING_PUNCTUATION – fjali komplekse akademike
     spellp_exercises = [
@@ -3012,7 +3012,7 @@ def seed_eighth_class_exercises(db: Session):
         ("Tërësia e ligjeve që rregullojnë një shoqëri.", "legjislacion"),
     ]
     for i, (desc, word) in enumerate(phrase_exercises, start=1):
-        add_exercise(CategoryEnum.PHRASES, c9, l9, f"Përshkrimi: {desc}\nFjala:", {"description": desc, "type": "phrase"}, word, i)
+        add_exercise(CategoryEnum.PHRASES, c9, l9, desc, {"description": desc, "type": "phrase"}, word, i)
 
     # 10) SPELLING_PUNCTUATION – fjali komplekse akademike
     spellp_exercises = [
@@ -3050,3 +3050,261 @@ def seed_eighth_class_exercises(db: Session):
     exercise_count = db.query(Exercise).filter(Exercise.course_id.in_([c.id for c in courses])).count()
     print(f"Successfully seeded {len(courses)} courses and {exercise_count} exercises for eighth class level")
     return eighth_class.id
+
+
+def seed_ninth_class_exercises(db: Session):
+    """Seed the ninth class with the same 12-category structure, most advanced content"""
+
+    # Clear existing data for Class 8
+    class_ids_to_clear = db.query(Course.id).filter(Course.name.like("Klasa 9%"))
+    db.query(Exercise).filter(Exercise.course_id.in_(class_ids_to_clear)).delete()
+    db.query(Level).filter(Level.course_id.in_(class_ids_to_clear)).delete()
+    db.query(Course).filter(Course.name.like("Klasa 9%")).delete()
+
+    # Create Class 8
+    ninth_class = Course(
+        name="Klasa 9",
+        description="Klasa e nëntë (14-15 vjeç) me 12 kategori ushtrimesh më të avancuara për klasën e nëntë",
+        order_index=9,
+        category=CategoryEnum.VOCABULARY,
+        required_score=80,
+        enabled=True,
+    )
+    db.add(ninth_class)
+    db.flush()
+
+    # Create levels 1..12
+    level_1 = Level(
+        course_id=ninth_class.id,
+        name="Niveli 1",
+        description="Ushtrime më të avancuara për klasën e tetë",
+        order_index=1,
+        required_score=0,
+        enabled=True,
+    )
+    db.add(level_1)
+    db.flush()
+
+    extra_levels = []
+    for idx in range(2, 13):
+        extra_levels.append(
+            Level(
+                course_id=ninth_class.id,
+                name=f"Niveli {idx}",
+                description=f"Niveli {idx} për Klasa 9",
+                order_index=idx,
+                required_score=80 if idx > 1 else 0,
+                enabled=True,
+            )
+        )
+    for lvl in extra_levels:
+        db.add(lvl)
+    db.flush()
+
+    # Create 12 courses (categories) under Class 8
+    courses = []
+    course_defs = [
+        ("Niveli 1", CategoryEnum.LISTEN_WRITE),
+        ("Niveli 2", CategoryEnum.WORD_FROM_DESCRIPTION),
+        ("Niveli 3", CategoryEnum.SYNONYMS_ANTONYMS),
+        ("Niveli 4", CategoryEnum.ALBANIAN_OR_LOANWORD),
+        ("Niveli 5", CategoryEnum.MISSING_LETTER),
+        ("Niveli 6", CategoryEnum.WRONG_LETTER),
+        ("Niveli 7", CategoryEnum.BUILD_WORD),
+        ("Niveli 8", CategoryEnum.NUMBER_TO_WORD),
+        ("Niveli 9", CategoryEnum.PHRASES),
+        ("Niveli 10", CategoryEnum.SPELLING_PUNCTUATION),
+        ("Niveli 11", CategoryEnum.ABSTRACT_CONCRETE),
+        ("Niveli 12", CategoryEnum.BUILD_SENTENCE),
+    ]
+    for idx, (name, cat) in enumerate(course_defs, start=1):
+        c = Course(
+            name=name,
+            description=name,
+            order_index=idx,
+            category=cat,
+            required_score=0,
+            enabled=True,
+            parent_class_id=ninth_class.id,
+        )
+        db.add(c)
+        courses.append(c)
+    db.flush()
+
+    # Map level 1 to all courses
+    level_by_course = {}
+    for c in courses:
+        lvl = Level(
+            course_id=c.id,
+            name="Niveli 1",
+            description="Ushtrime më të avancuara",
+            order_index=1,
+            required_score=0,
+            enabled=True,
+        )
+        db.add(lvl)
+        level_by_course[c.id] = lvl
+    db.flush()
+
+    def add_exercise(cat, course, level, prompt, data_obj, answer, idx):
+        from app.exercise_hints import hint_for_exercise
+        ex = Exercise(
+            category=cat,
+            course_id=course.id,
+            level_id=level.id,
+            prompt=prompt,
+            data=json.dumps(data_obj),
+            answer=answer,
+            points=1,
+            order_index=idx,
+            rule=hint_for_exercise(cat, data_obj),
+        )
+        db.add(ex)
+
+    (
+        c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12
+    ) = courses
+    l1 = level_by_course[c1.id]
+    l2 = level_by_course[c2.id]
+    l3 = level_by_course[c3.id]
+    l4 = level_by_course[c4.id]
+    l5 = level_by_course[c5.id]
+    l6 = level_by_course[c6.id]
+    l7 = level_by_course[c7.id]
+    l8 = level_by_course[c8.id]
+    l9 = level_by_course[c9.id]
+    l10 = level_by_course[c10.id]
+    l11 = level_by_course[c11.id]
+    l12 = level_by_course[c12.id]
+
+    # 1) LISTEN_WRITE – paragrafë kompleks dhe argumentative
+    dictation_exercises = [
+        ("Shkencëtarët modernë dhe inovativë studiojnë natyrën në thellësi maksimale për të kuptuar ligjet e saj themelore, për të zbuluar sekrete të reja dhe për të transformuar botën tonë në mënyrë pozitive.", "Shkencëtarët modernë dhe inovativë studiojnë natyrën në thellësi maksimale për të kuptuar ligjet e saj themelore, për të zbuluar sekrete të reja dhe për të transformuar botën tonë në mënyrë pozitive."),
+        ("Demokracia moderne dhe e zhvilluar kërkon pjesëmarrje aktive, të informuar dhe të përgjegjshme nga të gjithë qytetarët në proceset vendimmarrëse që ndikojnë në të ardhmen e shoqërisë dhe të komunitetit tonë.", "Demokracia moderne dhe e zhvilluar kërkon pjesëmarrje aktive, të informuar dhe të përgjegjshme nga të gjithë qytetarët në proceset vendimmarrëse që ndikojnë në të ardhmen e shoqërisë dhe të komunitetit tonë."),
+        ("Kultura jonë kombëtare e pasur dhe e larmishme pasqyron traditat e lashta, vlerat e popullit tonë dhe identitetin tonë unik që kanë kaluar brez pas brezi dhe që na bëjnë të dallueshëm në botë.", "Kultura jonë kombëtare e pasur dhe e larmishme pasqyron traditat e lashta, vlerat e popullit tonë dhe identitetin tonë unik që kanë kaluar brez pas brezi dhe që na bëjnë të dallueshëm në botë."),
+        ("Teknologjia moderne dhe e avancuar transformon mënyrën se si komunikojmë, punojmë, mësojmë dhe jetojmë në shoqërinë e sotme, duke krijuar mundësi të reja, sfida të reja dhe perspektiva të reja për të ardhmen.", "Teknologjia moderne dhe e avancuar transformon mënyrën se si komunikojmë, punojmë, mësojmë dhe jetojmë në shoqërinë e sotme, duke krijuar mundësi të reja, sfida të reja dhe perspektiva të reja për të ardhmen."),
+        ("Edukimi cilësor dhe i plotë është themeli i zhvillimit personal, profesional dhe shoqëror për të gjithë brezat, duke siguruar një të ardhme më të mirë, më të drejtë dhe më të qëndrueshme për të gjithë.", "Edukimi cilësor dhe i plotë është themeli i zhvillimit personal, profesional dhe shoqëror për të gjithë brezat, duke siguruar një të ardhme më të mirë, më të drejtë dhe më të qëndrueshme për të gjithë."),
+    ]
+    for i, (p, a) in enumerate(dictation_exercises, start=1):
+        add_exercise(CategoryEnum.LISTEN_WRITE, c1, l1, "Shkruaj fjalinë që dëgjon.", {"audio_word": p, "type": "dictation"}, a, i)
+
+    # 2) WORD_FROM_DESCRIPTION – koncepte akademike dhe filozofike komplekse
+    desc_exercises = [
+        ("Sistemi kompleks, i organizuar dhe i sofistikuar që administron, kontrollon dhe drejton një shtet ose organizatë më të madhe me efikasitet maksimal.", "qeveria", ["qeveria", "shkolla", "familja", "biblioteka", "spitali"]),
+        ("Ndjenjë e thellë, e sinqertë dhe e vazhdueshme respekti, admirimi dhe vlerësimi për dikë ose diçka që konsiderohet e rëndësishme dhe e vlefshme.", "nderim", ["nderim", "gëzim", "frikë", "lumturi", "trishtim"]),
+        ("Procesi i vazhdueshëm, i planifikuar dhe i strukturuar i mësimit, zhvillimit dhe përmirësimit të njohurive, aftësive dhe kompetencave për të arritur potencialin maksimal.", "edukim", ["edukim", "lojë", "pushim", "udhëtim", "vizitë"]),
+        ("Tërësia e ligjeve, rregullave, normave dhe procedurave që rregullojnë, organizojnë dhe kontrollojnë një shoqëri ose sistem në mënyrë sistematike dhe të drejtë.", "legjislacion", ["legjislacion", "libër", "letër", "fletore", "revistë"]),
+        ("Ndjenjë e përbashkët e thellë dhe e vazhdueshme e identitetit, përkatësisë dhe mbështetjes reciproke në një grup, komunitet ose shoqëri që bashkon njerëzit.", "solidaritet", ["solidaritet", "lojë", "kohë", "vend", "shtëpi"]),
+    ]
+    for i, (desc, word, choices) in enumerate(desc_exercises, start=1):
+        add_exercise(CategoryEnum.WORD_FROM_DESCRIPTION, c2, l2, desc, {"choices": choices, "type": "multiple_choice"}, word, i)
+
+    # 3) SYNONYMS_ANTONYMS – fjalë akademike komplekse
+    syn_ant_exercises = [
+        ("i analitik → _______", "i logjik", "synonym"),
+        ("i inovativ → _______", "i konvencional", "antonym"),
+        ("i kritik → _______", "i pranueshëm", "antonym"),
+        ("i objektiv → _______", "i subjektiv", "antonym"),
+        ("i racional → _______", "i emocional", "antonym"),
+        ("i sistematik → _______", "i çrregullt", "antonym"),
+        ("i teoretik → _______", "i praktik", "antonym"),
+        ("i universal → _______", "i lokal", "antonym"),
+        ("i sofistikuar → _______", "i thjeshtë", "antonym"),
+        ("i kompleks → _______", "i thjeshtë", "antonym"),
+    ]
+    for i, (p, a, t) in enumerate(syn_ant_exercises, start=1):
+        add_exercise(CategoryEnum.SYNONYMS_ANTONYMS, c3, l3, p, {"choices": [], "type": t}, a, i)
+
+    # 4) ALBANIAN_OR_LOANWORD – fjalë akademike dhe teknike komplekse
+    al_lo_exercises = [
+        ("demokraci", "Huazim"), ("kulturë", "Shqip"), ("teknologji", "Huazim"),
+        ("traditë", "Shqip"), ("komunikim", "Shqip"), ("sistem", "Huazim"),
+        ("edukim", "Shqip"), ("organizim", "Huazim"), ("transformim", "Huazim"),
+        ("identitet", "Huazim"), ("legjislacion", "Huazim"), ("solidaritet", "Huazim"),
+    ]
+    for i, (w, a) in enumerate(al_lo_exercises, start=1):
+        add_exercise(CategoryEnum.ALBANIAN_OR_LOANWORD, c4, l4, f"'{w}' është:", {"choices": ["Shqip", "Huazim"], "type": "albanian_loanword"}, a, i)
+
+    # 5) MISSING_LETTER – fjalë komplekse akademike
+    miss_exercises = [
+        ("demokr_ci", "demokraci"), ("kult_rë", "kulturë"), ("teknol_gji", "teknologji"),
+        ("trad_të", "traditë"), ("komun_kim", "komunikim"), ("s_stem", "sistem"),
+        ("eduk_m", "edukim"), ("organ_zim", "organizim"), ("transform_m", "transformim"),
+    ]
+    for i, (w, a) in enumerate(miss_exercises, start=1):
+        add_exercise(CategoryEnum.MISSING_LETTER, c5, l5, f"Shkruaj fjalën: {w}", {"word_with_gap": w, "type": "missing_letter"}, a, i)
+
+    # 6) WRONG_LETTER – fjali komplekse akademike
+    wrong_exercises = [
+        ("Demokracia moderne kërkon pjesmarrje aktive nga qytetarët.", "pjesëmarrje"),
+        ("Edukimi cilësor është themeli i zhvillimit shoqëror.", "zhvillimit"),
+        ("Kultura kombëtare pasqyron traditat dhe vlerat tona.", "traditat"),
+        ("Teknologjia transformon mënyrën e komunikimit modern.", "komunikimit"),
+    ]
+    for i, (s, a) in enumerate(wrong_exercises, start=1):
+        add_exercise(CategoryEnum.WRONG_LETTER, c6, l6, f"{s}\nFjala e saktë: __________", {"sentence": s, "type": "wrong_letter"}, a, i)
+
+    # 7) BUILD_WORD – fjalë komplekse akademike
+    buildw_exercises = [
+        ("demokraci", "demokraci"), ("kulturë", "kulturë"), ("teknologji", "teknologji"),
+        ("traditë", "traditë"), ("komunikim", "komunikim"), ("sistem", "sistem"),
+        ("edukim", "edukim"), ("organizim", "organizim"), ("transformim", "transformim"),
+    ]
+    for i, (w, a) in enumerate(buildw_exercises, start=1):
+        scrambled = ''.join(sorted(w, key=lambda x: hash(x) % 10))
+        add_exercise(CategoryEnum.BUILD_WORD, c7, l7, f"{scrambled} → __________", {"scrambled_word": scrambled, "type": "build_word"}, a, i)
+
+    # 8) NUMBER_TO_WORD – numra kompleks
+    numw_exercises = [
+        ("1250", "njëmijë e dyqind e pesëdhjetë"), ("2500", "dymijë e pesëqind"), ("3750", "tremijë e shtatëqind e pesëdhjetë"),
+        ("5000", "pesëmijë"), ("7500", "shtatëmijë e pesëqind"), ("10000", "dhjetëmijë"),
+    ]
+    for i, (n, w) in enumerate(numw_exercises, start=1):
+        add_exercise(CategoryEnum.NUMBER_TO_WORD, c8, l8, f"{n} → _____", {"number": n, "type": "number_to_word"}, w, i)
+
+    # 9) PHRASES – koncepte akademike komplekse
+    phrase_exercises = [
+        ("Sistemi kompleks që organizon dhe kontrollon një shtet.", "qeveria"),
+        ("Ndjenjë e thellë respekti dhe admirimi për dikë.", "nderim"),
+        ("Procesi i vazhdueshëm i mësimit dhe zhvillimit.", "edukim"),
+        ("Tërësia e ligjeve që rregullojnë një shoqëri.", "legjislacion"),
+    ]
+    for i, (desc, word) in enumerate(phrase_exercises, start=1):
+        add_exercise(CategoryEnum.PHRASES, c9, l9, desc, {"description": desc, "type": "phrase"}, word, i)
+
+    # 10) SPELLING_PUNCTUATION – fjali komplekse akademike
+    spellp_exercises = [
+        ("demokracia moderne kërkon pjesëmarrje aktive", "Demokracia moderne kërkon pjesëmarrje aktive."),
+        ("edukimi cilësor është themeli i zhvillimit", "Edukimi cilësor është themeli i zhvillimit."),
+        ("kultura kombëtare pasqyron traditat tona", "Kultura kombëtare pasqyron traditat tona."),
+        ("teknologjia transformon komunikimin modern", "Teknologjia transformon komunikimin modern."),
+    ]
+    for i, (inc, corr) in enumerate(spellp_exercises, start=1):
+        add_exercise(CategoryEnum.SPELLING_PUNCTUATION, c10, l10, inc, {"incorrect": inc, "type": "spelling_punctuation"}, corr, i)
+
+    # 11) ABSTRACT_CONCRETE – koncepte komplekse akademike
+    abscon_exercises = [
+        ("demokraci / qeveri / parlament → parlament (konkret)", "parlament", "concrete"),
+        ("kulturë / traditë / muze → muze (konkret)", "muze", "concrete"),
+        ("edukim / shkollë / universitet → universitet (konkret)", "universitet", "concrete"),
+        ("demokraci / qeveri / ligj → demokraci (abstrakte)", "demokraci", "abstract"),
+        ("kulturë / traditë / vlerë → vlerë (abstrakte)", "vlerë", "abstract"),
+        ("edukim / shkollë / njohuri → njohuri (abstrakte)", "njohuri", "abstract"),
+    ]
+    for i, (p, a, t) in enumerate(abscon_exercises, start=1):
+        base = p.split("→")[0].strip()
+        add_exercise(CategoryEnum.ABSTRACT_CONCRETE, c11, l11, f"Zgjidh fjalën e duhur: {base}", {"choices": [], "type": t}, a, i)
+
+    # 12) BUILD_SENTENCE – fjali komplekse akademike
+    builds_exercises = [
+        (["Demokracia", "moderne", "kërkon", "pjesëmarrje", "aktive", "nga", "qytetarët", "në", "proceset", "vendimmarrëse"], "Demokracia moderne kërkon pjesëmarrje aktive nga qytetarët në proceset vendimmarrëse."),
+        (["Edukimi", "cilësor", "është", "themeli", "i", "zhvillimit", "personal", "dhe", "shoqëror"], "Edukimi cilësor është themeli i zhvillimit personal dhe shoqëror."),
+        (["Kultura", "kombëtare", "pasqyron", "traditat", "e", "lashta", "dhe", "vlerat", "e", "popullit"], "Kultura kombëtare pasqyron traditat e lashta dhe vlerat e popullit."),
+    ]
+    for i, (words, sentence) in enumerate(builds_exercises, start=1):
+        add_exercise(CategoryEnum.BUILD_SENTENCE, c12, l12, f"Fjalë: {words}\nFjalia: ____________________________", {"words": words, "type": "build_sentence"}, sentence, i)
+
+    db.commit()
+    exercise_count = db.query(Exercise).filter(Exercise.course_id.in_([c.id for c in courses])).count()
+    print(f"Successfully seeded {len(courses)} courses and {exercise_count} exercises for ninth class level")
+    return ninth_class.id
