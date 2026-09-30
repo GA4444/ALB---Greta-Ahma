@@ -767,7 +767,7 @@ function App() {
                 // Update user stats from server to ensure accuracy
                 fetchUserStats()
                 
-                setMessage(`Përgjigja e saktë! 🎉 +${pointsEarned} pikë`)
+                setMessage(result.message || `Përgjigja e saktë! 🎉 +${pointsEarned} pikë`)
                 
                 console.log('[DEBUG] Before setTimeout - exercises length:', exercises.length)
                 console.log('[DEBUG] Before setTimeout - currentExerciseIndex:', currentExerciseIndex)

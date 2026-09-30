@@ -42,6 +42,7 @@ def migrate_email_notification_schema(engine: Engine) -> None:
 				("current_streak", "INTEGER", "0"),
 				("longest_streak", "INTEGER", "0"),
 				("total_achievements", "INTEGER", "0"),
+				("bonus_points", "INTEGER", "0"),
 			):
 				if name not in user_columns:
 					connection.execute(text(

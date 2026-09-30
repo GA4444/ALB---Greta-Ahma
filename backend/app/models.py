@@ -199,6 +199,8 @@ class User(Base):
 	longest_streak = Column(Integer, default=0, nullable=False)
 	last_activity_date = Column(DateTime, nullable=True)
 	total_achievements = Column(Integer, default=0, nullable=False)
+	# Bonus points from daily challenges / achievements (NOT level Progress).
+	bonus_points = Column(Integer, default=0, nullable=False)
 	last_streak_warning_at = Column(DateTime, nullable=True)
 	last_weekly_report_at = Column(DateTime, nullable=True)
 

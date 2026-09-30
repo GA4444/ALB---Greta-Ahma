@@ -153,6 +153,9 @@ def init_database() -> None:
 			logger.info("Phrase prompt «Fjala:» cleanup: %s", phrase_result)
 			result = backfill_exercise_hints(db)
 			logger.info("Exercise hints backfill: %s", result)
+			from .progress_repairs import repair_inflated_level_progress_points
+			repair_result = repair_inflated_level_progress_points(db)
+			logger.info("Progress points repair: %s", repair_result)
 		finally:
 			db.close()
 	except Exception:

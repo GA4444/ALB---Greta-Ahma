@@ -389,14 +389,11 @@ def update_daily_challenge_progress(db: Session, user_id: str, challenge_type: s
 			progress.completed = True
 			progress.completed_at = datetime.utcnow()
 			
-			# Award points to user (add to Progress)
-			user_progress = (
-				db.query(models.Progress)
-				.filter(models.Progress.user_id == user_id)
-				.first()
-			)
-			if user_progress:
-				user_progress.points += challenge.points_reward
+			# Award bonus points on the USER, never on level Progress.
+			# (Old bug added +50/+75 into Progress.points and inflated totals / accuracy.)
+			user = db.query(models.User).filter(models.User.id == int(user_id)).first()
+			if user is not None:
+				user.bonus_points = int(getattr(user, "bonus_points", 0) or 0) + int(challenge.points_reward or 0)
 		
 		db.commit()
 

@@ -78,10 +78,13 @@ def get_user_totals(user_id: str, db: Session = Depends(get_db)):
 		.filter(models.Progress.user_id == user_id)
 		.one()
 	)
+	user = db.query(models.User).filter(models.User.id == int(user_id)).first()
+	bonus = int(getattr(user, "bonus_points", 0) or 0) if user else 0
 	return {
 		"user_id": user_id,
-		"total_points": int(total_points or 0),
+		"total_points": int(total_points or 0) + bonus,
 		"total_stars": int(total_stars or 0),
+		"bonus_points": bonus,
 	}
 
 
@@ -99,6 +102,9 @@ def get_user_overview(user_id: str, db: Session = Depends(get_db)):
 	)
 	total_points = int(total_points or 0)
 	total_stars = int(total_stars or 0)
+	user = db.query(models.User).filter(models.User.id == int(user_id)).first()
+	bonus = int(getattr(user, "bonus_points", 0) or 0) if user else 0
+	total_points += bonus
 
 	# Get all courses
 	courses = db.query(models.Course).order_by(models.Course.order_index).all()
