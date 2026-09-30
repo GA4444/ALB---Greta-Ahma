@@ -188,18 +188,20 @@ def strip_fjala_from_phrase_prompts(db: Session) -> dict:
 
 
 def backfill_exercise_hints(db: Session) -> dict:
-	"""Set missing/outdated instructional tips for all exercise categories."""
+	"""Fill missing instructional tips only (skip rows that already have a rule)."""
 	from . import models
 
 	updated = 0
 	skipped = 0
-	exercises = db.query(models.Exercise).all()
+	exercises = (
+		db.query(models.Exercise)
+		.filter((models.Exercise.rule.is_(None)) | (models.Exercise.rule == ""))
+		.all()
+	)
+	total_checked = len(exercises)
 	for exercise in exercises:
 		desired = hint_for_exercise(exercise.category, exercise.data)
 		if not desired:
-			skipped += 1
-			continue
-		if (exercise.rule or "").strip() == desired:
 			skipped += 1
 			continue
 		exercise.rule = desired
@@ -207,7 +209,7 @@ def backfill_exercise_hints(db: Session) -> dict:
 
 	if updated:
 		db.commit()
-	return {"updated": updated, "skipped": skipped, "total": len(exercises)}
+	return {"updated": updated, "skipped": skipped, "missing_checked": total_checked}
 
 
 # Backwards-compatible alias used by older call sites / migrations.

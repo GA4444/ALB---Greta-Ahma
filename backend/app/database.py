@@ -146,14 +146,23 @@ def init_database() -> None:
 		migrate_exercise_rule_column(engine)
 		db = SessionLocal()
 		try:
+			# Keep startup migrations cheap — avoid long locks that cause proxy 503s.
 			prompt_result = strip_sakte_from_spelling_prompts(db)
 			logger.info("Spelling prompt «Saktë:» cleanup: %s", prompt_result)
 			phrase_result = strip_fjala_from_phrase_prompts(db)
 			logger.info("Phrase prompt «Fjala:» cleanup: %s", phrase_result)
 			result = backfill_exercise_hints(db)
 			logger.info("Exercise hints backfill: %s", result)
-			# Ensure Klasa 9 exists (grades go through 9; older DBs only had 1–8).
-			from . import models
+		finally:
+			db.close()
+	except Exception:
+		logger.exception("Exercise hint migration/backfill failed")
+
+	# Seed Klasa 9 in a separate short transaction after core migrations.
+	try:
+		from . import models
+		db = SessionLocal()
+		try:
 			has_class_9 = (
 				db.query(models.Course.id)
 				.filter(
@@ -166,13 +175,13 @@ def init_database() -> None:
 				from .routers.seed_albanian_corpus import seed_ninth_class_exercises
 				seed_ninth_class_exercises(db)
 				logger.info("Seeded missing Klasa 9")
-				phrase_result = strip_fjala_from_phrase_prompts(db)
-				result = backfill_exercise_hints(db)
-				logger.info("Post Klasa 9 cleanup/hints: phrase=%s hints=%s", phrase_result, result)
+				from .exercise_hints import backfill_exercise_hints, strip_fjala_from_phrase_prompts
+				strip_fjala_from_phrase_prompts(db)
+				backfill_exercise_hints(db)
 		finally:
 			db.close()
 	except Exception:
-		logger.exception("Exercise hint migration/backfill failed")
+		logger.exception("Klasa 9 ensure/seed failed")
 
 	ok, error = check_database()
 	if not ok:
