@@ -187,8 +187,6 @@ function App() {
 
     // Progress and gamification state
     const [answers, setAnswers] = useState<Record<number, string>>({})
-    const answerInputRef = useRef<HTMLInputElement | null>(null)
-    const childPracticeInputRef = useRef<HTMLInputElement | null>(null)
     const [progress, setProgress] = useState<ProgressOut[]>([])
 
     const [message, setMessage] = useState<string>('')
@@ -2497,6 +2495,8 @@ function MainContent({
         return labels[type || ''] || 'Drejtshkrim'
     }
 
+    const answerInputRef = useRef<HTMLInputElement | null>(null)
+    const childPracticeInputRef = useRef<HTMLInputElement | null>(null)
     const currentExercise = exercises[currentExerciseIndex]
     const classLabel = selectedClass ? `Klasa ${getClassNumber(selectedClass, classes)}` : 'klasa jote'
     const levelLabel = selectedCourse || selectedLevel
