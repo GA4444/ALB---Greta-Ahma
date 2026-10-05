@@ -320,8 +320,11 @@ function App() {
 
     // Audio features state
     const [isRecording, setIsRecording] = useState(false)
-
-
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const mediaStreamRef = useRef<MediaStream | null>(null)
+    const speechRecognitionRef = useRef<any>(null)
+    const recordingTimeoutRef = useRef<number | null>(null)
+    const voiceTargetExerciseIdRef = useRef<number | null>(null)
 
     // Course levels state
     const [courseLevels, setCourseLevels] = useState<LevelOut[]>([])
@@ -1191,107 +1194,257 @@ function App() {
         }
     }
 
-    const startRecording = async () => {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    const clearRecordingTimeout = () => {
+        if (recordingTimeoutRef.current !== null) {
+            window.clearTimeout(recordingTimeoutRef.current)
+            recordingTimeoutRef.current = null
+        }
+    }
+
+    const fillAnswerFromSpeech = (spokenText: string, exerciseId?: number | null) => {
+        const targetId = exerciseId ?? voiceTargetExerciseIdRef.current ?? exercises[currentExerciseIndex]?.id
+        const cleaned = String(spokenText || '').trim()
+        if (!targetId || !cleaned) return
+        setAnswers((prev) => ({
+            ...prev,
+            [targetId]: cleaned,
+        }))
+    }
+
+    const stopRecording = () => {
+        clearRecordingTimeout()
+
+        const recognition = speechRecognitionRef.current
+        if (recognition) {
+            try {
+                recognition.stop()
+            } catch {
+                /* already stopped */
+            }
+            speechRecognitionRef.current = null
+        }
+
+        const recorder = mediaRecorderRef.current
+        if (recorder && recorder.state === 'recording') {
+            try {
+                recorder.stop()
+            } catch {
+                /* already stopped */
+            }
+        } else {
+            mediaStreamRef.current?.getTracks().forEach((track) => track.stop())
+            mediaStreamRef.current = null
+            mediaRecorderRef.current = null
+            setIsRecording(false)
+        }
+    }
+
+    const startBrowserSpeechRecognition = (): boolean => {
+        const SpeechRecognitionCtor =
+            (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+        if (!SpeechRecognitionCtor) return false
+
+        try {
+            const recognition = new SpeechRecognitionCtor()
+            recognition.lang = 'sq-AL'
+            recognition.interimResults = true
+            recognition.maxAlternatives = 3
+            recognition.continuous = false
+
+            let finalTranscript = ''
+
+            recognition.onstart = () => {
+                setIsRecording(true)
+                setMessage('Fol në shqip… Shtyp “Ndalo” kur të mbarosh. 🎤')
+            }
+
+            recognition.onresult = (event: any) => {
+                let interim = ''
+                for (let i = event.resultIndex; i < event.results.length; i += 1) {
+                    const piece = String(event.results[i]?.[0]?.transcript || '')
+                    if (event.results[i].isFinal) {
+                        finalTranscript = `${finalTranscript} ${piece}`.trim()
+                    } else {
+                        interim = `${interim} ${piece}`.trim()
+                    }
+                }
+                if (interim) {
+                    setMessage(`Po dëgjoj: “${interim}”…`)
+                }
+                if (finalTranscript) {
+                    fillAnswerFromSpeech(finalTranscript)
+                    setMessage(`E shkrova me zë: “${finalTranscript}”. Kontrollo përgjigjen.`)
+                }
+            }
+
+            recognition.onerror = (event: any) => {
+                const err = String(event?.error || '')
+                console.error('Speech recognition error:', err)
+                speechRecognitionRef.current = null
+                setIsRecording(false)
+                if (err === 'not-allowed' || err === 'service-not-allowed') {
+                    setMessage('Lejo mikrofonin në shfletues që të shkruash me zë. 🎤')
+                    return
+                }
+                if (err === 'no-speech') {
+                    setMessage('Nuk dëgjova asgjë. Provo përsëri dhe fol më qartë. 🎤')
+                    return
+                }
+                // Fall back to MediaRecorder + backend STT for unsupported language/service issues.
+                void startMediaRecorderFallback()
+            }
+
+            recognition.onend = () => {
+                speechRecognitionRef.current = null
+                setIsRecording(false)
+                if (finalTranscript) {
+                    fillAnswerFromSpeech(finalTranscript)
+                    setMessage(`E shkrova me zë: “${finalTranscript}”. Kontrollo përgjigjen.`)
+                }
+            }
+
+            speechRecognitionRef.current = recognition
+            recognition.start()
+            recordingTimeoutRef.current = window.setTimeout(() => {
+                stopRecording()
+            }, 12000)
+            return true
+        } catch (error) {
+            console.error('Browser speech recognition failed:', error)
+            speechRecognitionRef.current = null
+            return false
+        }
+    }
+
+    const startMediaRecorderFallback = async () => {
+        if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
             setMessage('Regjistrimi i zërit nuk mbështetet në këtë shfletues! 🎤')
             return
         }
 
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
+            const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
-                    sampleRate: 16000
-                } 
+                },
             })
-            
+            mediaStreamRef.current = stream
             setIsRecording(true)
-            setMessage('Duke regjistruar... Fol qartë! 🎤')
-            
-            // Try different audio formats based on browser support
+            setMessage('Duke regjistruar… Fol qartë në shqip! 🎤')
+
             let mimeType = 'audio/webm;codecs=opus'
             if (!MediaRecorder.isTypeSupported(mimeType)) {
                 mimeType = 'audio/webm'
                 if (!MediaRecorder.isTypeSupported(mimeType)) {
                     mimeType = 'audio/mp4'
                     if (!MediaRecorder.isTypeSupported(mimeType)) {
-                        mimeType = '' // Use default
+                        mimeType = ''
                     }
                 }
             }
-            
+
             const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {})
+            mediaRecorderRef.current = mediaRecorder
             const audioChunks: Blob[] = []
-            
+
             mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    audioChunks.push(event.data)
-                }
+                if (event.data.size > 0) audioChunks.push(event.data)
             }
-            
+
             mediaRecorder.onstop = async () => {
+                clearRecordingTimeout()
                 setIsRecording(false)
-                stream.getTracks().forEach(track => track.stop())
-                
+                stream.getTracks().forEach((track) => track.stop())
+                mediaStreamRef.current = null
+                mediaRecorderRef.current = null
+
+                const exerciseId = voiceTargetExerciseIdRef.current ?? exercises[currentExerciseIndex]?.id
+                if (!exerciseId) {
+                    setMessage('Nuk u gjet ushtrimi aktiv për zërin. 🎤')
+                    return
+                }
+                if (audioChunks.length === 0) {
+                    setMessage('Regjistrimi doli bosh. Provo përsëri. 🎤')
+                    return
+                }
+
                 try {
-                    // Create audio blob with detected mime type
-                    const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' })
-                    
-                    // Send to backend for Albanian pronunciation check
+                    const blobType = mimeType || audioChunks[0]?.type || 'audio/webm'
+                    const audioBlob = new Blob(audioChunks, { type: blobType })
+                    const extension = blobType.includes('mp4')
+                        ? 'mp4'
+                        : blobType.includes('ogg')
+                          ? 'ogg'
+                          : 'webm'
                     const formData = new FormData()
-                    const extension = mimeType.includes('webm') ? 'webm' : mimeType.includes('mp4') ? 'mp4' : 'webm'
                     formData.append('audio_file', audioBlob, `recording.${extension}`)
-                    formData.append('exercise_id', exercises[currentExerciseIndex].id.toString())
-                    
-                    setMessage('Duke kontrolluar shqiptimin... 🔍')
-                    
+                    formData.append('exercise_id', String(exerciseId))
+
+                    setMessage('Duke kthyer zërin në shkrim shqip… 🔍')
+
                     const response = await fetch('/api/albanian-pronunciation-check', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
                     })
-                    
-                    if (response.ok) {
-                        const result = await response.json()
-                        
-                        // Show pronunciation feedback
-                        const feedback = `${result.feedback}\n\nShqiptimi yt: "${result.spoken_text}"\nSaktësia: ${Math.round(result.similarity_score * 100)}%`
-                        setMessage(feedback)
-                        
-                        // Auto-fill the answer if pronunciation is good
-                        if (result.is_correct && result.spoken_text) {
-                            setAnswers(prev => ({ 
-                                ...prev, 
-                                [exercises[currentExerciseIndex].id]: result.spoken_text 
-                            }))
-                        }
-                    } else {
-                        throw new Error('Pronunciation check failed')
+
+                    if (!response.ok) {
+                        const errText = await response.text().catch(() => '')
+                        throw new Error(errText || `STT failed (${response.status})`)
                     }
+
+                    const result = await response.json()
+                    const spoken = String(result.spoken_text || '').trim()
+                    if (!spoken) {
+                        setMessage('Nuk kuptova fjalën. Fol më qartë dhe provo përsëri. 🎤')
+                        return
+                    }
+
+                    // Always fill the answer so the child can complete the exercise by voice.
+                    fillAnswerFromSpeech(spoken, exerciseId)
+                    const accuracy = Math.round(Number(result.similarity_score || 0) * 100)
+                    const tip = result.feedback
+                        ? `${result.feedback} `
+                        : ''
+                    setMessage(`${tip}E shkrova me zë: “${spoken}”${accuracy ? ` (${accuracy}%)` : ''}. Kontrollo përgjigjen.`)
                 } catch (error) {
                     console.error('Error processing recording:', error)
-                    setMessage('Gabim në përpunimin e regjistrimit. Provo përsëri! 🎤')
+                    setMessage('Gabim në njohjen e zërit. Provo përsëri ose shkruaje me dorë. 🎤')
                 }
             }
-            
-            mediaRecorder.start()
-            
-            // Stop recording after 5 seconds
-            setTimeout(() => {
-                if (mediaRecorder.state === 'recording') {
-                    mediaRecorder.stop()
-                }
-            }, 5000)
-            
+
+            mediaRecorder.start(250)
+            recordingTimeoutRef.current = window.setTimeout(() => {
+                if (mediaRecorder.state === 'recording') mediaRecorder.stop()
+            }, 10000)
         } catch (error) {
             console.error('Error accessing microphone:', error)
             setMessage('Gabim në aksesin e mikrofonit. Kontrolloni lejet e mikrofonit! 🎤')
             setIsRecording(false)
+            mediaStreamRef.current?.getTracks().forEach((track) => track.stop())
+            mediaStreamRef.current = null
+            mediaRecorderRef.current = null
         }
     }
 
+    const startRecording = async () => {
+        if (isRecording) {
+            stopRecording()
+            return
+        }
+        const exercise = exercises[currentExerciseIndex]
+        if (!exercise) {
+            setMessage('Hap një ushtrim për të shkruar me zë. 🎤')
+            return
+        }
+        voiceTargetExerciseIdRef.current = exercise.id
+        // Prefer in-browser Albanian speech recognition (fills the answer field directly).
+        if (startBrowserSpeechRecognition()) return
+        await startMediaRecorderFallback()
+    }
+
     const showPronunciationHint = () => {
-        setMessage('💡 Këshillë: Dëgjoni me kujdes zërin dhe përpiquni ta imitoni atë! 🎵')
+        setMessage('💡 Këshillë: Dëgjo audion, pastaj shtyp “Regjistro” dhe thuaja fjalën në shqip. 🎵')
     }
 
     // If not logged in, show welcome then authentication
@@ -3366,7 +3519,7 @@ function MainContent({
                                     {exercises[currentExerciseIndex].category === 'listen_write' && (
                                         <div className="dictation-helper-modern">
                                             <div className="dictation-helper-text">
-                                                <strong>Si ta bësh këtë ushtrim:</strong> Shtyp “Dëgjo”, pastaj shkruaj fjalën ose fjalinë që dëgjove.
+                                                <strong>Si ta bësh këtë ushtrim:</strong> Shtyp “Dëgjo”, pastaj thuaja fjalën me “Regjistro” ose shkruaje poshtë.
                                             </div>
                                             <div className="voice-controls-modern">
                                                 <button
@@ -3378,11 +3531,11 @@ function MainContent({
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    className="voice-btn-modern secondary"
-                                                    onClick={() => startRecording()}
-                                                    disabled={isRecording}
+                                                    className={`voice-btn-modern secondary ${isRecording ? 'recording' : ''}`}
+                                                    onClick={() => { void startRecording() }}
+                                                    aria-pressed={isRecording}
                                                 >
-                                                    <span>{isRecording ? 'Duke regjistruar...' : 'Regjistro'}</span>
+                                                    <span>{isRecording ? 'Ndalo' : 'Regjistro'}</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -3460,6 +3613,16 @@ function MainContent({
                                                     </button>
                                                 ))}
                                             </div>
+                                            <button
+                                                type="button"
+                                                className={`special-letter-btn voice-answer-btn ${isRecording ? 'recording' : ''}`}
+                                                onClick={() => { void startRecording() }}
+                                                aria-pressed={isRecording}
+                                                aria-label={isRecording ? 'Ndalo regjistrimin' : 'Shkruaj përgjigjen me zë'}
+                                                title={isRecording ? 'Ndalo' : 'Fol në shqip'}
+                                            >
+                                                {isRecording ? '⏹' : '🎤'}
+                                            </button>
                                         </div>
                                     </div>
 

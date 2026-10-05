@@ -170,52 +170,78 @@ async def text_to_speech(
 @router.post("/speech-to-text")
 async def speech_to_text(audio_file: UploadFile = File(...), language: str = "sq-AL"):
 	"""
-	Convert speech to text using Google Speech Recognition
+	Convert speech to text using Azure Speech (preferred) or Google Speech Recognition.
 	Language codes: 'sq-AL' for Albanian, 'en-US' for English
 	"""
+	temp_filepath = None
 	try:
-		# Save uploaded file temporarily
-		temp_filename = f"stt_{uuid.uuid4()}.wav"
+		suffix = os.path.splitext(audio_file.filename or "")[1] or ".webm"
+		temp_filename = f"stt_{uuid.uuid4()}{suffix}"
 		temp_filepath = os.path.join(TEMP_AUDIO_DIR, temp_filename)
-		
+		wav_filepath = os.path.join(TEMP_AUDIO_DIR, f"stt_{uuid.uuid4()}.wav")
+
 		with open(temp_filepath, "wb") as buffer:
 			buffer.write(await audio_file.read())
-		
-		# Convert to proper format if needed (lazy import to avoid ffmpeg warning at startup)
+
+		# Normalize browser recordings (webm/mp4/ogg) to mono 16k wav.
 		from pydub import AudioSegment
 		audio = AudioSegment.from_file(temp_filepath)
 		audio = audio.set_frame_rate(16000).set_channels(1)
-		audio.export(temp_filepath, format="wav")
-		
-		# Initialize recognizer
+		audio.export(wav_filepath, format="wav")
+
+		# Prefer Azure Neural STT for Albanian when configured.
+		if AZURE_AVAILABLE and speechsdk is not None and language.lower().startswith("sq"):
+			try:
+				speech_config = speechsdk.SpeechConfig(
+					subscription=AZURE_SPEECH_KEY,
+					region=AZURE_SPEECH_REGION,
+				)
+				speech_config.speech_recognition_language = "sq-AL"
+				audio_config = speechsdk.audio.AudioConfig(filename=wav_filepath)
+				recognizer = speechsdk.SpeechRecognizer(
+					speech_config=speech_config,
+					audio_config=audio_config,
+				)
+				result = recognizer.recognize_once_async().get()
+				if result.reason == speechsdk.ResultReason.RecognizedSpeech and result.text:
+					return {
+						"text": result.text.strip(),
+						"confidence": 0.95,
+						"language": "sq-AL",
+						"engine": "azure",
+					}
+				if result.reason == speechsdk.ResultReason.NoMatch:
+					raise sr.UnknownValueError("Azure NoMatch")
+			except sr.UnknownValueError:
+				raise
+			except Exception as azure_err:
+				print(f"[WARNING] Azure STT failed, falling back to Google: {azure_err}")
+
 		recognizer = sr.Recognizer()
-		
-		# Load audio file
-		with sr.AudioFile(temp_filepath) as source:
+		with sr.AudioFile(wav_filepath) as source:
 			audio_data = recognizer.record(source)
-		
-		# Recognize speech
+
 		text = recognizer.recognize_google(audio_data, language=language)
-		
-		# Clean up temp files
-		os.remove(temp_filepath)
-		
 		return {
 			"text": text,
-			"confidence": 0.9,  # Google doesn't provide confidence for free tier
-			"language": language
+			"confidence": 0.9,
+			"language": language,
+			"engine": "google",
 		}
-		
+
 	except sr.UnknownValueError:
-		raise HTTPException(status_code=400, detail="Could not understand audio")
+		raise HTTPException(status_code=400, detail="Nuk kuptova audion. Fol më qartë në shqip.")
 	except sr.RequestError as e:
 		raise HTTPException(status_code=500, detail=f"Speech recognition service error: {str(e)}")
 	except Exception as e:
 		raise HTTPException(status_code=500, detail=f"Speech-to-text failed: {str(e)}")
 	finally:
-		# Clean up temp files
-		if 'temp_filepath' in locals() and os.path.exists(temp_filepath):
-			os.remove(temp_filepath)
+		for path in (temp_filepath, locals().get("wav_filepath")):
+			if path and os.path.exists(path):
+				try:
+					os.remove(path)
+				except OSError:
+					pass
 
 
 @router.post("/pronunciation-check")
@@ -242,6 +268,8 @@ async def pronunciation_check(
 			"feedback": get_pronunciation_feedback(similarity, recognized_text["text"], target_text)
 		}
 		
+	except HTTPException:
+		raise
 	except Exception as e:
 		raise HTTPException(status_code=500, detail=f"Pronunciation check failed: {str(e)}")
 
@@ -435,8 +463,8 @@ async def albanian_pronunciation_check(
 		# Enhanced similarity check for Albanian
 		similarity = calculate_albanian_similarity(recognized_text["text"], target_text)
 		
-		# Determine score based on Albanian corpus rules
-		is_correct = similarity > 0.8  # Higher threshold for Albanian
+		# Soft threshold: we still return spoken_text so the UI can fill the answer field.
+		is_correct = similarity > 0.75
 		score = get_albanian_score(similarity)
 		
 		return {
@@ -449,6 +477,8 @@ async def albanian_pronunciation_check(
 			"pronunciation_tips": get_albanian_pronunciation_tips(recognized_text["text"], target_text)
 		}
 		
+	except HTTPException:
+		raise
 	except Exception as e:
 		raise HTTPException(status_code=500, detail=f"Albanian pronunciation check failed: {str(e)}")
 

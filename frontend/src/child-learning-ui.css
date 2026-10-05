@@ -1158,6 +1158,25 @@
 	background: rgba(31, 111, 139, 0.06);
 }
 
+.app .exercise-workspace .voice-btn-modern.secondary.recording,
+.app .exercise-workspace .voice-answer-btn.recording {
+	background: #c2410c !important;
+	color: #fff !important;
+	border-color: #c2410c !important;
+	animation: voice-pulse 1.1s ease-in-out infinite;
+}
+
+.app .exercise-workspace .voice-answer-btn {
+	min-width: 42px;
+	font-size: 1.05rem;
+	line-height: 1;
+}
+
+@keyframes voice-pulse {
+	0%, 100% { transform: scale(1); }
+	50% { transform: scale(1.05); }
+}
+
 .app .exercise-workspace .exercise-hint-modern {
 	margin: 0;
 	padding: 12px 14px;
