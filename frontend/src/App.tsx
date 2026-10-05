@@ -3611,7 +3611,27 @@ function MainContent({
                             </div>
                         )}
                         </>
-                        ) : null}
+                        ) : (
+                            <div className="exercise-empty-state" style={{ padding: '24px 18px', textAlign: 'center' }}>
+                                <p style={{ margin: 0, color: '#1f6f8b', fontWeight: 700 }}>
+                                    Nuk u ngarkuan ushtrimet për këtë nivel.
+                                </p>
+                                <p style={{ margin: '8px 0 16px', color: '#64748b' }}>
+                                    Provo përsëri, ose kthehu te nivelet dhe hap nivelin sërish.
+                                </p>
+                                <button
+                                    type="button"
+                                    className="back-button-modern"
+                                    onClick={() => {
+                                        if (selectedLevel) {
+                                            void onLevelClick(selectedLevel)
+                                        }
+                                    }}
+                                >
+                                    Provo përsëri
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : null}
             </div>
