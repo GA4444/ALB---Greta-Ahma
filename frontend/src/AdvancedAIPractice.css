@@ -420,18 +420,31 @@
 /* Answer Section */
 .answer-section {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 0.75rem;
 	margin-bottom: 1rem;
+	align-items: stretch;
+}
+
+.answer-input-row--ai {
+	display: flex;
+	align-items: stretch;
+	gap: 8px;
+	flex: 1 1 220px;
+	min-width: 0;
 }
 
 .answer-input-ai {
 	flex: 1;
+	min-width: 0;
 	padding: 0.875rem 1.25rem;
 	border: 2px solid #e2e8f0;
 	border-radius: 8px;
 	font-size: 1rem;
 	transition: all 0.2s;
 	background: white;
+	-webkit-appearance: none;
+	appearance: none;
 }
 
 .answer-input-ai:focus {

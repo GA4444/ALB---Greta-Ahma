@@ -685,6 +685,43 @@
     clip-path: none !important;
   }
 
+  .app .answer-input-row,
+  .app .exercise-workspace .answer-input-row {
+    display: flex !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .app .special-letter-pad {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(44px, 48px)) !important;
+    gap: 6px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .app .special-letter-btn {
+    min-width: 44px !important;
+    min-height: 48px !important;
+    font-size: 1.15rem !important;
+    border-radius: 12px !important;
+  }
+
+  .app .child-practice-input-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+
+  .app .child-practice-input {
+    flex: 1 1 140px !important;
+    min-width: 0 !important;
+    font-size: 17px !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+
   .app .answer-input-field::placeholder {
     color: #64748b !important;
     opacity: 1 !important;

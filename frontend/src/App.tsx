@@ -187,6 +187,8 @@ function App() {
 
     // Progress and gamification state
     const [answers, setAnswers] = useState<Record<number, string>>({})
+    const answerInputRef = useRef<HTMLInputElement | null>(null)
+    const childPracticeInputRef = useRef<HTMLInputElement | null>(null)
     const [progress, setProgress] = useState<ProgressOut[]>([])
 
     const [message, setMessage] = useState<string>('')
@@ -2537,6 +2539,41 @@ function MainContent({
         return 'Shkruaj përgjigjen këtu...'
     }
 
+    const insertLetterIntoField = (
+        letter: string,
+        input: HTMLInputElement | null,
+        currentValue: string,
+        onUpdate: (next: string) => void,
+    ) => {
+        if (!input) {
+            onUpdate(`${currentValue}${letter}`)
+            return
+        }
+        const start = input.selectionStart ?? currentValue.length
+        const end = input.selectionEnd ?? currentValue.length
+        const next = `${currentValue.slice(0, start)}${letter}${currentValue.slice(end)}`
+        onUpdate(next)
+        // Restore caret after React re-render
+        requestAnimationFrame(() => {
+            const pos = start + letter.length
+            input.focus()
+            try {
+                input.setSelectionRange(pos, pos)
+            } catch {
+                /* older browsers / input types */
+            }
+        })
+    }
+
+    const insertAnswerLetter = (letter: string) => {
+        const exerciseId = exercises[currentExerciseIndex]?.id
+        if (!exerciseId) return
+        const currentValue = answers[exerciseId] || ''
+        insertLetterIntoField(letter, answerInputRef.current, currentValue, (next) => {
+            setAnswers((prev) => ({ ...prev, [exerciseId]: next }))
+        })
+    }
+
     const getExerciseHint = (exercise?: typeof currentExercise) => {
         if (!exercise) return null
         if (exercise.rule && String(exercise.rule).trim()) return String(exercise.rule).trim()
@@ -3380,15 +3417,50 @@ function MainContent({
                                     })()}
 
                                     <div className="answer-input-modern">
-                                        <input
-                                            type="text"
-                                            className="answer-input-field"
-                                            placeholder={getAnswerPlaceholder()}
-                                            value={answers[exercises[currentExerciseIndex].id] || ''}
-                                            onChange={(e) => setAnswers(prev => ({ ...prev, [exercises[currentExerciseIndex].id]: e.target.value }))}
-                                            onKeyPress={(e) => e.key === 'Enter' && handleSubmitAnswer()}
-                                            autoFocus
-                                        />
+                                        <div className="answer-input-row">
+                                            <input
+                                                ref={answerInputRef}
+                                                type="text"
+                                                className="answer-input-field"
+                                                placeholder={getAnswerPlaceholder()}
+                                                value={answers[exercises[currentExerciseIndex].id] || ''}
+                                                onChange={(e) => setAnswers(prev => ({ ...prev, [exercises[currentExerciseIndex].id]: e.target.value }))}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault()
+                                                        handleSubmitAnswer()
+                                                    }
+                                                }}
+                                                autoFocus
+                                                autoComplete="off"
+                                                autoCorrect="off"
+                                                autoCapitalize="none"
+                                                spellCheck={false}
+                                                inputMode="text"
+                                                enterKeyHint="done"
+                                                name="alblingo-exercise-answer"
+                                                id={`alblingo-exercise-answer-${exercises[currentExerciseIndex].id}`}
+                                                data-lpignore="true"
+                                                data-1p-ignore="true"
+                                                data-form-type="other"
+                                                data-bwignore="true"
+                                            />
+                                            <div className="special-letter-pad" role="group" aria-label="Shkronja shqipe">
+                                                {(['ë', 'ç', 'Ë', 'Ç'] as const).map((letter) => (
+                                                    <button
+                                                        key={letter}
+                                                        type="button"
+                                                        className="special-letter-btn"
+                                                        onMouseDown={(e) => e.preventDefault()}
+                                                        onClick={() => insertAnswerLetter(letter)}
+                                                        aria-label={`Shto shkronjën ${letter}`}
+                                                        title={letter}
+                                                    >
+                                                        {letter}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {childFeedback && (
@@ -3411,13 +3483,43 @@ function MainContent({
                                                     <strong>{childFeedback.child_message?.try_next || childFeedback.next_practice.prompt}</strong>
                                                     <div className="child-practice-input-row">
                                                         <input
+                                                            ref={childPracticeInputRef}
                                                             type="text"
                                                             value={childPracticeAnswer}
                                                             onChange={(e) => setChildPracticeAnswer(e.target.value)}
                                                             onKeyDown={(e) => e.key === 'Enter' && handleChildPracticeCheck()}
                                                             placeholder="Shkruaje këtu..."
                                                             className="child-practice-input"
+                                                            autoComplete="off"
+                                                            autoCorrect="off"
+                                                            autoCapitalize="none"
+                                                            spellCheck={false}
+                                                            name="alblingo-practice-answer"
+                                                            data-lpignore="true"
+                                                            data-1p-ignore="true"
+                                                            data-form-type="other"
                                                         />
+                                                        <div className="special-letter-pad special-letter-pad--compact" role="group" aria-label="Shkronja shqipe">
+                                                            {(['ë', 'ç'] as const).map((letter) => (
+                                                                <button
+                                                                    key={letter}
+                                                                    type="button"
+                                                                    className="special-letter-btn"
+                                                                    onMouseDown={(e) => e.preventDefault()}
+                                                                    onClick={() =>
+                                                                        insertLetterIntoField(
+                                                                            letter,
+                                                                            childPracticeInputRef.current,
+                                                                            childPracticeAnswer,
+                                                                            setChildPracticeAnswer,
+                                                                        )
+                                                                    }
+                                                                    aria-label={`Shto shkronjën ${letter}`}
+                                                                >
+                                                                    {letter}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                         <button type="button" onClick={handleChildPracticeCheck} className="child-practice-check-btn">
                                                             Kontrollo
                                                         </button>

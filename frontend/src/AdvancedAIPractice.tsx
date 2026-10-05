@@ -309,23 +309,54 @@ export default function AdvancedAIPractice({ userId, levelId, onGenerateRequest 
 								)}
 
 								<div className="answer-section">
-									<input
-										type="text"
-										className="answer-input-ai"
-										placeholder="Shkruaj përgjigjen..."
-										value={responses[exercise.id] || ''}
-										onChange={(e) =>
-											setResponses({
-												...responses,
-												[exercise.id]: e.target.value
-											})
-										}
-										onKeyPress={(e) => {
-											if (e.key === 'Enter') {
-												handleCheck(exercise)
+									<div className="answer-input-row answer-input-row--ai">
+										<input
+											type="text"
+											className="answer-input-ai"
+											placeholder="Shkruaj përgjigjen..."
+											value={responses[exercise.id] || ''}
+											onChange={(e) =>
+												setResponses({
+													...responses,
+													[exercise.id]: e.target.value
+												})
 											}
-										}}
-									/>
+											onKeyDown={(e) => {
+												if (e.key === 'Enter') {
+													e.preventDefault()
+													handleCheck(exercise)
+												}
+											}}
+											autoComplete="off"
+											autoCorrect="off"
+											autoCapitalize="none"
+											spellCheck={false}
+											name={`alblingo-ai-answer-${exercise.id}`}
+											data-lpignore="true"
+											data-1p-ignore="true"
+											data-form-type="other"
+										/>
+										<div className="special-letter-pad special-letter-pad--compact" role="group" aria-label="Shkronja shqipe">
+											{(['ë', 'ç'] as const).map((letter) => (
+												<button
+													key={letter}
+													type="button"
+													className="special-letter-btn"
+													onMouseDown={(e) => e.preventDefault()}
+													onClick={() => {
+														const current = responses[exercise.id] || ''
+														setResponses({
+															...responses,
+															[exercise.id]: `${current}${letter}`,
+														})
+													}}
+													aria-label={`Shto shkronjën ${letter}`}
+												>
+													{letter}
+												</button>
+											))}
+										</div>
+									</div>
 									<button
 										className="check-btn-ai"
 										onClick={() => handleCheck(exercise)}

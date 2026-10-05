@@ -138,8 +138,10 @@
 
 .child-practice-input-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
+  align-items: center;
 }
 
 .child-practice-input {
@@ -8734,6 +8736,65 @@ body {
     margin-bottom: var(--space-4);
 }
 
+.answer-input-row {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+}
+
+.answer-input-row .answer-input-field {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.special-letter-pad {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(40px, 44px));
+    gap: 6px;
+    flex: 0 0 auto;
+    align-content: center;
+}
+
+.special-letter-pad--compact {
+    grid-template-columns: repeat(2, minmax(36px, 40px));
+}
+
+.special-letter-btn {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+    border: 1.5px solid rgba(31, 111, 139, 0.28);
+    border-radius: 10px;
+    background: #f0f7fa;
+    color: #1f6f8b;
+    font-size: 1.05rem;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.special-letter-btn:hover {
+    background: #e2f1f6;
+    border-color: #1f6f8b;
+}
+
+.special-letter-btn:active {
+    transform: scale(0.96);
+    background: #d5eaf2;
+}
+
+.special-letter-btn:focus-visible {
+    outline: 2px solid #1f6f8b;
+    outline-offset: 2px;
+}
+
 .answer-input-field {
     width: 100%;
     padding: var(--space-4);
@@ -8745,6 +8806,9 @@ body {
     font-weight: 500;
     transition: all var(--duration-300) ease;
     box-shadow: var(--shadow-sm);
+    /* Cross-browser input resets */
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .answer-input-field:focus {
@@ -8757,6 +8821,22 @@ body {
     color: var(--text-secondary);
     opacity: 0.5;
     font-weight: 400;
+}
+
+@media (max-width: 480px) {
+    .answer-input-row {
+        flex-wrap: wrap;
+    }
+
+    .special-letter-pad {
+        width: 100%;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .special-letter-btn {
+        min-height: 44px;
+        width: 100%;
+    }
 }
 
 .exercise-actions-modern {

@@ -1180,6 +1180,13 @@
 	margin: 0;
 }
 
+.app .exercise-workspace .answer-input-row {
+	display: flex;
+	align-items: stretch;
+	gap: 8px;
+	width: 100%;
+}
+
 .app .exercise-workspace .answer-input-field {
 	width: 100%;
 	padding: 13px 14px;
@@ -1188,12 +1195,30 @@
 	box-shadow: none;
 	font-size: 0.98rem;
 	background: #fff;
+	-webkit-appearance: none;
+	appearance: none;
 }
 
 .app .exercise-workspace .answer-input-field:focus {
 	border-color: #1f6f8b;
 	outline: none;
 	box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.12);
+}
+
+.app .exercise-workspace .special-letter-pad {
+	display: grid;
+	grid-template-columns: repeat(2, 42px);
+	gap: 6px;
+}
+
+.app .exercise-workspace .special-letter-btn {
+	min-width: 42px;
+	min-height: 42px;
+	border-radius: 10px;
+	border: 1.5px solid rgba(31, 111, 139, 0.25);
+	background: #f0f7fa;
+	color: #1f6f8b;
+	font-weight: 800;
 }
 
 .app .exercise-workspace .exercise-actions-modern {
