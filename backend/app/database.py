@@ -140,6 +140,7 @@ def init_database() -> None:
 		from .exercise_hints import (
 			backfill_exercise_hints,
 			migrate_exercise_rule_column,
+			replace_i_i_ri_with_i_ri,
 			replace_i_trim_with_trim,
 			strip_fjala_from_phrase_prompts,
 			strip_sakte_from_spelling_prompts,
@@ -154,6 +155,8 @@ def init_database() -> None:
 			logger.info("Phrase prompt «Fjala:» cleanup: %s", phrase_result)
 			trim_result = replace_i_trim_with_trim(db)
 			logger.info("Exercise wording «i trim» cleanup: %s", trim_result)
+			ri_result = replace_i_i_ri_with_i_ri(db)
+			logger.info("Exercise typo «i i ri» cleanup: %s", ri_result)
 			result = backfill_exercise_hints(db)
 			logger.info("Exercise hints backfill: %s", result)
 			from .progress_repairs import repair_inflated_level_progress_points

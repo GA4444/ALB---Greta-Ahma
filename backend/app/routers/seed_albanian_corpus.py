@@ -281,10 +281,10 @@ def seed_first_class_exercises(db: Session):
     synonym_antonym_exercises = [
         # Antonime
         ("i mirë → _______", "i keq", ["i keq", "i lumtur", "i bukur"], "antonym"),
-        ("i gjatë → _______", "i shkurtër", ["i shkurtër", "i i ri", "i vjetër"], "antonym"),
+        ("i gjatë → _______", "i shkurtër", ["i shkurtër", "i ri", "i vjetër"], "antonym"),
         ("i lumtur → _______", "i trishtuar", ["i trishtuar", "i gëzuar", "i bukur"], "antonym"),
         ("i ftohtë → _______", "i nxehtë", ["i nxehtë", "i ngrohtë", "i butë"], "antonym"),
-        ("i shpejtë → _______", "i ngadaltë", ["i ngadaltë", "i i ri", "i vjetër"], "antonym"),
+        ("i shpejtë → _______", "i ngadaltë", ["i ngadaltë", "i ri", "i vjetër"], "antonym"),
         # Sinonime
         ("i lumtur → _______", "i gëzuar", ["i gëzuar", "i bukur", "i mirë"], "synonym"),
         ("i bukur → _______", "i hijshëm", ["i hijshëm", "i mirë", "i lumtur"], "synonym"),

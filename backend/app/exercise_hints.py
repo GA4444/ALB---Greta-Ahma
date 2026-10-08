@@ -213,6 +213,32 @@ def replace_i_trim_with_trim(db: Session) -> dict:
 	return {"updated": updated, "total": len(exercises)}
 
 
+def replace_i_i_ri_with_i_ri(db: Session) -> dict:
+	"""Remove the duplicated article in the typo «i i ri»."""
+	from . import models
+
+	updated = 0
+	exercises = (
+		db.query(models.Exercise)
+		.filter(models.Exercise.category == models.CategoryEnum.SYNONYMS_ANTONYMS)
+		.all()
+	)
+	for exercise in exercises:
+		changed = False
+		for field in ("prompt", "answer", "data"):
+			original = getattr(exercise, field, None)
+			if not isinstance(original, str) or "i i ri" not in original:
+				continue
+			setattr(exercise, field, original.replace("i i ri", "i ri"))
+			changed = True
+		if changed:
+			updated += 1
+
+	if updated:
+		db.commit()
+	return {"updated": updated, "total": len(exercises)}
+
+
 def backfill_exercise_hints(db: Session) -> dict:
 	"""Fill missing instructional tips only (skip rows that already have a rule)."""
 	from . import models
