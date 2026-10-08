@@ -812,14 +812,14 @@ def seed_second_class_exercises(db: Session):
     # 3. Niveli 3 - 10 exercises (More advanced synonyms/antonyms)
     synonym_antonym_exercises = [
         # Antonime
-        ("i guximshëm → _______", "i frikësuar", ["i frikësuar", "i trim", "i zgjuar"], "antonym"),
+        ("i guximshëm → _______", "i frikësuar", ["i frikësuar", "trim", "i zgjuar"], "antonym"),
         ("i pasur → _______", "i varfër", ["i varfër", "i lumtur", "i mirë"], "antonym"),
         ("i vjetër → _______", "i ri", ["i ri", "i vjetër", "i mirë"], "antonym"),
         ("i ngadaltë → _______", "i shpejtë", ["i shpejtë", "i ngadaltë", "i mirë"], "antonym"),
         ("i lumtur → _______", "i trishtuar", ["i trishtuar", "i gëzuar", "i mirë"], "antonym"),
         # Sinonime
         ("i zgjuar → _______", "i mençur", ["i mençur", "i mirë", "i lumtur"], "synonym"),
-        ("i trim → _______", "i guximshëm", ["i guximshëm", "i mirë", "i lumtur"], "synonym"),
+        ("trim → _______", "i guximshëm", ["i guximshëm", "i mirë", "i lumtur"], "synonym"),
         ("i bukur → _______", "i hijshëm", ["i hijshëm", "i mirë", "i lumtur"], "synonym"),
         ("i gëzuar → _______", "i lumtur", ["i lumtur", "i mirë", "i bukur"], "synonym"),
         ("i qetë → _______", "i heshtur", ["i heshtur", "i mirë", "i lumtur"], "synonym")
