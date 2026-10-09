@@ -142,6 +142,7 @@ def init_database() -> None:
 			migrate_exercise_rule_column,
 			replace_i_i_ri_with_i_ri,
 			replace_i_trim_with_trim,
+			replace_njeri_with_personi_in_class_2_level_2,
 			strip_fjala_from_phrase_prompts,
 			strip_sakte_from_spelling_prompts,
 		)
@@ -157,6 +158,8 @@ def init_database() -> None:
 			logger.info("Exercise wording «i trim» cleanup: %s", trim_result)
 			ri_result = replace_i_i_ri_with_i_ri(db)
 			logger.info("Exercise typo «i i ri» cleanup: %s", ri_result)
+			person_result = replace_njeri_with_personi_in_class_2_level_2(db)
+			logger.info("Klasa 2 Niveli 2 «Personi» wording cleanup: %s", person_result)
 			result = backfill_exercise_hints(db)
 			logger.info("Exercise hints backfill: %s", result)
 			from .progress_repairs import repair_inflated_level_progress_points

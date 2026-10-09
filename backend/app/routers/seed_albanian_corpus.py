@@ -791,7 +791,7 @@ def seed_second_class_exercises(db: Session):
     description_exercises = [
         ("Personi që na mëson në shkollë dhe na ndihmon të mësojmë.", "mësuesi", ["mësuesi", "mjeku", "inxhinieri", "bibliotekari", "zyrtari"]),
         ("Vendi ku lexojmë libra dhe studiojmë.", "biblioteka", ["biblioteka", "shtëpia", "kopshti", "shkolla", "salla"]),
-        ("Njëri që shëron njerëzit kur janë të sëmurë.", "mjeku", ["mjeku", "mësuesi", "inxhinieri", "zyrtari", "bibliotekari"]),
+        ("Personi që shëron njerëzit kur janë të sëmurë.", "mjeku", ["mjeku", "mësuesi", "inxhinieri", "zyrtari", "bibliotekari"]),
         ("Vendi ku rriten pemë dhe lulet.", "kopshti", ["kopshti", "biblioteka", "shtëpia", "shkolla", "rruga"]),
         ("Personi që projektë dhe ndërton ndërtesa.", "inxhinieri", ["inxhinieri", "mjeku", "mësuesi", "zyrtari", "bibliotekari"])
     ]

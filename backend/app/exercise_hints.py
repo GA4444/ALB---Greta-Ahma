@@ -239,6 +239,28 @@ def replace_i_i_ri_with_i_ri(db: Session) -> dict:
 	return {"updated": updated, "total": len(exercises)}
 
 
+def replace_njeri_with_personi_in_class_2_level_2(db: Session) -> dict:
+	"""Use «Personi» in the requested Klasa 2, Niveli 2 exercise."""
+	from . import models
+
+	old_prompt = "Njëri që shëron njerëzit kur janë të sëmurë."
+	new_prompt = "Personi që shëron njerëzit kur janë të sëmurë."
+	exercises = (
+		db.query(models.Exercise)
+		.filter(
+			models.Exercise.category == models.CategoryEnum.WORD_FROM_DESCRIPTION,
+			models.Exercise.prompt == old_prompt,
+		)
+		.all()
+	)
+	for exercise in exercises:
+		exercise.prompt = new_prompt
+
+	if exercises:
+		db.commit()
+	return {"updated": len(exercises)}
+
+
 def backfill_exercise_hints(db: Session) -> dict:
 	"""Fill missing instructional tips only (skip rows that already have a rule)."""
 	from . import models
