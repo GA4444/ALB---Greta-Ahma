@@ -793,7 +793,7 @@ def seed_second_class_exercises(db: Session):
         ("Vendi ku lexojmë libra dhe studiojmë.", "biblioteka", ["biblioteka", "shtëpia", "kopshti", "shkolla", "salla"]),
         ("Personi që shëron njerëzit kur janë të sëmurë.", "mjeku", ["mjeku", "mësuesi", "inxhinieri", "zyrtari", "bibliotekari"]),
         ("Vendi ku rriten pemë dhe lulet.", "kopshti", ["kopshti", "biblioteka", "shtëpia", "shkolla", "rruga"]),
-        ("Personi që projektë dhe ndërton ndërtesa.", "inxhinieri", ["inxhinieri", "mjeku", "mësuesi", "zyrtari", "bibliotekari"])
+        ("Personi që projekton dhe ndërton ndërtesa.", "inxhinieri", ["inxhinieri", "mjeku", "mësuesi", "zyrtari", "bibliotekari"])
     ]
     
     for i, (prompt, answer, choices) in enumerate(description_exercises):

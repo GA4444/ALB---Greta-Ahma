@@ -261,6 +261,28 @@ def replace_njeri_with_personi_in_class_2_level_2(db: Session) -> dict:
 	return {"updated": len(exercises)}
 
 
+def replace_projekte_with_projekton_in_class_2_level_2(db: Session) -> dict:
+	"""Correct «projektë» to «projekton» in the requested Klasa 2, Niveli 2 exercise."""
+	from . import models
+
+	old_prompt = "Personi që projektë dhe ndërton ndërtesa."
+	new_prompt = "Personi që projekton dhe ndërton ndërtesa."
+	exercises = (
+		db.query(models.Exercise)
+		.filter(
+			models.Exercise.category == models.CategoryEnum.WORD_FROM_DESCRIPTION,
+			models.Exercise.prompt == old_prompt,
+		)
+		.all()
+	)
+	for exercise in exercises:
+		exercise.prompt = new_prompt
+
+	if exercises:
+		db.commit()
+	return {"updated": len(exercises)}
+
+
 def backfill_exercise_hints(db: Session) -> dict:
 	"""Fill missing instructional tips only (skip rows that already have a rule)."""
 	from . import models
